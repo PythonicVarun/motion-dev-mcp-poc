@@ -1,67 +1,324 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Claude Code Outputs</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Claude Code — Motion.dev MCP Benchmark</title>
+  <meta name="description" content="Claude Code's generated outputs for the Motion.dev MCP benchmark: dock, blob, timeline, menu." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      color-scheme: dark;
-      font-family: "Segoe UI", sans-serif;
-      background: #111827;
-      color: #f8fafc;
+      --bg: #f6f3ee;
+      --paper: #fbf9f4;
+      --ink: #15191c;
+      --ink-soft: #3b4145;
+      --rule: #1e221f;
+      --muted: #6b6b66;
+      --line: #d8d3c8;
+      --accent: #b1402a;
+      --agent: #c8533a;
     }
-
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
     body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background:
-        radial-gradient(circle at top, rgba(34, 197, 94, 0.16), transparent 28%),
-        linear-gradient(180deg, #111827, #0f172a);
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Fraunces', Georgia, serif;
+      font-weight: 400;
+      font-size: 18px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
-
-    main {
-      width: min(760px, calc(100% - 32px));
-      padding: 32px;
-      border-radius: 20px;
-      background: rgba(15, 23, 42, 0.82);
-      border: 1px solid rgba(148, 163, 184, 0.18);
+    .wrap {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 40px 28px 96px;
     }
-
-    h1 {
-      margin: 0 0 10px;
+    .masthead {
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 14px;
+      margin-bottom: 36px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
     }
-
-    p {
-      margin: 0 0 18px;
-      color: rgba(248, 250, 252, 0.74);
-    }
-
-    ul {
-      margin: 0;
-      padding-left: 20px;
-      line-height: 1.9;
-    }
-
-    a {
-      color: #86efac;
+    .masthead .brand {
+      font-weight: 700;
+      color: var(--ink);
       text-decoration: none;
+      transition: color 0.15s;
+    }
+    .masthead .brand:hover { color: var(--accent); }
+    .kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--agent);
+      margin-bottom: 14px;
+      text-transform: none;
+    }
+    h1.headline {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: clamp(40px, 6vw, 64px);
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+      margin: 0 0 18px;
+      color: var(--ink);
+    }
+    .subhead {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-style: italic;
+      font-size: clamp(18px, 2vw, 22px);
+      line-height: 1.5;
+      color: var(--ink-soft);
+      margin: 0 0 32px;
+      max-width: 720px;
+    }
+    .statstrip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      margin: 0 0 48px;
+    }
+    .stat {
+      padding: 18px 16px;
+      border-right: 1px solid var(--line);
+      font-family: 'Inter', sans-serif;
+    }
+    .stat:last-child { border-right: 0; }
+    .stat .label {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .stat .value {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 28px;
+      line-height: 1;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat .sub {
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-top: 4px;
+    }
+    @media (max-width: 720px) {
+      .statstrip { grid-template-columns: repeat(2, 1fr); }
+      .stat:nth-child(2) { border-right: 0; }
+      .stat:nth-child(1), .stat:nth-child(2) { border-bottom: 1px solid var(--line); }
+    }
+    h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 30px;
+      line-height: 1.15;
+      letter-spacing: -0.015em;
+      margin: 16px 0 22px;
+      color: var(--ink);
+    }
+    h2::before {
+      content: "";
+      display: block;
+      width: 44px;
+      height: 2px;
+      background: var(--accent);
+      margin-bottom: 14px;
+    }
+    .output-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+    }
+    @media (max-width: 720px) {
+      .output-grid { grid-template-columns: 1fr; }
+    }
+    .output-card {
+      display: block;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 22px 22px 20px;
+      text-decoration: none;
+      color: var(--ink);
+      position: relative;
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .output-card:hover {
+      border-color: var(--ink);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(21, 25, 28, 0.08);
+    }
+    .output-card.winner {
+      border-left: 3px solid var(--agent);
+      padding-left: 20px;
+    }
+    .output-prompt {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      margin: 0 0 4px;
+    }
+    .output-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      margin-bottom: 16px;
+    }
+    .output-time {
+      font-family: 'Fraunces', serif;
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .output-meta {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.01em;
+    }
+    .output-badge {
+      display: inline-block;
+      background: var(--agent);
+      color: white;
+      padding: 3px 9px;
+      border-radius: 2px;
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-weight: 700;
+      margin-top: 12px;
+    }
+    .output-arrow {
+      position: absolute;
+      top: 22px;
+      right: 22px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--muted);
+      transition: color 0.18s, transform 0.18s;
+    }
+    .output-card:hover .output-arrow { color: var(--accent); transform: translateX(2px); }
+    .meta {
+      margin-top: 56px;
+      padding-top: 22px;
+      border-top: 1px solid var(--rule);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .meta a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+    code, .mono {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
+      background: #ece6d5;
+      padding: 1px 5px;
+      border-radius: 2px;
+      color: #2a2a26;
     }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Claude Code Outputs</h1>
-    <p>Published static pages for this agent directory.</p>
-    <ul>
-      <li><a href="../">Back to root</a></li>
-      <li><a href="./visual-first/">Visual First</a></li>
-      <li><a href="./spec-driven/">Spec Driven</a></li>
-      <li><a href="./context-rich/">Context Rich</a></li>
-      <li><a href="./goal-oriented/">Goal Oriented</a></li>
-    </ul>
-  </main>
+  <div class="wrap">
+
+    <header class="masthead">
+      <a class="brand" href="../">← Motion.dev MCP Benchmark</a>
+      <span>Agent Profile · 01 of 04</span>
+    </header>
+
+    <div class="kicker">agent · claude-code · model · Sonnet 4.6 (high)</div>
+    <h1 class="headline">Claude Code</h1>
+    <p class="subhead">Third overall on speed; selective with the Motion.dev MCP. Won the dock prompt without invoking the toolkit once, then leaned on it for the other three. Powered by Claude Sonnet 4.6 at high reasoning.</p>
+
+    <div class="statstrip">
+      <div class="stat">
+        <div class="label">Total time</div>
+        <div class="value">42:51</div>
+        <div class="sub">avg 10m 43s / prompt</div>
+      </div>
+      <div class="stat">
+        <div class="label">Motion.dev MCP</div>
+        <div class="value">16</div>
+        <div class="sub">across 3 of 4 prompts</div>
+      </div>
+      <div class="stat">
+        <div class="label">Total tool calls</div>
+        <div class="value">91</div>
+        <div class="sub">including shell + file ops</div>
+      </div>
+      <div class="stat">
+        <div class="label">Prompts won</div>
+        <div class="value">1</div>
+        <div class="sub">MagneticDock · 7m 25s</div>
+      </div>
+    </div>
+
+    <h2>Generated outputs</h2>
+    <div class="output-grid">
+
+      <a class="output-card winner" href="./context-rich/">
+        <span class="output-arrow">Open →</span>
+        <div class="output-prompt">MagneticDock</div>
+        <div class="output-code">dock · context-rich</div>
+        <div class="output-time">7m 25s</div>
+        <div class="output-meta">0 Motion.dev MCP calls · 23 total tool calls</div>
+        <div class="output-badge">Prompt winner</div>
+      </a>
+
+      <a class="output-card" href="./goal-oriented/">
+        <span class="output-arrow">Open →</span>
+        <div class="output-prompt">Interactive SVG Blob</div>
+        <div class="output-code">blob · goal-oriented</div>
+        <div class="output-time">7m 27s</div>
+        <div class="output-meta">5 Motion.dev MCP calls · 8 total tool calls</div>
+      </a>
+
+      <a class="output-card" href="./spec-driven/">
+        <span class="output-arrow">Open →</span>
+        <div class="output-prompt">Cinematic Timeline</div>
+        <div class="output-code">timeline · spec-driven</div>
+        <div class="output-time">20m 25s</div>
+        <div class="output-meta">6 Motion.dev MCP calls · 31 total tool calls</div>
+      </a>
+
+      <a class="output-card" href="./visual-first/">
+        <span class="output-arrow">Open →</span>
+        <div class="output-prompt">Liquid Menu</div>
+        <div class="output-code">menu · visual-first</div>
+        <div class="output-time">7m 33s</div>
+        <div class="output-meta">5 Motion.dev MCP calls · 29 total tool calls</div>
+      </a>
+
+    </div>
+
+    <section class="meta">
+      <p>Times reflect the first completed benchmark turn for each prompt. Motion.dev MCP calls are counted from tools matching <code>mcp__motion-dev__*</code> for this agent. Output quality is not measured here. Full methodology and cross-agent comparison: <a href="../">Motion.dev MCP Benchmark</a>.</p>
+    </section>
+
+  </div>
 </body>
 </html>

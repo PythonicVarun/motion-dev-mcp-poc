@@ -1,0 +1,17 @@
+prompt,agent,duration_ms,duration_human,motion_dev_mcp_calls,total_tool_calls,source
+dock,claude-code,445405,7m 25s,0,23,87f7f279-72ee-492b-b316-8bb9303172cd.jsonl
+dock,codex,504514,8m 25s,13,29,rollout-2026-05-15T11-34-27-019e2a3c-7a69-7083-8dec-fe355abd80bb.jsonl
+dock,gemini-cli,849330,14m 09s,0,13,session-2026-05-15T06-06-2a452776.jsonl
+dock,opencode-minimax-2.5,1466754,24m 27s,4,34,ses_1d5b9e18affep744wQ8BGdMMWP
+blob,claude-code,447163,7m 27s,5,8,a482cf5e-4361-4bc3-9e42-3a28bc1a36f7.jsonl
+blob,codex,541203,9m 01s,6,24,rollout-2026-05-15T12-13-51-019e2a60-8dba-78b3-850d-a62b2eb4f96c.jsonl
+blob,gemini-cli,167269,2m 47s,0,3,session-2026-05-15T06-45-7d11b6c4.jsonl
+blob,opencode-minimax-2.5,228713,3m 49s,0,5,ses_1d59e96dfffeQpxNoeZ6Ab86W9
+timeline,claude-code,1225356,20m 25s,6,31,298c230b-08ff-4ccb-8cf5-eeed95f02d05.jsonl
+timeline,codex,203999,3m 24s,5,17,rollout-2026-05-15T12-26-30-019e2a6c-218c-74d0-b17f-267c2b78ee9b.jsonl
+timeline,gemini-cli,643576,10m 44s,0,14,session-2026-05-15T06-57-512af8e4.jsonl
+timeline,opencode-minimax-2.5,860647,14m 21s,0,19,ses_1d592aacaffetSZBtTEtcqOcf1
+menu,claude-code,453113,7m 33s,5,29,0e0a0bc9-a8c3-45ea-9f46-9bc80576a3fe.jsonl
+menu,codex,360616,6m 01s,7,27,rollout-2026-05-15T12-45-15-019e2a7d-4c58-7bc2-a750-fd16c91c5260.jsonl
+menu,gemini-cli,313641,5m 14s,0,8,session-2026-05-15T07-16-72861c00.jsonl
+menu,opencode-minimax-2.5,1152842,19m 13s,0,20,ses_1d581abb6ffehJDTLpZf8W8Ro2

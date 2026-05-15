@@ -1,0 +1,294 @@
+{
+  "benchmark": {
+    "name": "Motion.dev MCP Benchmark",
+    "date": "2026-05-15",
+    "scope": "History-based comparison of four coding agents across four Motion.dev-heavy animation prompts"
+  },
+  "metric_definitions": {
+    "duration": "Time from the benchmark prompt being received to the first completed benchmark turn for that prompt",
+    "motion_dev_mcp_calls": "Only explicit Motion.dev-specific tool invocations",
+    "total_tool_calls": "All recorded tool invocations in that prompt run, including shell/file/task tools"
+  },
+  "normalization_notes": [
+    "For codex, Motion.dev calls were counted from tool names such as search_motion_docs, get_component_api, generate_motion_component, validate_motion_syntax, and optimize_motion_code even though they do not carry an mcp prefix.",
+    "For claude-code, only tools matching mcp__motion-dev__* were counted as Motion.dev MCP calls.",
+    "For opencode-minimax-2.5, only tools matching motion-dev_* were counted as Motion.dev MCP calls.",
+    "For gemini-cli, no Motion.dev-specific tool calls were recorded in the selected benchmark sessions.",
+    "Generic discovery calls such as list_mcp_resources were excluded from Motion.dev MCP counts."
+  ],
+  "records": [
+    {
+      "prompt": "dock",
+      "prompt_label": "MagneticDock",
+      "directory": "context-rich",
+      "agent": "claude-code",
+      "duration_ms": 445405,
+      "duration_human": "7m 25s",
+      "motion_dev_mcp_calls": 0,
+      "total_tool_calls": 23,
+      "source": "87f7f279-72ee-492b-b316-8bb9303172cd.jsonl"
+    },
+    {
+      "prompt": "dock",
+      "prompt_label": "MagneticDock",
+      "directory": "context-rich",
+      "agent": "codex",
+      "duration_ms": 504514,
+      "duration_human": "8m 25s",
+      "motion_dev_mcp_calls": 13,
+      "total_tool_calls": 29,
+      "source": "rollout-2026-05-15T11-34-27-019e2a3c-7a69-7083-8dec-fe355abd80bb.jsonl"
+    },
+    {
+      "prompt": "dock",
+      "prompt_label": "MagneticDock",
+      "directory": "context-rich",
+      "agent": "gemini-cli",
+      "duration_ms": 849330,
+      "duration_human": "14m 09s",
+      "motion_dev_mcp_calls": 0,
+      "total_tool_calls": 13,
+      "source": "session-2026-05-15T06-06-2a452776.jsonl"
+    },
+    {
+      "prompt": "dock",
+      "prompt_label": "MagneticDock",
+      "directory": "context-rich",
+      "agent": "opencode-minimax-2.5",
+      "duration_ms": 1466754,
+      "duration_human": "24m 27s",
+      "motion_dev_mcp_calls": 4,
+      "total_tool_calls": 34,
+      "source": "ses_1d5b9e18affep744wQ8BGdMMWP"
+    },
+    {
+      "prompt": "blob",
+      "prompt_label": "Interactive SVG Blob",
+      "directory": "goal-oriented",
+      "agent": "claude-code",
+      "duration_ms": 447163,
+      "duration_human": "7m 27s",
+      "motion_dev_mcp_calls": 5,
+      "total_tool_calls": 8,
+      "source": "a482cf5e-4361-4bc3-9e42-3a28bc1a36f7.jsonl"
+    },
+    {
+      "prompt": "blob",
+      "prompt_label": "Interactive SVG Blob",
+      "directory": "goal-oriented",
+      "agent": "codex",
+      "duration_ms": 541203,
+      "duration_human": "9m 01s",
+      "motion_dev_mcp_calls": 6,
+      "total_tool_calls": 24,
+      "source": "rollout-2026-05-15T12-13-51-019e2a60-8dba-78b3-850d-a62b2eb4f96c.jsonl"
+    },
+    {
+      "prompt": "blob",
+      "prompt_label": "Interactive SVG Blob",
+      "directory": "goal-oriented",
+      "agent": "gemini-cli",
+      "duration_ms": 167269,
+      "duration_human": "2m 47s",
+      "motion_dev_mcp_calls": 0,
+      "total_tool_calls": 3,
+      "source": "session-2026-05-15T06-45-7d11b6c4.jsonl"
+    },
+    {
+      "prompt": "blob",
+      "prompt_label": "Interactive SVG Blob",
+      "directory": "goal-oriented",
+      "agent": "opencode-minimax-2.5",
+      "duration_ms": 228713,
+      "duration_human": "3m 49s",
+      "motion_dev_mcp_calls": 0,
+      "total_tool_calls": 5,
+      "source": "ses_1d59e96dfffeQpxNoeZ6Ab86W9"
+    },
+    {
+      "prompt": "timeline",
+      "prompt_label": "Scroll-Driven Cinematic Timeline",
+      "directory": "spec-driven",
+      "agent": "claude-code",
+      "duration_ms": 1225356,
+      "duration_human": "20m 25s",
+      "motion_dev_mcp_calls": 6,
+      "total_tool_calls": 31,
+      "source": "298c230b-08ff-4ccb-8cf5-eeed95f02d05.jsonl"
+    },
+    {
+      "prompt": "timeline",
+      "prompt_label": "Scroll-Driven Cinematic Timeline",
+      "directory": "spec-driven",
+      "agent": "codex",
+      "duration_ms": 203999,
+      "duration_human": "3m 24s",
+      "motion_dev_mcp_calls": 5,
+      "total_tool_calls": 17,
+      "source": "rollout-2026-05-15T12-26-30-019e2a6c-218c-74d0-b17f-267c2b78ee9b.jsonl"
+    },
+    {
+      "prompt": "timeline",
+      "prompt_label": "Scroll-Driven Cinematic Timeline",
+      "directory": "spec-driven",
+      "agent": "gemini-cli",
+      "duration_ms": 643576,
+      "duration_human": "10m 44s",
+      "motion_dev_mcp_calls": 0,
+      "total_tool_calls": 14,
+      "source": "session-2026-05-15T06-57-512af8e4.jsonl"
+    },
+    {
+      "prompt": "timeline",
+      "prompt_label": "Scroll-Driven Cinematic Timeline",
+      "directory": "spec-driven",
+      "agent": "opencode-minimax-2.5",
+      "duration_ms": 860647,
+      "duration_human": "14m 21s",
+      "motion_dev_mcp_calls": 0,
+      "total_tool_calls": 19,
+      "source": "ses_1d592aacaffetSZBtTEtcqOcf1"
+    },
+    {
+      "prompt": "menu",
+      "prompt_label": "Liquid Menu",
+      "directory": "visual-first",
+      "agent": "claude-code",
+      "duration_ms": 453113,
+      "duration_human": "7m 33s",
+      "motion_dev_mcp_calls": 5,
+      "total_tool_calls": 29,
+      "source": "0e0a0bc9-a8c3-45ea-9f46-9bc80576a3fe.jsonl"
+    },
+    {
+      "prompt": "menu",
+      "prompt_label": "Liquid Menu",
+      "directory": "visual-first",
+      "agent": "codex",
+      "duration_ms": 360616,
+      "duration_human": "6m 01s",
+      "motion_dev_mcp_calls": 7,
+      "total_tool_calls": 27,
+      "source": "rollout-2026-05-15T12-45-15-019e2a7d-4c58-7bc2-a750-fd16c91c5260.jsonl"
+    },
+    {
+      "prompt": "menu",
+      "prompt_label": "Liquid Menu",
+      "directory": "visual-first",
+      "agent": "gemini-cli",
+      "duration_ms": 313641,
+      "duration_human": "5m 14s",
+      "motion_dev_mcp_calls": 0,
+      "total_tool_calls": 8,
+      "source": "session-2026-05-15T07-16-72861c00.jsonl"
+    },
+    {
+      "prompt": "menu",
+      "prompt_label": "Liquid Menu",
+      "directory": "visual-first",
+      "agent": "opencode-minimax-2.5",
+      "duration_ms": 1152842,
+      "duration_human": "19m 13s",
+      "motion_dev_mcp_calls": 0,
+      "total_tool_calls": 20,
+      "source": "ses_1d581abb6ffehJDTLpZf8W8Ro2"
+    }
+  ],
+  "aggregate_by_agent": [
+    {
+      "agent": "codex",
+      "total_duration_ms": 1610332,
+      "total_duration_human": "26m 50s",
+      "avg_duration_ms": 402583,
+      "avg_duration_human": "6m 43s",
+      "motion_dev_mcp_calls": 31,
+      "total_tool_calls": 97,
+      "prompts_with_motion_dev_mcp": 4
+    },
+    {
+      "agent": "gemini-cli",
+      "total_duration_ms": 1973816,
+      "total_duration_human": "32m 54s",
+      "avg_duration_ms": 493454,
+      "avg_duration_human": "8m 14s",
+      "motion_dev_mcp_calls": 0,
+      "total_tool_calls": 38,
+      "prompts_with_motion_dev_mcp": 0
+    },
+    {
+      "agent": "claude-code",
+      "total_duration_ms": 2571037,
+      "total_duration_human": "42m 51s",
+      "avg_duration_ms": 642759,
+      "avg_duration_human": "10m 43s",
+      "motion_dev_mcp_calls": 16,
+      "total_tool_calls": 91,
+      "prompts_with_motion_dev_mcp": 3
+    },
+    {
+      "agent": "opencode-minimax-2.5",
+      "total_duration_ms": 3708956,
+      "total_duration_human": "61m 49s",
+      "avg_duration_ms": 927239,
+      "avg_duration_human": "15m 27s",
+      "motion_dev_mcp_calls": 4,
+      "total_tool_calls": 78,
+      "prompts_with_motion_dev_mcp": 1
+    }
+  ],
+  "aggregate_by_prompt": [
+    {
+      "prompt": "dock",
+      "avg_duration_ms": 816501,
+      "avg_duration_human": "13m 37s",
+      "fastest_agent": "claude-code"
+    },
+    {
+      "prompt": "timeline",
+      "avg_duration_ms": 733395,
+      "avg_duration_human": "12m 13s",
+      "fastest_agent": "codex"
+    },
+    {
+      "prompt": "menu",
+      "avg_duration_ms": 570053,
+      "avg_duration_human": "9m 30s",
+      "fastest_agent": "gemini-cli"
+    },
+    {
+      "prompt": "blob",
+      "avg_duration_ms": 346087,
+      "avg_duration_human": "5m 46s",
+      "fastest_agent": "gemini-cli"
+    }
+  ],
+  "fastest_by_prompt": [
+    {
+      "prompt": "dock",
+      "agent": "claude-code",
+      "duration_human": "7m 25s"
+    },
+    {
+      "prompt": "blob",
+      "agent": "gemini-cli",
+      "duration_human": "2m 47s"
+    },
+    {
+      "prompt": "timeline",
+      "agent": "codex",
+      "duration_human": "3m 24s"
+    },
+    {
+      "prompt": "menu",
+      "agent": "gemini-cli",
+      "duration_human": "5m 14s"
+    }
+  ],
+  "story_hooks": [
+    "Codex is the strongest MCP plus speed story: it used Motion.dev MCP on all four prompts and still finished fastest overall.",
+    "Gemini CLI is the strongest fast-without-MCP story: it recorded zero Motion.dev MCP calls and still won two prompts on speed.",
+    "The prompt mentioning MCP did not cause uniform behavior across agents; actual tool use diverged sharply.",
+    "The timeline prompt created the biggest performance gap and is the best single comparison graphic.",
+    "The dock prompt was the hardest prompt on average across the field."
+  ]
+}
