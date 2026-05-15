@@ -1,0 +1,92 @@
+.scene {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  padding-bottom: 36px;
+  background:
+    radial-gradient(ellipse at 62% 18%, rgba(99, 102, 241, 0.2) 0%, transparent 52%),
+    radial-gradient(ellipse at 22% 78%, rgba(236, 72, 153, 0.14) 0%, transparent 44%),
+    linear-gradient(180deg, #07070f 0%, #0d0d1e 45%, #090912 100%);
+}
+
+.dock {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 14px 18px 12px;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(32px) saturate(160%);
+  -webkit-backdrop-filter: blur(32px) saturate(160%);
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.25),
+    0 16px 48px rgba(0, 0, 0, 0.55),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -0.5px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* ── Individual icon slot ─────────────────────────────────────── */
+
+.iconWrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+}
+
+.icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  will-change: transform;
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.45),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -0.5px 0 rgba(0, 0, 0, 0.2);
+  transition: box-shadow 120ms ease;
+}
+
+.icon:active {
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.55),
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.18);
+}
+
+.emoji {
+  font-size: 28px;
+  line-height: 1;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+}
+
+/* ── Hover label ──────────────────────────────────────────────── */
+
+.label {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 50%;
+  /* x: '-50%' applied via motion style prop to avoid CSS transform conflict */
+  z-index: 20;
+  background: rgba(16, 16, 22, 0.86);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  padding: 5px 11px;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+}
