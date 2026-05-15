@@ -1,0 +1,7 @@
+node_modules/
+.next/
+docs/
+motion-dev-mcp/
+dist/
+*.log
+.claude/
