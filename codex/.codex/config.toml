@@ -1,0 +1,9 @@
+[mcp_servers.motion-studio]
+command = "npx"
+args = ["-y", "https://api.motion.dev/registry.tgz?package=motion-studio-mcp&version=latest"]
+startup_timeout_ms = 20000
+
+[mcp_servers.motion-dev]
+command = "node"
+args = ["dist/index.js"]
+cwd = "V:/mcp_server/motion-dev-mcp"

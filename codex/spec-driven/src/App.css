@@ -1,0 +1,292 @@
+.app-shell {
+  position: relative;
+}
+
+.progress-shell {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 20;
+  padding: 1rem 1rem 0;
+  pointer-events: none;
+}
+
+.progress-shell__track {
+  overflow: hidden;
+  border-radius: 999px;
+  height: 0.45rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 0.65rem 2.4rem rgba(8, 10, 14, 0.28);
+}
+
+.progress-shell__indicator {
+  height: 100%;
+  width: 100%;
+  transform-origin: 0 50%;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(255, 212, 148, 0.95),
+      rgba(255, 132, 97, 0.95),
+      rgba(145, 215, 255, 0.95)
+    );
+  box-shadow: 0 0 1.8rem rgba(255, 162, 120, 0.35);
+}
+
+.progress-shell__labels {
+  margin-top: 0.65rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(247, 240, 230, 0.78);
+}
+
+.timeline {
+  position: relative;
+}
+
+.scene {
+  min-height: 180vh;
+  position: relative;
+}
+
+.scene__sticky {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 4.75rem 1rem 2rem;
+}
+
+.scene__frame {
+  position: relative;
+  width: min(74rem, calc(100vw - 2rem));
+  height: min(78vh, 46rem);
+  border-radius: 2rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 15% 20%, var(--scene-glow), transparent 38%),
+    linear-gradient(145deg, var(--scene-surface), var(--scene-surface-strong));
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow:
+    0 2.25rem 5rem rgba(2, 4, 6, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.scene__backdrop,
+.scene__foreground,
+.scene__shade {
+  position: absolute;
+  inset: -8%;
+}
+
+.scene__backdrop--a {
+  background:
+    radial-gradient(circle at 18% 35%, var(--scene-glow), transparent 26%),
+    radial-gradient(circle at 82% 25%, rgba(255, 255, 255, 0.1), transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 45%);
+  filter: blur(4px);
+}
+
+.scene__backdrop--b {
+  inset: 10% -5%;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  opacity: 0.22;
+  mask-image: radial-gradient(circle at center, black 45%, transparent 85%);
+}
+
+.scene__foreground--a {
+  inset: auto -15% -12% auto;
+  width: 68%;
+  height: 0.95rem;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, transparent, var(--scene-accent), rgba(255, 255, 255, 0.85));
+  box-shadow: 0 0 2rem var(--scene-glow);
+  opacity: 0.82;
+}
+
+.scene__foreground--b {
+  inset: 8% auto auto -10%;
+  width: 16rem;
+  height: 16rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--scene-accent-soft), transparent 70%);
+  filter: blur(16px);
+  opacity: 0.8;
+}
+
+.scene__shade {
+  inset: 0;
+}
+
+.scene__content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: grid;
+  align-content: end;
+  gap: 1rem;
+  padding: clamp(1.5rem, 2vw, 2.5rem);
+  color: rgba(250, 244, 235, 0.94);
+}
+
+.scene--left .scene__content {
+  justify-items: start;
+  text-align: left;
+}
+
+.scene--right .scene__content {
+  justify-items: end;
+  text-align: right;
+}
+
+.scene__header {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(250, 244, 235, 0.78);
+}
+
+.scene__index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.7rem;
+  min-height: 2.7rem;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.scene__eyebrow {
+  padding-inline-end: 0.1em;
+}
+
+.scene__title {
+  width: min(12ch, 100%);
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 7vw, 6.2rem);
+  line-height: 0.95;
+  letter-spacing: -0.05em;
+  color: #fff9f0;
+  text-wrap: balance;
+}
+
+.scene__description,
+.scene__caption {
+  margin: 0;
+  max-width: 34rem;
+  font-size: clamp(1rem, 1.8vw, 1.16rem);
+  line-height: 1.7;
+  color: rgba(250, 244, 235, 0.78);
+}
+
+.scene__meta {
+  width: min(40rem, 100%);
+  display: grid;
+  gap: 1.35rem;
+}
+
+.scene__caption {
+  padding-top: 0.4rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.scene__metrics {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.scene__metric {
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+}
+
+.scene__metric-value,
+.scene__metric-label {
+  display: block;
+}
+
+.scene__metric-value {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 2.5vw, 2.3rem);
+  line-height: 1;
+  color: #fff9f0;
+}
+
+.scene__metric-label {
+  margin-top: 0.55rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(250, 244, 235, 0.7);
+}
+
+@media (max-width: 900px) {
+  .progress-shell {
+    padding-inline: 0.75rem;
+  }
+
+  .progress-shell__labels {
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+  }
+
+  .scene {
+    min-height: 165vh;
+  }
+
+  .scene__sticky {
+    padding-inline: 0.75rem;
+  }
+
+  .scene__frame {
+    width: min(100%, calc(100vw - 1.5rem));
+    height: min(76vh, 42rem);
+  }
+
+  .scene__content,
+  .scene--left .scene__content,
+  .scene--right .scene__content {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .scene__description,
+  .scene__caption,
+  .scene__meta {
+    width: 100%;
+    max-width: none;
+  }
+
+  .scene__metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .scene__foreground--a {
+    width: 84%;
+  }
+}
