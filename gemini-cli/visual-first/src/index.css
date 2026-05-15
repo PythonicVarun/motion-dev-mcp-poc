@@ -1,0 +1,143 @@
+:root {
+  --morph-bg: #050505;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Hide scrollbars for the fluid feel */
+  background-color: #e0e0e0; /* Main app background */
+  cursor: none; /* Hide default cursor to show custom one */
+}
+
+/* Custom Cursor */
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background-color: white; /* Difference blend makes it contrast heavily */
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+}
+
+/* Main Layout */
+.app-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.content h1 {
+  font-size: 8vw;
+  font-weight: 900;
+  margin: 0;
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+  text-transform: uppercase;
+  color: #111;
+}
+
+.content p {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #555;
+  margin-top: 1rem;
+}
+
+/* Toggle Button */
+.menu-toggle {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  z-index: 100;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: none; /* Use custom cursor */
+  color: white;
+  mix-blend-mode: difference; /* Ensures visibility over any background */
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  outline: none;
+}
+
+/* Menu Overlay */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--morph-bg);
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  will-change: transform;
+}
+
+.menu-inner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.menu-item-container {
+  perspective: 1200px; /* 3D effect depth */
+  margin: 1rem 0;
+}
+
+.menu-item {
+  display: block;
+  font-size: 8vw;
+  font-weight: 900;
+  text-decoration: none;
+  color: #ffffff;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  transform-style: preserve-3d;
+  cursor: none; /* Use custom cursor */
+}
+
+/* Liquid Underline */
+.underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0.12em;
+  background-color: #ffffff;
+  border-radius: 0.05em; /* Rounded edges for 'liquid' feel */
+}
+
+/* Interactive link states */
+a {
+  outline: none;
+}

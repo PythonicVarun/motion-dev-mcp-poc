@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Morphing Blob</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #050510;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+
+        #container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #blob-svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        /* Glowing radial gradient and hue shift */
+        .glowing-blob {
+            fill: url(#blob-gradient);
+            filter: drop-shadow(0 0 30px rgba(0, 242, 254, 0.6));
+            animation: hue-rotate 8s infinite linear;
+        }
+
+        @keyframes hue-rotate {
+            0% { filter: drop-shadow(0 0 30px rgba(0, 242, 254, 0.6)) hue-rotate(0deg); }
+            100% { filter: drop-shadow(0 0 30px rgba(0, 242, 254, 0.6)) hue-rotate(360deg); }
+        }
+
+        /* Fragments for the explosion */
+        .fragment {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #4facfe, #00f2fe);
+            top: 50%;
+            left: 50%;
+            margin-top: -15px;
+            margin-left: -15px;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.8);
+            pointer-events: none;
+            opacity: 0;
+            animation: hue-rotate 8s infinite linear;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 40px;
+            color: rgba(255, 255, 255, 0.6);
+            pointer-events: none;
+            text-align: center;
+            width: 100%;
+            font-size: 14px;
+            letter-spacing: 1px;
+            transition: opacity 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- SVG setup with -100 to 100 coordinates to center the organic paths -->
+        <svg id="blob-svg" viewBox="-100 -100 200 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <radialGradient id="blob-gradient" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#4facfe" />
+                    <stop offset="100%" stop-color="#00f2fe" />
+                </radialGradient>
+            </defs>
+            <!-- Default path is the first organic shape -->
+            <path id="blob-path" class="glowing-blob" d="M45.7,-76.4C58.9,-69.5,68.8,-54.9,76.5,-39.8C84.2,-24.8,89.7,-9.3,87.6,5.3C85.5,19.9,75.9,33.6,65.3,46.1C54.8,58.5,43.3,69.7,29.3,77.1C15.3,84.4,-1.1,87.9,-16.9,84.7C-32.6,81.4,-47.7,71.4,-60.7,59.2C-73.6,47,-84.4,32.7,-88.7,16.8C-93.1,1,-91,-16.5,-83,-31.2C-75,-46,-61,-57.9,-46.5,-64.5C-31.9,-71,-15.9,-72.1,1,-73.6C17.9,-75.1,35.8,-76.9,45.7,-76.4Z" />
+        </svg>
+    </div>
+    <div class="hint">Move around and click to explode</div>
+
+    <script type="module">
+        import { animate, stagger, motionValue } from 'https://esm.sh/motion@11.11.17';
+
+        // 4 distinct organic blob shapes
+        const paths = [
+            "M45.7,-76.4C58.9,-69.5,68.8,-54.9,76.5,-39.8C84.2,-24.8,89.7,-9.3,87.6,5.3C85.5,19.9,75.9,33.6,65.3,46.1C54.8,58.5,43.3,69.7,29.3,77.1C15.3,84.4,-1.1,87.9,-16.9,84.7C-32.6,81.4,-47.7,71.4,-60.7,59.2C-73.6,47,-84.4,32.7,-88.7,16.8C-93.1,1,-91,-16.5,-83,-31.2C-75,-46,-61,-57.9,-46.5,-64.5C-31.9,-71,-15.9,-72.1,1,-73.6C17.9,-75.1,35.8,-76.9,45.7,-76.4Z",
+            "M51.8,-69.3C66.8,-60.6,78.2,-45.5,83.9,-28.5C89.5,-11.5,89.4,7.4,82.8,24.3C76.2,41.2,63.1,56.1,47.4,66.6C31.7,77.1,13.4,83.3,-4.2,88.2C-21.7,93,-38.4,96.6,-53.2,89.6C-68.1,82.5,-80.9,64.9,-88.2,46.3C-95.5,27.7,-97.2,8.2,-92.3,-9.6C-87.5,-27.5,-76,-43.6,-61.8,-54.6C-47.5,-65.7,-30.4,-71.7,-13.7,-73.9C3.1,-76.2,19.9,-74.6,34.8,-71.1L51.8,-69.3Z",
+            "M36.1,-62.7C48.6,-57.5,61.7,-49.8,70.9,-38.5C80.2,-27.1,85.6,-12.2,85.7,2.8C85.7,17.7,80.3,32.6,70.6,44.1C60.9,55.6,46.8,63.6,32.4,68.7C17.9,73.8,3.2,76,-11.6,74.7C-26.3,73.3,-41.1,68.4,-53.4,59.3C-65.7,50.2,-75.4,36.8,-80.7,21.9C-86,6.9,-86.8,-9.6,-80.7,-23.7C-74.5,-37.8,-61.3,-49.5,-47.3,-55.1C-33.2,-60.7,-18.2,-60.2,-3.5,-55.5C11.1,-50.8,23.6,-67.9,36.1,-62.7Z",
+            "M40.4,-67.5C51.6,-61.7,59.5,-49.3,67.6,-36.5C75.8,-23.7,84.1,-10.4,85.1,3.4C86,17.2,79.5,31.5,70.2,42.9C60.8,54.3,48.5,62.8,35.1,68.4C21.6,74,7.1,76.6,-7.1,75.4C-21.4,74.1,-35.3,69,-46.8,60C-58.4,51,-67.7,38.1,-74.3,23.5C-80.9,8.8,-84.9,-7.6,-80.6,-22.3C-76.3,-36.9,-63.9,-49.8,-50,-56.3C-36.2,-62.7,-20.9,-62.8,-5.5,-56.1C9.8,-49.3,29.3,-73.3,40.4,-67.5Z",
+            "M45.7,-76.4C58.9,-69.5,68.8,-54.9,76.5,-39.8C84.2,-24.8,89.7,-9.3,87.6,5.3C85.5,19.9,75.9,33.6,65.3,46.1C54.8,58.5,43.3,69.7,29.3,77.1C15.3,84.4,-1.1,87.9,-16.9,84.7C-32.6,81.4,-47.7,71.4,-60.7,59.2C-73.6,47,-84.4,32.7,-88.7,16.8C-93.1,1,-91,-16.5,-83,-31.2C-75,-46,-61,-57.9,-46.5,-64.5C-31.9,-71,-15.9,-72.1,1,-73.6C17.9,-75.1,35.8,-76.9,45.7,-76.4Z"
+        ];
+
+        // 1. Morph between 4 organic shapes on a loop
+        const blobPath = document.getElementById('blob-path');
+        const morphAnimation = animate(blobPath, { 
+            d: paths 
+        }, { 
+            duration: 8, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+        });
+
+        // 2. React to mouse position using motion values to "lean" towards the cursor
+        const blobSvg = document.getElementById('blob-svg');
+        const x = motionValue(0);
+        const y = motionValue(0);
+
+        document.addEventListener('mousemove', (e) => {
+            const { innerWidth, innerHeight } = window;
+            // Normalize mouse position between -1 and 1
+            const targetX = (e.clientX / innerWidth) * 2 - 1;
+            const targetY = (e.clientY / innerHeight) * 2 - 1;
+            
+            // Animate motion values using a spring for a smooth organic feel
+            animate(x, targetX, { type: "spring", stiffness: 100, damping: 20 });
+            animate(y, targetY, { type: "spring", stiffness: 100, damping: 20 });
+        });
+
+        // Derive and apply the transform from the motion values
+        const updateTransform = () => {
+            const latestX = x.get();
+            const latestY = y.get();
+            // Leaning effect: translation + rotation + scaling
+            blobSvg.style.transform = `translate(${latestX * 40}px, ${latestY * 40}px) rotate(${latestX * 15}deg) scaleY(${1 - Math.abs(latestY) * 0.1})`;
+        };
+
+        x.on("change", updateTransform);
+        y.on("change", updateTransform);
+
+        // 4. On click, explode into 12 smaller blobs that scatter and fade
+        const container = document.getElementById('container');
+        const hint = document.querySelector('.hint');
+        let exploded = false;
+
+        blobSvg.addEventListener('click', () => {
+            if (exploded) return;
+            exploded = true;
+            
+            // Hide the main blob and instructions
+            blobSvg.style.display = 'none';
+            hint.style.opacity = '0';
+            
+            // Create 12 fragments
+            const fragments = [];
+            for(let i = 0; i < 12; i++) {
+                const frag = document.createElement('div');
+                frag.className = 'fragment';
+                container.appendChild(frag);
+                fragments.push(frag);
+            }
+
+            // Scatter animation using Motion's stagger capability
+            animate(fragments, {
+                opacity: [1, 1, 0],
+                scale: [0, 1.5, 0],
+                // Scatter them in a circular pattern using trigonometry
+                x: (i) => Math.cos((i / 12) * Math.PI * 2) * (150 + Math.random() * 80),
+                y: (i) => Math.sin((i / 12) * Math.PI * 2) * (150 + Math.random() * 80),
+                rotate: () => Math.random() * 360
+            }, {
+                duration: 1.5,
+                ease: "easeOut",
+                delay: stagger(0.03) // staggered exit animations
+            }).finished.then(() => {
+                // Reset after explosion sequence for replayability
+                fragments.forEach(f => f.remove());
+                blobSvg.style.display = 'block';
+                hint.style.opacity = '1';
+                exploded = false;
+            });
+        });
+    </script>
+</body>
+</html>
