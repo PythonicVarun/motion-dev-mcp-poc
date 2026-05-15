@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Morphing Blob</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0a0a0f;
+      overflow: hidden;
+      cursor: crosshair;
+    }
+    .container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #main-blob {
+      cursor: pointer;
+      filter: drop-shadow(0 0 60px var(--glow-color, rgba(120, 60, 255, 0.6)));
+      transition: filter 0.3s ease;
+    }
+    .mini-blob {
+      position: absolute;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="container">
+    <svg id="main-blob" width="300" height="300" viewBox="0 0 200 200">
+      <defs>
+        <radialGradient id="blobGradient" cx="50%" cy="50%" r="70%">
+          <stop offset="0%" stop-color="var(--inner-color, #a855f7)" />
+          <stop offset="50%" stop-color="var(--mid-color, #7c3aed)" />
+          <stop offset="100%" stop-color="var(--outer-color, #4c1d95)" />
+        </radialGradient>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+      <path id="blob-path" fill="url(#blobGradient)" filter="url(#glow)" d=""/>
+    </svg>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@motionone/motion@2.0.0/dist/motion.js"></script>
+  <script>
+    const { animate, scroll, timeline, stagger, spring, value, easeInOut } = Motion;
+
+    const container = document.getElementById('container');
+    const blobPath = document.getElementById('blob-path');
+    const mainBlob = document.getElementById('main-blob');
+
+    const shapes = [
+      "M100,20 C150,20 180,60 180,100 C180,150 150,180 100,180 C50,180 20,150 20,100 C20,60 50,20 100,20",
+      "M100,15 C160,15 190,50 185,100 C180,160 150,185 100,185 C50,185 15,160 20,100 C25,50 50,15 100,15",
+      "M100,25 C145,25 175,55 175,100 C175,150 145,175 100,175 C55,175 25,150 25,100 C25,55 55,25 100,25",
+      "M100,10 C155,20 190,60 180,100 C170,150 140,180 100,180 C50,180 10,140 20,100 C30,50 60,10 100,10"
+    ];
+
+    let hue = 260;
+    let isExploded = false;
+    let mouseX = value(0);
+    let mouseY = value(0);
+
+    function morphShapes() {
+      if (isExploded) return;
+      
+      let shapeIndex = 0;
+      
+      function nextShape() {
+        if (isExploded) return;
+        
+        animate(blobPath, 
+          { d: shapes[shapeIndex] },
+          { duration: 2, easing: "easeInOut" }
+        );
+        
+        shapeIndex = (shapeIndex + 1) % shapes.length;
+        setTimeout(nextShape, 2000);
+      }
+      
+      blobPath.setAttribute("d", shapes[0]);
+      nextShape();
+    }
+
+    function animateHue() {
+      function shiftHue() {
+        if (isExploded) return;
+        
+        hue = (hue + 1) % 360;
+        
+        const innerColor = `hsl(${hue}, 90%, 70%)`;
+        const midColor = `hsl(${hue}, 85%, 55%)`;
+        const outerColor = `hsl(${hue}, 80%, 35%)`;
+        
+        document.documentElement.style.setProperty('--inner-color', innerColor);
+        document.documentElement.style.setProperty('--mid-color', midColor);
+        document.documentElement.style.setProperty('--outer-color', outerColor);
+        document.documentElement.style.setProperty('--glow-color', `hsla(${hue}, 90%, 60%, 0.6)`);
+        
+        requestAnimationFrame(shiftHue);
+      }
+      shiftHue();
+    }
+
+    function handleMouseMove(e) {
+      const rect = container.getBoundingClientRect();
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      
+      const offsetX = (e.clientX - centerX) / centerX * 30;
+      const offsetY = (e.clientY - centerY) / centerY * 30;
+      
+      const currentTransform = mainBlob.style.transform || '';
+      const translateX = offsetX;
+      const translateY = offsetY;
+      const rotate = offsetX * 0.5;
+      
+      animate(mainBlob, 
+        { transform: `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg)` },
+        { duration: 0.3, easing: "easeOut" }
+      );
+    }
+
+    function explode() {
+      if (isExploded) return;
+      isExploded = true;
+      
+      mainBlob.style.opacity = '0';
+      
+      const miniBlobs = [];
+      const centerX = container.offsetWidth / 2;
+      const centerY = container.offsetHeight / 2;
+      
+      for (let i = 0; i < 12; i++) {
+        const miniBlob = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        miniBlob.classList.add('mini-blob');
+        miniBlob.setAttribute('width', '40');
+        miniBlob.setAttribute('height', '40');
+        miniBlob.setAttribute('viewBox', '0 0 40 40');
+        
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute('fill', `hsl(${hue}, 90%, 60%)`);
+        
+        const size = 15 + Math.random() * 10;
+        path.setAttribute('d', `M20,5 Q${20+size},5 ${20+size},20 Q${20+size},35 20,35 Q${20-size},35 ${20-size},20 Q${20-size},5 20,5`);
+        
+        miniBlob.appendChild(path);
+        container.appendChild(miniBlob);
+        
+        const angle = (i / 12) * Math.PI * 2;
+        const distance = 150 + Math.random() * 150;
+        const targetX = Math.cos(angle) * distance;
+        const targetY = Math.sin(angle) * distance;
+        
+        miniBlob.style.left = `${centerX - 20}px`;
+        miniBlob.style.top = `${centerY - 20}px`;
+        
+        miniBlobs.push({ element: miniBlob, tx: targetX, ty: targetY });
+      }
+      
+      animate(miniBlobs.map(b => b.element), 
+        { 
+          x: (i) => miniBlobs[i].tx,
+          y: (i) => miniBlobs[i].ty,
+          opacity: [1, 0],
+          scale: [1, 0.3]
+        },
+        { 
+          duration: 1.2, 
+          delay: stagger(0.05),
+          easing: "easeOutExpo"
+        }
+      );
+      
+      setTimeout(() => {
+        miniBlobs.forEach(b => b.element.remove());
+        mainBlob.style.opacity = '1';
+        
+        animate(mainBlob, { transform: 'translate(0px, 0px) rotate(0deg)' }, { duration: 0.5 });
+        isExploded = false;
+      }, 2000);
+    }
+
+    container.addEventListener('mousemove', handleMouseMove);
+    mainBlob.addEventListener('click', explode);
+
+    morphShapes();
+    animateHue();
+  </script>
+</body>
+</html>
