@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motion Dev MCP POC Builds</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: "Segoe UI", sans-serif;
+      background: #0b1020;
+      color: #eef2ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.18), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(244, 114, 182, 0.16), transparent 24%),
+        linear-gradient(180deg, #0b1020, #111831 58%, #0a0f1d);
+    }
+
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0 56px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+    }
+
+    p {
+      margin: 0 0 28px;
+      color: rgba(238, 242, 255, 0.76);
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .card {
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 18px;
+      padding: 20px;
+      background: rgba(15, 23, 42, 0.74);
+      backdrop-filter: blur(8px);
+    }
+
+    .card h2 {
+      margin: 0 0 14px;
+      font-size: 1.15rem;
+    }
+
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    a {
+      color: #93c5fd;
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: #dbeafe;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Static Motion Dev MCP POC Builds</h1>
+    <p>Serve this branch with <code>python -m http.server 8080</code> and open the links below. The branch contains only published static output.</p>
+    <section class="grid">
+      <article class="card">
+        <h2>Claude Code</h2>
+        <div class="links">
+          <a href="./claude-code/">Open agent directory</a>
+          <a href="./claude-code/visual-first/">Visual First</a>
+          <a href="./claude-code/spec-driven/">Spec Driven</a>
+          <a href="./claude-code/context-rich/">Context Rich</a>
+          <a href="./claude-code/goal-oriented/">Goal Oriented</a>
+        </div>
+      </article>
+      <article class="card">
+        <h2>Codex</h2>
+        <div class="links">
+          <a href="./codex/">Open agent directory</a>
+          <a href="./codex/visual-first/">Visual First</a>
+          <a href="./codex/spec-driven/">Spec Driven</a>
+          <a href="./codex/context-rich/">Context Rich</a>
+          <a href="./codex/goal-oriented/">Goal Oriented</a>
+        </div>
+      </article>
+      <article class="card">
+        <h2>Gemini CLI</h2>
+        <div class="links">
+          <a href="./gemini-cli/">Open agent directory</a>
+          <a href="./gemini-cli/visual-first/">Visual First</a>
+          <a href="./gemini-cli/spec-driven/">Spec Driven</a>
+          <a href="./gemini-cli/context-rich/">Context Rich</a>
+          <a href="./gemini-cli/goal-oriented/">Goal Oriented</a>
+        </div>
+      </article>
+      <article class="card">
+        <h2>OpenCode Minimax 2.5</h2>
+        <div class="links">
+          <a href="./opencode-minimax-2.5/">Main App</a>
+          <a href="./opencode-minimax-2.5/visual-first/">Visual First</a>
+          <a href="./opencode-minimax-2.5/goal-oriented/">Goal Oriented</a>
+        </div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
