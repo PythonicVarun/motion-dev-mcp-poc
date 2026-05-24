@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Motion.dev MCP Benchmark — When the Tool Isn't the Story</title>
+  <title>The Myth of the Tool-Using Agent</title>
   <meta name="description" content="Four coding agents, four Motion.dev animation prompts, one uncomfortable result: tool availability and tool behavior aren't the same thing." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -490,8 +490,8 @@
     <article>
 
       <div class="kicker">Benchmark · Coding Agents · Tool Use</div>
-      <h1 class="headline">When the tool isn't the story: four coding agents took the same Motion.dev prompts, and their behavior diverged before their speed did.</h1>
-      <p class="subhead">Codex was the fastest agent and the heaviest Motion.dev MCP user. Gemini CLI logged zero Motion.dev MCP calls and still won half the prompts. Availability and behavior, this benchmark argues, are not the same thing.</p>
+      <h1 class="headline">The Myth of the Tool-Using Agent</h1>
+      <p class="subhead">Codex used the most Motion.dev MCP and finished first. Gemini CLI used none and still won half the prompts. Same tasks, very different playbooks.</p>
 
       <div class="byline">
         <span><strong>Method</strong> History-based replay</span>
@@ -522,6 +522,55 @@
           <div class="sub"><strong>MiniMax M2.5</strong> · 4 calls</div>
         </div>
       </div>
+
+      <section class="builds">
+        <h3>Scores table</h3>
+        <p>Every cell below links to the generated output for that agent and prompt. Prompt winners are starred.</p>
+        <div class="outputs-wrap">
+          <table class="outputs-matrix" aria-label="Static outputs matrix">
+            <thead>
+              <tr>
+                <th class="label">Prompt</th>
+                <th>claude-code</th>
+                <th>codex</th>
+                <th>gemini-cli</th>
+                <th>opencode-minimax-2.5</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="prompt-cell">MagneticDock<small>dock · context-rich</small></td>
+                <td><a class="run winner" href="./claude-code/context-rich/">7m 25s</a></td>
+                <td><a class="run" href="./codex/context-rich/">8m 25s</a></td>
+                <td><a class="run" href="./gemini-cli/context-rich/">14m 09s</a></td>
+                <td><a class="run" href="./opencode-minimax-2.5/" title="Published at the agent root, not in a sub-route">24m 27s</a></td>
+              </tr>
+              <tr>
+                <td class="prompt-cell">Interactive SVG Blob<small>blob · goal-oriented</small></td>
+                <td><a class="run" href="./claude-code/goal-oriented/">7m 27s</a></td>
+                <td><a class="run" href="./codex/goal-oriented/">9m 01s</a></td>
+                <td><a class="run winner" href="./gemini-cli/goal-oriented/">2m 47s</a></td>
+                <td><a class="run" href="./opencode-minimax-2.5/goal-oriented/">3m 49s</a></td>
+              </tr>
+              <tr>
+                <td class="prompt-cell">Cinematic Timeline<small>timeline · spec-driven</small></td>
+                <td><a class="run" href="./claude-code/spec-driven/">20m 25s</a></td>
+                <td><a class="run winner" href="./codex/spec-driven/">3m 24s</a></td>
+                <td><a class="run" href="./gemini-cli/spec-driven/">10m 44s</a></td>
+                <td class="empty">14m 21s<small>no static export</small></td>
+              </tr>
+              <tr>
+                <td class="prompt-cell">Liquid Menu<small>menu · visual-first</small></td>
+                <td><a class="run" href="./claude-code/visual-first/">7m 33s</a></td>
+                <td><a class="run" href="./codex/visual-first/">6m 01s</a></td>
+                <td><a class="run winner" href="./gemini-cli/visual-first/">5m 14s</a></td>
+                <td><a class="run" href="./opencode-minimax-2.5/visual-first/">19m 13s</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="builds-legend"><span class="star">★</span> Prompt winner on completion time. Hover any cell to highlight it; click to open the generated artifact in its own page.</div>
+      </section>
 
       <p class="lede">The cleanest way to break the comfortable story about Model Context Protocol tooling is to put two agents next to each other. On a battery of four Motion.dev animation prompts — a magnetic dock, an interactive SVG blob, a scroll-driven cinematic timeline, and a liquid menu — <span class="agent codex">codex</span> invoked Motion.dev-specific tools <span class="num">31</span> times across every prompt and finished the entire benchmark first, at <span class="num">26m 50s</span>. <span class="agent gemini">gemini-cli</span> invoked them <span class="num">zero</span> times, never once, on any prompt — and still won two of the four sprints outright.</p>
 
@@ -642,55 +691,6 @@
         <p>The timeline prompt cracked the field open: Codex 3m 24s vs. Claude Code 20m 25s on identical instructions. The dock was the hardest prompt on average, and Claude Code won it with zero Motion.dev MCP calls.</p>
         <p>Lesson: MCP <i>availability</i> ≠ MCP <i>behavior</i>. Speed isn't quality. The toolkit matters; so does how an agent chooses to use it.</p>
       </div>
-
-      <section class="builds">
-        <h3>See the actual outputs</h3>
-        <p>Every cell below links to the static export of that agent's generated output for that prompt. Cell label = recorded completion time. Prompt winners are starred. OpenCode's dock is published at the agent root rather than in a sub-route, and its timeline run completed without producing a static export.</p>
-        <div class="outputs-wrap">
-          <table class="outputs-matrix" aria-label="Static outputs matrix">
-            <thead>
-              <tr>
-                <th class="label">Prompt</th>
-                <th>claude-code</th>
-                <th>codex</th>
-                <th>gemini-cli</th>
-                <th>opencode-minimax-2.5</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="prompt-cell">MagneticDock<small>dock · context-rich</small></td>
-                <td><a class="run winner" href="./claude-code/context-rich/">7m 25s</a></td>
-                <td><a class="run" href="./codex/context-rich/">8m 25s</a></td>
-                <td><a class="run" href="./gemini-cli/context-rich/">14m 09s</a></td>
-                <td><a class="run" href="./opencode-minimax-2.5/" title="Published at the agent root, not in a sub-route">24m 27s</a></td>
-              </tr>
-              <tr>
-                <td class="prompt-cell">Interactive SVG Blob<small>blob · goal-oriented</small></td>
-                <td><a class="run" href="./claude-code/goal-oriented/">7m 27s</a></td>
-                <td><a class="run" href="./codex/goal-oriented/">9m 01s</a></td>
-                <td><a class="run winner" href="./gemini-cli/goal-oriented/">2m 47s</a></td>
-                <td><a class="run" href="./opencode-minimax-2.5/goal-oriented/">3m 49s</a></td>
-              </tr>
-              <tr>
-                <td class="prompt-cell">Cinematic Timeline<small>timeline · spec-driven</small></td>
-                <td><a class="run" href="./claude-code/spec-driven/">20m 25s</a></td>
-                <td><a class="run winner" href="./codex/spec-driven/">3m 24s</a></td>
-                <td><a class="run" href="./gemini-cli/spec-driven/">10m 44s</a></td>
-                <td class="empty">14m 21s<small>no static export</small></td>
-              </tr>
-              <tr>
-                <td class="prompt-cell">Liquid Menu<small>menu · visual-first</small></td>
-                <td><a class="run" href="./claude-code/visual-first/">7m 33s</a></td>
-                <td><a class="run" href="./codex/visual-first/">6m 01s</a></td>
-                <td><a class="run winner" href="./gemini-cli/visual-first/">5m 14s</a></td>
-                <td><a class="run" href="./opencode-minimax-2.5/visual-first/">19m 13s</a></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="builds-legend"><span class="star">★</span> Prompt winner on completion time. Hover any cell to highlight it; click to open the generated artifact in its own page.</div>
-      </section>
 
       <section class="meta">
         <h3>Methodology and caveats</h3>
