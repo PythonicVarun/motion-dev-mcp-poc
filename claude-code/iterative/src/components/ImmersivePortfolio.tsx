@@ -746,6 +746,7 @@ export function ImmersivePortfolio() {
         setTimeout(() => setPhase("contact"), 80);
         return;
       }
+      // @ts-ignore
       animate(wipePath, [WIPE_HIDDEN, WIPE_ARC, WIPE_FULL], {
         duration: 0.95,
         times: [0, 0.52, 1],
@@ -759,6 +760,7 @@ export function ImmersivePortfolio() {
         setTimeout(() => setPhase("scatter-in"), 80);
         return;
       }
+      // @ts-ignore
       animate(wipePath, [WIPE_FULL, WIPE_ARC, WIPE_HIDDEN], {
         duration: 0.75,
         times: [0, 0.48, 1],
