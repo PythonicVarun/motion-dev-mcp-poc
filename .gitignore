@@ -5,3 +5,4 @@ motion-dev-mcp/
 dist/
 *.log
 .claude/
+.playwright*/
