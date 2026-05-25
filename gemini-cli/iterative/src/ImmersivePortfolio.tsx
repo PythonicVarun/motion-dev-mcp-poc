@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, useMotionValue, useAnimationFrame, useSpring, useTransform, AnimatePresence } from 'motion/react';
+import { motion, useMotionValue, useAnimationFrame, useSpring, useTransform, AnimatePresence, useScroll } from 'motion/react';
 
 const MotionFeTurbulence = motion.create("feTurbulence");
 const MotionFeDisplacementMap = motion.create("feDisplacementMap");
@@ -265,6 +265,7 @@ export const ImmersivePortfolio: React.FC = () => {
         )}
       </AnimatePresence>
 
+      <ProcessSection />
     </div>
   )
 }
@@ -435,4 +436,141 @@ const AnimatedLetter = ({
       {char === ' ' ? '\u00A0' : char}
     </motion.span>
   );
+}
+
+const ProcessSection = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
+
+  const clipPath = useTransform(
+    scrollYProgress, 
+    [0, 0.2], 
+    ["polygon(0% 0%, 0% 0%, -20% 100%, 0% 100%)", "polygon(0% 0%, 120% 0%, 100% 100%, 0% 100%)"]
+  );
+
+  const pathOffset = useTransform(scrollYProgress, [0.2, 0.8], [1, 0]);
+
+  const steps = [
+    { title: "Discovery", desc: "Unearthing the core problems.", img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop" },
+    { title: "Strategy", desc: "Defining the trajectory.", img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop" },
+    { title: "Design", desc: "Crafting the visual language.", img: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=800&auto=format&fit=crop" },
+    { title: "Development", desc: "Building the robust architecture.", img: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&auto=format&fit=crop" },
+    { title: "Deployment", desc: "Launching into the universe.", img: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop" }
+  ];
+
+  return (
+    <motion.div 
+      ref={containerRef}
+      style={{
+        height: '400vh',
+        position: 'relative',
+        clipPath,
+        backgroundColor: '#050505',
+        overflow: 'hidden',
+        marginTop: '10vh'
+      }}
+    >
+      <div style={{ position: 'absolute', left: '15%', top: '15%', bottom: '15%', width: '4px', zIndex: 10 }}>
+         <svg width="100%" height="100%" preserveAspectRatio="none">
+           <motion.line 
+             x1="50%" y1="0%" x2="50%" y2="100%" 
+             stroke="rgba(255,255,255,0.2)" 
+             strokeWidth="2"
+           />
+           <motion.line 
+             x1="50%" y1="0%" x2="50%" y2="100%" 
+             stroke="#fff" 
+             strokeWidth="4"
+             style={{
+               pathLength: 1,
+               strokeDasharray: "1",
+               strokeDashoffset: pathOffset
+             }}
+           />
+         </svg>
+      </div>
+
+      {steps.map((step, i) => {
+        const stepP = 0.2 + (i * 0.6 / 4); 
+        
+        const nodeScale = useTransform(scrollYProgress, [stepP - 0.02, stepP, stepP + 0.02], [1, 2, 1]);
+        const nodeGlow = useTransform(scrollYProgress, [stepP - 0.02, stepP, stepP + 0.02], [0, 1, 0]);
+        const boxShadow = useTransform(nodeGlow, (v) => `0 0 ${v * 30}px ${v * 15}px rgba(255,255,255,0.8)`);
+
+        const bgY = useTransform(scrollYProgress, [0, 1], ["-75vh", "75vh"]); 
+        const midY = useTransform(scrollYProgress, [0, 1], ["-175vh", "175vh"]); 
+        const fgY = useTransform(scrollYProgress, [0, 1], ["287.5vh", "-287.5vh"]); 
+
+        return (
+          <React.Fragment key={i}>
+            <motion.div style={{
+              position: 'absolute',
+              left: '15%',
+              top: `${stepP * 100}%`,
+              transform: 'translate(-50%, -50%)',
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              backgroundColor: '#fff',
+              scale: nodeScale,
+              boxShadow,
+              zIndex: 20
+            }} />
+
+            <div style={{
+              position: 'absolute',
+              top: `${stepP * 100}%`,
+              left: '25%',
+              right: '10%',
+              height: '60vh',
+              transform: 'translateY(-50%)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'hidden',
+              borderRadius: '24px',
+              backgroundColor: '#111'
+            }}>
+              <motion.div style={{
+                position: 'absolute',
+                inset: "-1000px", 
+                backgroundImage: `url(${step.img})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                opacity: 0.3,
+                y: bgY
+              }} />
+              
+              <motion.div style={{
+                position: 'absolute',
+                y: midY,
+                fontSize: '15rem',
+                fontWeight: 900,
+                color: 'rgba(255,255,255,0.05)',
+                zIndex: 5,
+                userSelect: 'none'
+              }}>
+                0{i+1}
+              </motion.div>
+
+              <motion.div style={{
+                position: 'relative',
+                y: fgY,
+                zIndex: 10,
+                textAlign: 'center',
+                padding: '2rem'
+              }}>
+                <h2 style={{ fontSize: '4rem', margin: '0 0 1rem 0', textShadow: '0 4px 10px rgba(0,0,0,0.5)' }}>{step.title}</h2>
+                <p style={{ fontSize: '1.5rem', color: '#ccc', margin: 0 }}>{step.desc}</p>
+              </motion.div>
+            </div>
+          </React.Fragment>
+        )
+      })}
+    </motion.div>
+  )
 }

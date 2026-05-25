@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AnimatePresence,
   LayoutGroup,
   motion,
+  useScroll,
   useMotionTemplate,
   useMotionValue,
   useSpring,
@@ -73,6 +74,29 @@ type ProjectSeed = {
   palette: [string, string, string];
 };
 
+type ProcessStep = {
+  id: string;
+  phase: string;
+  title: string;
+  description: string;
+  nodeLeft: number;
+  nodeTop: number;
+  cardSide: "left" | "right";
+  backgroundImage: string;
+  illustrationImage: string;
+};
+
+type ProcessStepSeed = {
+  id: string;
+  phase: string;
+  title: string;
+  description: string;
+  palette: [string, string, string];
+  nodeLeft: number;
+  nodeTop: number;
+  cardSide: "left" | "right";
+};
+
 function createProjectImage(
   name: string,
   category: string,
@@ -103,6 +127,54 @@ function createProjectImage(
       </g>
       <text x="100" y="748" fill="rgba(255,255,255,0.94)" font-size="104" font-family="Segoe UI, sans-serif" font-weight="800" letter-spacing="-4">${name}</text>
       <text x="106" y="822" fill="rgba(255,255,255,0.66)" font-size="30" font-family="Segoe UI, sans-serif" letter-spacing="8">${category.toUpperCase()}</text>
+    </svg>
+  `)}`;
+}
+
+function createProcessBackground(
+  title: string,
+  [primary, secondary, accent]: ProcessStepSeed["palette"],
+) {
+  return `data:image/svg+xml;utf8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${primary}" />
+          <stop offset="100%" stop-color="${secondary}" />
+        </linearGradient>
+        <radialGradient id="flare" cx="72%" cy="18%" r="48%">
+          <stop offset="0%" stop-color="${accent}" stop-opacity="0.88" />
+          <stop offset="100%" stop-color="${accent}" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="1200" height="900" rx="48" fill="url(#bg)" />
+      <circle cx="960" cy="180" r="280" fill="url(#flare)" />
+      <g fill="none" stroke="rgba(255,255,255,0.16)">
+        <path d="M88 646c164-104 309-122 433-54 124 68 247 76 574-38" stroke-width="8" />
+        <path d="M100 726c148-58 275-70 380-36 105 34 240 22 544-76" stroke-width="3" />
+      </g>
+      <text x="86" y="162" fill="rgba(255,255,255,0.14)" font-size="146" font-family="Segoe UI, sans-serif" font-weight="800" letter-spacing="-6">${title}</text>
+    </svg>
+  `)}`;
+}
+
+function createProcessIllustration(
+  [primary, secondary, accent]: ProcessStepSeed["palette"],
+) {
+  return `data:image/svg+xml;utf8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420">
+      <defs>
+        <linearGradient id="shape" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${accent}" stop-opacity="0.92" />
+          <stop offset="100%" stop-color="${secondary}" stop-opacity="0.4" />
+        </linearGradient>
+      </defs>
+      <g opacity="0.95">
+        <path d="M111 264c0-88 60-163 146-163 61 0 93 26 139 26 54 0 133-37 133 76 0 89-68 166-179 166-139 0-239-28-239-105Z" fill="url(#shape)" />
+        <rect x="122" y="88" width="362" height="214" rx="36" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="12" />
+        <path d="M168 311c43-56 84-83 123-83 40 0 72 29 104 29 32 0 64-20 114-67" fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="10" stroke-linecap="round" />
+      </g>
+      <circle cx="492" cy="118" r="16" fill="${primary}" fill-opacity="0.85" />
     </svg>
   `)}`;
 }
@@ -165,6 +237,68 @@ const PROJECTS: Project[] = ([
  ] satisfies ProjectSeed[]).map((project) => ({
   ...project,
   image: createProjectImage(project.name, project.category, project.palette),
+}));
+
+const PROCESS_STEPS: ProcessStep[] = ([
+  {
+    id: "discover",
+    phase: "Step 01",
+    title: "Discover",
+    description:
+      "We map the emotional arc first: what the user should feel, where attention should peak, and which moments deserve silence instead of motion.",
+    palette: ["#16101b", "#4a2b35", "#ff8e5b"],
+    nodeLeft: 48,
+    nodeTop: 10,
+    cardSide: "left",
+  },
+  {
+    id: "structure",
+    phase: "Step 02",
+    title: "Structure",
+    description:
+      "Narrative beats turn into layouts, grids, pacing rules, and content modules so the portfolio can stretch without losing rhythm.",
+    palette: ["#121724", "#274d62", "#77d7ff"],
+    nodeLeft: 57,
+    nodeTop: 29,
+    cardSide: "right",
+  },
+  {
+    id: "prototype",
+    phase: "Step 03",
+    title: "Prototype",
+    description:
+      "We build tactile transitions early, stress-testing reveal choreography, scroll velocity, and the exact handoff between sections.",
+    palette: ["#160f12", "#5b2a2f", "#ffaf77"],
+    nodeLeft: 44,
+    nodeTop: 49,
+    cardSide: "left",
+  },
+  {
+    id: "choreograph",
+    phase: "Step 04",
+    title: "Choreograph",
+    description:
+      "Every interaction gets tuned as a system: enter timings, breathing loops, parallax depth, liquid image response, and recovery states.",
+    palette: ["#101723", "#2f3a5d", "#86b9ff"],
+    nodeLeft: 56,
+    nodeTop: 69,
+    cardSide: "right",
+  },
+  {
+    id: "launch",
+    phase: "Step 05",
+    title: "Launch",
+    description:
+      "The final layer is resilience: responsive polish, production constraints, and preserving the cinematic feeling once real content lands.",
+    palette: ["#171411", "#5b4834", "#f3c47b"],
+    nodeLeft: 49,
+    nodeTop: 88,
+    cardSide: "left",
+  },
+ ] satisfies ProcessStepSeed[]).map((step) => ({
+  ...step,
+  backgroundImage: createProcessBackground(step.title, step.palette),
+  illustrationImage: createProcessIllustration(step.palette),
 }));
 
 function createSeededRandom(seed: number) {
@@ -238,6 +372,324 @@ function AnimatedCharacter({
         {character === " " ? "\u00A0" : character}
       </motion.span>
     </motion.span>
+  );
+}
+
+type ProcessStepCardProps = {
+  step: ProcessStep;
+  progress: MotionValue<number>;
+  index: number;
+};
+
+function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
+  const trigger = index / (PROCESS_STEPS.length - 1);
+  const inputRange = [
+    Math.max(0, trigger - 0.17),
+    trigger,
+    Math.min(1, trigger + 0.17),
+  ];
+  const backgroundY = useTransform(progress, inputRange, [90, 0, -90]);
+  const illustrationY = useTransform(progress, inputRange, [210, 0, -210]);
+  const textY = useTransform(progress, inputRange, [345, 0, -345]);
+
+  return (
+    <motion.article
+      style={{
+        position: "absolute",
+        top: `calc(${step.nodeTop}% - 132px)`,
+        [step.cardSide]: "7%",
+        width: "min(38vw, 430px)",
+        minHeight: "264px",
+        borderRadius: "28px",
+        overflow: "hidden",
+        border: "1px solid rgba(255,255,255,0.08)",
+        background: "rgba(14, 14, 18, 0.7)",
+        boxShadow: "0 18px 48px rgba(0, 0, 0, 0.28)",
+      }}
+    >
+      <motion.div
+        style={{
+          position: "absolute",
+          inset: 0,
+          y: backgroundY,
+          backgroundImage: `url("${step.backgroundImage}")`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          opacity: 0.58,
+        }}
+      />
+      <motion.div
+        style={{
+          position: "absolute",
+          inset: "12% 12% auto auto",
+          width: "46%",
+          y: illustrationY,
+          opacity: 0.88,
+        }}
+      >
+        <img
+          src={step.illustrationImage}
+          alt=""
+          style={{
+            width: "100%",
+            display: "block",
+            pointerEvents: "none",
+          }}
+        />
+      </motion.div>
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(180deg, rgba(6,6,8,0.14), rgba(6,6,8,0.26) 44%, rgba(6,6,8,0.82) 100%)",
+        }}
+      />
+      <motion.div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          display: "grid",
+          gap: "14px",
+          padding: "28px",
+          y: textY,
+        }}
+      >
+        <span
+          style={{
+            color: "rgba(246,239,232,0.52)",
+            fontSize: "0.76rem",
+            letterSpacing: "0.22em",
+            textTransform: "uppercase",
+          }}
+        >
+          {step.phase}
+        </span>
+        <h3
+          style={{
+            margin: 0,
+            fontSize: "clamp(1.9rem, 3vw, 2.7rem)",
+            lineHeight: 0.94,
+            letterSpacing: "-0.05em",
+          }}
+        >
+          {step.title}
+        </h3>
+        <p
+          style={{
+            margin: 0,
+            color: "rgba(246,239,232,0.7)",
+            lineHeight: 1.55,
+            maxWidth: "34ch",
+          }}
+        >
+          {step.description}
+        </p>
+      </motion.div>
+    </motion.article>
+  );
+}
+
+type ProcessNodeProps = {
+  progress: MotionValue<number>;
+  trigger: number;
+  left: number;
+  top: number;
+};
+
+function ProcessNode({ progress, trigger, left, top }: ProcessNodeProps) {
+  const pulse = useTransform(
+    progress,
+    [Math.max(0, trigger - 0.045), trigger, Math.min(1, trigger + 0.045)],
+    [0, 1, 0],
+  );
+  const scale = useTransform(pulse, [0, 1], [1, 1.45]);
+  const glowSize = useTransform(pulse, [0, 1], [12, 42]);
+  const glowAlpha = useTransform(pulse, [0, 1], [0.24, 0.9]);
+  const boxShadow = useMotionTemplate`0 0 ${glowSize}px rgba(255, 140, 82, ${glowAlpha})`;
+
+  return (
+    <motion.div
+      data-node-trigger={trigger}
+      style={{
+        position: "absolute",
+        left: `${left}%`,
+        top: `${top}%`,
+        x: "-50%",
+        y: "-50%",
+        zIndex: 3,
+      }}
+    >
+      <motion.div
+        style={{
+          width: "26px",
+          height: "26px",
+          borderRadius: "999px",
+          border: "4px solid rgba(255,255,255,0.28)",
+          background: "linear-gradient(135deg, #ff8b51, #ffd18d)",
+          scale,
+          boxShadow,
+        }}
+      />
+    </motion.div>
+  );
+}
+
+function ProcessSection() {
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const pathRef = useRef<SVGPathElement | null>(null);
+  const [pathLength, setPathLength] = useState(0);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+
+  useEffect(() => {
+    if (!pathRef.current) {
+      return;
+    }
+
+    setPathLength(pathRef.current.getTotalLength());
+  }, []);
+
+  const strokeDashoffset = useTransform(scrollYProgress, [0, 1], [pathLength, 0]);
+  const wipeLead = useTransform(scrollYProgress, [0, 0.18], [0, 112]);
+  const wipeTail = useTransform(scrollYProgress, [0, 0.18], [-16, 98]);
+  const sectionClipPath = useMotionTemplate`polygon(0% 0%, ${wipeLead}% 0%, ${wipeTail}% 100%, 0% 100%)`;
+
+  return (
+    <section
+      ref={sectionRef}
+      id="process-section"
+      style={{
+        height: "400vh",
+        position: "relative",
+      }}
+    >
+      <motion.div
+        data-process-stage="true"
+        style={{
+          position: "sticky",
+          top: 0,
+          height: "100vh",
+          overflow: "hidden",
+          clipPath: sectionClipPath,
+          borderRadius: "32px",
+          border: "1px solid rgba(255,255,255,0.08)",
+          background:
+            "radial-gradient(circle at top, rgba(255, 136, 72, 0.14), transparent 30%), linear-gradient(180deg, rgba(15,15,21,0.98), rgba(10,10,14,0.94))",
+          boxShadow: "0 24px 90px rgba(0, 0, 0, 0.3)",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(90deg, rgba(8, 8, 12, 0.84) 0%, rgba(8, 8, 12, 0.56) 44%, rgba(8, 8, 12, 0.78) 100%)",
+          }}
+        />
+
+        <div
+          style={{
+            position: "absolute",
+            inset: "6% 8% auto",
+            zIndex: 2,
+            display: "grid",
+            gap: "10px",
+          }}
+        >
+          <span
+            style={{
+              color: "rgba(246,239,232,0.48)",
+              fontSize: "0.78rem",
+              letterSpacing: "0.24em",
+              textTransform: "uppercase",
+            }}
+          >
+            Process
+          </span>
+          <h2
+            style={{
+              margin: 0,
+              maxWidth: "12ch",
+              fontSize: "clamp(2.2rem, 5vw, 4.4rem)",
+              lineHeight: 0.92,
+              letterSpacing: "-0.06em",
+            }}
+          >
+            Scroll the system as it builds itself.
+          </h2>
+        </div>
+
+        <svg
+          viewBox="0 0 1000 3200"
+          preserveAspectRatio="none"
+          style={{
+            position: "absolute",
+            inset: "0 36%",
+            width: "28%",
+            height: "100%",
+            zIndex: 1,
+          }}
+        >
+          <path
+            d="M500 110C420 320 616 516 502 768S372 1280 514 1552 620 2100 472 2416 420 2868 508 3102"
+            fill="none"
+            stroke="rgba(255,255,255,0.12)"
+            strokeWidth="18"
+            strokeLinecap="round"
+          />
+          <motion.path
+            ref={pathRef}
+            data-process-path="true"
+            d="M500 110C420 320 616 516 502 768S372 1280 514 1552 620 2100 472 2416 420 2868 508 3102"
+            fill="none"
+            stroke="url(#process-draw-gradient)"
+            strokeWidth="12"
+            strokeLinecap="round"
+            strokeDasharray={pathLength || 1}
+            style={{
+              strokeDashoffset,
+            }}
+          />
+          <defs>
+            <linearGradient id="process-draw-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#ff8446" />
+              <stop offset="55%" stopColor="#ffd18d" />
+              <stop offset="100%" stopColor="#8fd5ff" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        {PROCESS_STEPS.map((step, index) => (
+          <ProcessNode
+            key={step.id}
+            progress={scrollYProgress}
+            trigger={index / (PROCESS_STEPS.length - 1)}
+            left={step.nodeLeft}
+            top={step.nodeTop}
+          />
+        ))}
+
+        <div
+          style={{
+            position: "absolute",
+            inset: "0 0 0 0",
+            zIndex: 2,
+          }}
+        >
+          {PROCESS_STEPS.map((step, index) => (
+            <ProcessStepCard
+              key={step.id}
+              step={step}
+              index={index}
+              progress={scrollYProgress}
+            />
+          ))}
+        </div>
+      </motion.div>
+    </section>
   );
 }
 
@@ -739,6 +1191,8 @@ export function ImmersivePortfolio() {
               })}
             </motion.div>
           </motion.section>
+
+          <ProcessSection />
         </motion.div>
 
         <AnimatePresence initial={false}>

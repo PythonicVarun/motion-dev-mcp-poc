@@ -6,6 +6,8 @@ import {
   useSpring,
   useMotionValueEvent,
   AnimatePresence,
+  useScroll,
+  useTransform,
 } from "motion/react";
 import type { MotionValue } from "motion/react";
 
@@ -92,6 +94,313 @@ const PROJECTS: Project[] = [
     tags: ["Hardware", "Arduino", "Light Design"],
   },
 ];
+
+// ─── Process section data ─────────────────────────────────────────────────────
+
+const STEPS = [
+  {
+    num: "01",
+    title: "Discover",
+    body: "Map the terrain before drawing the road. We immerse in context, users, and competitors through research sprints and field observation sessions.",
+  },
+  {
+    num: "02",
+    title: "Define",
+    body: "From signal to structure. Synthesis turns raw findings into a ranked brief — priorities named, constraints surfaced, success criteria agreed.",
+  },
+  {
+    num: "03",
+    title: "Design",
+    body: "Iterative form-giving at every scale. Each decision traces back to a principle; each pixel earns its place through prototyping and real friction.",
+  },
+  {
+    num: "04",
+    title: "Develop",
+    body: "Code as craft. Motion, performance, and accessibility ship as first-class concerns — never retrofitted after the fact.",
+  },
+  {
+    num: "05",
+    title: "Deploy",
+    body: "Launch is the opening move, not the final one. We instrument, observe, and iterate continuously through the first ninety days live.",
+  },
+];
+
+const PROCESS_PATH =
+  "M 50 50 C 64 90 36 110 50 150 C 64 190 36 210 50 250 C 64 290 36 310 50 350 C 64 390 36 410 50 450";
+const NODE_CYS = [50, 150, 250, 350, 450];
+
+// ─── Process section component ────────────────────────────────────────────────
+
+function ProcessSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const [pathLen, setPathLen] = useState(420);
+  const strokeDashoffset = useMotionValue(420);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
+  });
+
+  // Horizontal clip-path wipe: section reveals left→right as it enters
+  const wipePct = useTransform(scrollYProgress, [0, 0.1], [100, 0]);
+  const clipPath = useTransform(wipePct, (v) => `inset(0 ${v.toFixed(1)}% 0 0)`);
+
+  // 3-layer section-wide parallax (different speeds → depth)
+  const bgY = useTransform(scrollYProgress, [0, 1], [40, -40]);    // 0.3× relative
+  const midY = useTransform(scrollYProgress, [0, 1], [100, -100]); // 0.7× relative
+  const fgY = useTransform(scrollYProgress, [0, 1], [160, -160]);  // 1.15× relative
+
+  // Node pulse — each fires as the drawn path reaches it
+  const n0Scale = useTransform(scrollYProgress, [0.08, 0.14, 0.22], [1, 1.85, 1]);
+  const n1Scale = useTransform(scrollYProgress, [0.27, 0.33, 0.41], [1, 1.85, 1]);
+  const n2Scale = useTransform(scrollYProgress, [0.46, 0.52, 0.60], [1, 1.85, 1]);
+  const n3Scale = useTransform(scrollYProgress, [0.65, 0.71, 0.79], [1, 1.85, 1]);
+  const n4Scale = useTransform(scrollYProgress, [0.84, 0.90, 0.96], [1, 1.85, 1]);
+  const n0Op = useTransform(scrollYProgress, [0.08, 0.14, 0.22], [0.3, 1, 0.6]);
+  const n1Op = useTransform(scrollYProgress, [0.27, 0.33, 0.41], [0.3, 1, 0.6]);
+  const n2Op = useTransform(scrollYProgress, [0.46, 0.52, 0.60], [0.3, 1, 0.6]);
+  const n3Op = useTransform(scrollYProgress, [0.65, 0.71, 0.79], [0.3, 1, 0.6]);
+  const n4Op = useTransform(scrollYProgress, [0.84, 0.90, 0.96], [0.3, 1, 0.6]);
+  const nodeScales = [n0Scale, n1Scale, n2Scale, n3Scale, n4Scale];
+  const nodeOpacities = [n0Op, n1Op, n2Op, n3Op, n4Op];
+
+  // Sync strokeDashoffset to scroll progress after measuring path length
+  useEffect(() => {
+    const len = pathRef.current?.getTotalLength() ?? 420;
+    setPathLen(len);
+    strokeDashoffset.set(len);
+    const unsub = scrollYProgress.on("change", (p) => {
+      const t = Math.max(0, Math.min(1, (p - 0.06) / 0.86));
+      strokeDashoffset.set(len * (1 - t));
+    });
+    return unsub;
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return (
+    <motion.section
+      ref={sectionRef}
+      style={{
+        position: "relative",
+        zIndex: 1,
+        minHeight: "400vh",
+        clipPath,
+        overflow: "hidden",
+      }}
+    >
+      {/* Section label */}
+      <div
+        style={{
+          padding: "5rem 3rem 2rem",
+          maxWidth: "1200px",
+          margin: "0 auto",
+        }}
+      >
+        <p
+          style={{
+            fontSize: "0.62rem",
+            letterSpacing: "0.28em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,.35)",
+            margin: "0 0 0.75rem",
+          }}
+        >
+          How We Work
+        </p>
+        <h2
+          style={{
+            fontSize: "clamp(2rem, 4vw, 3.5rem)",
+            fontWeight: 900,
+            color: "#ffffff",
+            margin: 0,
+            letterSpacing: "-0.03em",
+            lineHeight: 1.05,
+          }}
+        >
+          Process
+        </h2>
+      </div>
+
+      {/* Path column + steps column */}
+      <div
+        style={{
+          display: "flex",
+          padding: "0 3rem",
+          maxWidth: "1200px",
+          margin: "0 auto",
+          gap: "2.5rem",
+        }}
+      >
+        {/* Sticky SVG path */}
+        <div style={{ width: "80px", flexShrink: 0 }}>
+          <div
+            style={{ position: "sticky", top: "10vh", height: "80vh" }}
+          >
+            <svg
+              viewBox="0 0 100 500"
+              preserveAspectRatio="none"
+              style={{ width: "100%", height: "100%", overflow: "visible" }}
+            >
+              {/* Ghost track */}
+              <path
+                d={PROCESS_PATH}
+                stroke="rgba(255,255,255,0.07)"
+                strokeWidth="2"
+                fill="none"
+              />
+              {/* Animated drawn path */}
+              <motion.path
+                ref={pathRef}
+                d={PROCESS_PATH}
+                stroke="rgba(139,92,246,0.8)"
+                strokeWidth="2"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={pathLen}
+                style={{ strokeDashoffset }}
+              />
+              {/* Glow rings */}
+              {NODE_CYS.map((cy, i) => (
+                <motion.circle
+                  key={`ring-${i}`}
+                  cx="50"
+                  cy={cy}
+                  r="15"
+                  fill="none"
+                  stroke="rgba(139,92,246,0.35)"
+                  strokeWidth="1"
+                  style={{
+                    scale: nodeScales[i],
+                    opacity: nodeOpacities[i],
+                    transformBox: "fill-box",
+                    transformOrigin: "center",
+                  }}
+                />
+              ))}
+              {/* Nodes */}
+              {NODE_CYS.map((cy, i) => (
+                <motion.circle
+                  key={`node-${i}`}
+                  cx="50"
+                  cy={cy}
+                  r="7"
+                  fill="rgba(10,10,10,0.95)"
+                  stroke="rgba(255,255,255,0.55)"
+                  strokeWidth="1.5"
+                  style={{
+                    scale: nodeScales[i],
+                    opacity: nodeOpacities[i],
+                    transformBox: "fill-box",
+                    transformOrigin: "center",
+                  }}
+                />
+              ))}
+            </svg>
+          </div>
+        </div>
+
+        {/* Steps */}
+        <div style={{ flex: 1 }}>
+          {STEPS.map((step, i) => (
+            <div
+              key={i}
+              style={{
+                minHeight: "76vh",
+                display: "flex",
+                alignItems: "center",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              {/* Background layer — 0.3× parallax */}
+              <motion.div
+                style={{
+                  position: "absolute",
+                  inset: "-30%",
+                  y: bgY,
+                  pointerEvents: "none",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: `radial-gradient(ellipse at ${18 + i * 14}% 50%, rgba(139,92,246,0.09) 0%, transparent 65%)`,
+                  }}
+                />
+              </motion.div>
+
+              {/* Mid layer — 0.7× parallax, ghost step number */}
+              <motion.div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  display: "flex",
+                  alignItems: "center",
+                  pointerEvents: "none",
+                  y: midY,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "clamp(7rem, 20vw, 17rem)",
+                    fontWeight: 900,
+                    color: "rgba(255,255,255,0.028)",
+                    lineHeight: 1,
+                    letterSpacing: "-0.05em",
+                    userSelect: "none",
+                  }}
+                >
+                  {step.num}
+                </span>
+              </motion.div>
+
+              {/* Foreground layer — 1.15× parallax, actual content */}
+              <motion.div
+                style={{ position: "relative", zIndex: 2, y: fgY }}
+              >
+                <p
+                  style={{
+                    fontSize: "0.62rem",
+                    letterSpacing: "0.28em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,.35)",
+                    margin: "0 0 1rem",
+                  }}
+                >
+                  {step.num}
+                </p>
+                <h3
+                  style={{
+                    fontSize: "clamp(2rem, 4vw, 3.2rem)",
+                    fontWeight: 900,
+                    color: "#ffffff",
+                    lineHeight: 1.0,
+                    letterSpacing: "-0.03em",
+                    margin: "0 0 1.4rem",
+                  }}
+                >
+                  {step.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: "0.94rem",
+                    lineHeight: 1.8,
+                    color: "rgba(255,255,255,.52)",
+                    margin: 0,
+                    maxWidth: "42ch",
+                  }}
+                >
+                  {step.body}
+                </p>
+              </motion.div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </motion.section>
+  );
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -469,6 +778,9 @@ export function ImmersivePortfolio() {
           ))}
         </div>
       </motion.section>
+
+      {/* ── Process section ──────────────────────────────────── */}
+      <ProcessSection />
 
       {/* ── Fullscreen detail overlay ─────────────────────────── */}
       <AnimatePresence>
