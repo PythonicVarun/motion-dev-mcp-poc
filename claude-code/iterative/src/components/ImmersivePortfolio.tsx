@@ -5,6 +5,7 @@ import {
   useMotionValue,
   useSpring,
   useMotionValueEvent,
+  AnimatePresence,
 } from "motion/react";
 import type { MotionValue } from "motion/react";
 
@@ -15,18 +16,82 @@ const CHARS = HEADING.split("");
 
 const STAGGER = 0.04;
 const FLIP_DUR = 0.55;
-
 const BREATHE_AMP = 8;
 const BREATHE_HZ = 1.5;
 const PHASE_STEP = 0.65;
-
 const ALL_IN_SEC = (CHARS.length - 1) * STAGGER + FLIP_DUR + 0.15;
 
-// SVG filter neutral values (mouse leave snaps back to these)
 const FREQ_NEUTRAL = 0.02;
 const SCALE_NEUTRAL = 0;
-
 const SPRING_CFG = { stiffness: 60, damping: 20 };
+
+// ─── Project data ────────────────────────────────────────────────────────────
+
+interface Project {
+  id: string;
+  name: string;
+  category: string;
+  gradient: string;
+  description: string;
+  tags: string[];
+}
+
+const PROJECTS: Project[] = [
+  {
+    id: "p1",
+    name: "Echo Chamber",
+    category: "Interactive",
+    gradient: "linear-gradient(135deg,#667eea,#764ba2)",
+    description:
+      "A spatial audio installation that responds to visitor movement, creating personalized soundscapes from ambient city noise captured over eighteen months.",
+    tags: ["WebGL", "Web Audio API", "Sensor Fusion"],
+  },
+  {
+    id: "p2",
+    name: "Tidal Memory",
+    category: "Data Viz",
+    gradient: "linear-gradient(135deg,#f093fb,#f5576c)",
+    description:
+      "Ocean temperature data spanning 40 years rendered as a living tide chart. Each frame breathes with the rhythm of seasonal change at 12 global stations.",
+    tags: ["D3.js", "Canvas 2D", "Climate Data"],
+  },
+  {
+    id: "p3",
+    name: "Formless",
+    category: "Brand",
+    gradient: "linear-gradient(135deg,#4facfe,#00f2fe)",
+    description:
+      "Identity system for a generative-art studio. The logo morphs through 1,000+ parametric states — every printed piece and screen render is unique.",
+    tags: ["Identity", "Generative", "Variable Font"],
+  },
+  {
+    id: "p4",
+    name: "Depth Index",
+    category: "Editorial",
+    gradient: "linear-gradient(135deg,#43e97b,#38f9d7)",
+    description:
+      "Annual report for a marine research foundation, designed as a submarine dive. Each section descends further into the data, pressure rising as you scroll.",
+    tags: ["Editorial", "Scroll FX", "Typography"],
+  },
+  {
+    id: "p5",
+    name: "Threshold",
+    category: "Web",
+    gradient: "linear-gradient(135deg,#fa709a,#fee140)",
+    description:
+      "E-commerce platform for a luxury fashion label built around controlled access and anticipation. Inventory is intentionally obscured until a visitor qualifies.",
+    tags: ["Next.js", "Commerce", "Motion"],
+  },
+  {
+    id: "p6",
+    name: "Parallax Hours",
+    category: "Installation",
+    gradient: "linear-gradient(135deg,#a18cd1,#fbc2eb)",
+    description:
+      "Time-based installation using 96 suspended LED columns to chart daylight hours throughout a year at 60°N latitude. Shown at two biennales.",
+    tags: ["Hardware", "Arduino", "Light Design"],
+  },
+];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -38,32 +103,57 @@ function seededRand(seed: number): number {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function ImmersivePortfolio() {
+  // ── Card selection state ─────────────────────────────────────────────────
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detailVisible, setDetailVisible] = useState(false);
+  // Ref mirror used inside stable callbacks without adding selectedId to deps
+  const selectedIdRef = useRef<string | null>(null);
+  selectedIdRef.current = selectedId;
+
+  const selectedProject = PROJECTS.find((p) => p.id === selectedId) ?? null;
+
+  // ── Hero breathing wave ──────────────────────────────────────────────────
   const [subVisible, setSubVisible] = useState(false);
   const rafRef = useRef<number>(0);
   const t0Ref = useRef<number>(0);
 
-  // ── Character breathing Y offsets ───────────────────────────────────────
   const charYsRef = useRef<MotionValue<number>[] | null>(null);
   if (!charYsRef.current) {
     charYsRef.current = CHARS.map(() => motionValue(0));
   }
   const charYs = charYsRef.current;
 
-  // ── SVG filter element refs ──────────────────────────────────────────────
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSubVisible(true);
+      t0Ref.current = performance.now();
+      const tick = (now: number) => {
+        const t = (now - t0Ref.current) / 1000;
+        for (let i = 0; i < CHARS.length; i++) {
+          charYs[i].set(
+            Math.sin(t * BREATHE_HZ * Math.PI * 2 + i * PHASE_STEP) *
+              BREATHE_AMP
+          );
+        }
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+    }, ALL_IN_SEC * 1000);
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── SVG filter ──────────────────────────────────────────────────────────
   const turbRef = useRef<SVGFETurbulenceElement>(null);
   const dispRef = useRef<SVGFEDisplacementMapElement>(null);
 
-  // ── Cursor-to-filter pipeline ────────────────────────────────────────────
-  // Raw targets set directly from mousemove; springs handle the interpolation
-  // and the spring-back on mouse leave.
   const targetFreq = useMotionValue(FREQ_NEUTRAL);
   const targetScale = useMotionValue(SCALE_NEUTRAL);
-
   const freqSpring = useSpring(targetFreq, SPRING_CFG);
   const scaleSpring = useSpring(targetScale, SPRING_CFG);
 
-  // Write spring values straight into SVG attributes — bypasses React's
-  // render cycle entirely so there is zero jank on the character wave RAF.
   useMotionValueEvent(freqSpring, "change", (v) => {
     turbRef.current?.setAttribute("baseFrequency", `${v.toFixed(4)} 0.04`);
   });
@@ -71,14 +161,24 @@ export function ImmersivePortfolio() {
     dispRef.current?.setAttribute("scale", v.toFixed(2));
   });
 
+  // Reset filter to neutral when a card opens so distortion doesn't bleed
+  // through the overlay.
+  useEffect(() => {
+    if (selectedId) {
+      targetFreq.set(FREQ_NEUTRAL);
+      targetScale.set(SCALE_NEUTRAL);
+    }
+  }, [selectedId, targetFreq, targetScale]);
+
   // ── Mouse handlers ───────────────────────────────────────────────────────
   const handleMouseMove = useCallback(
     (e: MouseEvent<HTMLDivElement>) => {
+      if (selectedIdRef.current) return;
       const rect = e.currentTarget.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;   // 0 → 1 (left → right)
-      const y = (e.clientY - rect.top) / rect.height;    // 0 → 1 (top → bottom)
-      targetFreq.set(0.01 + x * 0.07);  // maps to 0.01 … 0.08
-      targetScale.set(y * 40);           // maps to 0 … 40
+      const x = (e.clientX - rect.left) / rect.width;
+      const y = (e.clientY - rect.top) / rect.height;
+      targetFreq.set(0.01 + x * 0.07);
+      targetScale.set(y * 40);
     },
     [targetFreq, targetScale]
   );
@@ -88,30 +188,17 @@ export function ImmersivePortfolio() {
     targetScale.set(SCALE_NEUTRAL);
   }, [targetFreq, targetScale]);
 
-  // ── Breathing wave ───────────────────────────────────────────────────────
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setSubVisible(true);
-      t0Ref.current = performance.now();
+  // ── Card interaction ─────────────────────────────────────────────────────
+  const handleCardClick = useCallback((id: string) => {
+    if (selectedIdRef.current) return;
+    setDetailVisible(false);
+    setSelectedId(id);
+  }, []);
 
-      const tick = (now: number) => {
-        const t = (now - t0Ref.current) / 1000;
-        for (let i = 0; i < CHARS.length; i++) {
-          charYs[i].set(
-            Math.sin(t * BREATHE_HZ * Math.PI * 2 + i * PHASE_STEP) * BREATHE_AMP
-          );
-        }
-        rafRef.current = requestAnimationFrame(tick);
-      };
-
-      rafRef.current = requestAnimationFrame(tick);
-    }, ALL_IN_SEC * 1000);
-
-    return () => {
-      clearTimeout(timer);
-      cancelAnimationFrame(rafRef.current);
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const handleClose = useCallback(() => {
+    setDetailVisible(false);
+    setSelectedId(null);
+  }, []);
 
   // ── Render ───────────────────────────────────────────────────────────────
   return (
@@ -120,19 +207,12 @@ export function ImmersivePortfolio() {
       onMouseLeave={handleMouseLeave}
       style={{
         position: "relative",
-        minHeight: "100vh",
-        overflow: "hidden",
         fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
         userSelect: "none",
         background: "#0a0a0a",
       }}
     >
-      {/* ── Inline SVG filter definition ────────────────────── */}
-      {/*
-        The SVG is 0×0 and lives outside the visual flow.
-        Both filter primitives are driven via ref attribute mutations,
-        not React re-renders, keeping this path off the main thread budget.
-      */}
+      {/* ── Inline SVG filter ─────────────────────────────── */}
       <svg
         aria-hidden="true"
         style={{ position: "absolute", width: 0, height: 0, overflow: "hidden" }}
@@ -146,10 +226,6 @@ export function ImmersivePortfolio() {
             height="120%"
             colorInterpolationFilters="sRGB"
           >
-            {/*
-              Step 1 — generate fractal noise used both as a texture
-              overlay and as the displacement field.
-            */}
             <feTurbulence
               ref={turbRef}
               type="fractalNoise"
@@ -158,13 +234,6 @@ export function ImmersivePortfolio() {
               seed="3"
               result="noise"
             />
-            {/*
-              Step 2 — compress noise values to a narrow band around 0.5
-              (range ≈ 0.43–0.57) so that the soft-light blend below is
-              barely visible in the neutral state but still provides
-              enough local variation for displacement to distort visibly
-              across the entire image, not just at gradient edges.
-            */}
             <feColorMatrix
               in="noise"
               type="matrix"
@@ -180,10 +249,6 @@ export function ImmersivePortfolio() {
               mode="soft-light"
               result="textured"
             />
-            {/*
-              Step 3 — displace the *textured* result so the liquid warp
-              is visible everywhere, not just where two gradient colors meet.
-            */}
             <feDisplacementMap
               ref={dispRef}
               in="textured"
@@ -196,56 +261,53 @@ export function ImmersivePortfolio() {
         </defs>
       </svg>
 
-      {/* ── Background "image" layer ─────────────────────────── */}
-      {/*
-        Multi-stop radial gradient acts as the hero image.
-        CSS filter references the inline SVG filter by ID.
-        willChange: filter tells the GPU to composite this layer
-        separately so liquid warping never touches the text layer.
-      */}
+      {/* ── Background image layer (fixed so it covers on scroll) ─ */}
       <div
         aria-hidden="true"
         style={{
-          position: "absolute",
-          inset: "-5%",   // oversized so edge-displaced pixels always sample real gradient content
+          position: "fixed",
+          inset: "-5%",
           background: `
-            radial-gradient(ellipse at 22% 38%, rgba(139, 92, 246, 0.90) 0%, transparent 52%),
-            radial-gradient(ellipse at 80% 65%, rgba(236, 72, 153, 0.75) 0%, transparent 48%),
-            radial-gradient(ellipse at 58% 18%, rgba(16, 185, 129, 0.55) 0%, transparent 42%),
-            radial-gradient(ellipse at 12% 88%, rgba(245, 158, 11, 0.45) 0%, transparent 38%),
-            radial-gradient(ellipse at 90% 10%, rgba(59, 130, 246, 0.50) 0%, transparent 40%),
-            linear-gradient(148deg, #0f0c29 0%, #302b63 52%, #24243e 100%)
+            radial-gradient(ellipse at 22% 38%,rgba(139,92,246,.90) 0%,transparent 52%),
+            radial-gradient(ellipse at 80% 65%,rgba(236,72,153,.75) 0%,transparent 48%),
+            radial-gradient(ellipse at 58% 18%,rgba(16,185,129,.55) 0%,transparent 42%),
+            radial-gradient(ellipse at 12% 88%,rgba(245,158,11,.45) 0%,transparent 38%),
+            radial-gradient(ellipse at 90% 10%,rgba(59,130,246,.50) 0%,transparent 40%),
+            linear-gradient(148deg,#0f0c29 0%,#302b63 52%,#24243e 100%)
           `,
           filter: "url(#liquid-distort)",
           willChange: "filter",
+          zIndex: 0,
         }}
       />
-
-      {/* Vignette — dims edges, keeps text legible over bright distortion */}
       <div
         aria-hidden="true"
         style={{
-          position: "absolute",
+          position: "fixed",
           inset: 0,
           background:
-            "radial-gradient(ellipse at 50% 50%, rgba(10,10,10,0.30) 0%, rgba(10,10,10,0.70) 100%)",
+            "radial-gradient(ellipse at 50% 50%,rgba(10,10,10,.30) 0%,rgba(10,10,10,.72) 100%)",
           pointerEvents: "none",
+          zIndex: 0,
         }}
       />
 
-      {/* ── Content layer (z above filter) ──────────────────── */}
-      <div
+      {/* ── Hero ─────────────────────────────────────────────── */}
+      <motion.section
+        layout
+        transition={{ type: "spring", stiffness: 100, damping: 28 }}
         style={{
           position: "relative",
           zIndex: 1,
-          minHeight: "100vh",
+          minHeight: selectedId ? "38vh" : "100vh",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          overflow: "hidden",
         }}
       >
-        {/* ── Heading ─────────────────────────────────────── */}
+        {/* Heading */}
         <div aria-label={HEADING} style={{ display: "flex", alignItems: "center" }}>
           {CHARS.map((char, i) => {
             const flipFrom = seededRand(i) > 0.5 ? 90 : -90;
@@ -254,14 +316,12 @@ export function ImmersivePortfolio() {
                 <motion.span
                   initial={{ rotateX: flipFrom, opacity: 0 }}
                   animate={{ rotateX: 0, opacity: 1 }}
-                  transition={{
-                    duration: FLIP_DUR,
-                    delay: i * STAGGER,
-                    ease: [0.22, 1, 0.36, 1],
-                  }}
+                  transition={{ duration: FLIP_DUR, delay: i * STAGGER, ease: [0.22, 1, 0.36, 1] }}
                   style={{
                     display: "block",
-                    fontSize: "clamp(4rem, 19vw, 15rem)",
+                    fontSize: selectedId
+                      ? "clamp(2rem, 8vw, 6rem)"
+                      : "clamp(4rem, 19vw, 15rem)",
                     fontWeight: 900,
                     color: "#ffffff",
                     lineHeight: 0.88,
@@ -269,7 +329,7 @@ export function ImmersivePortfolio() {
                     transformOrigin: "50% 50%",
                     y: charYs[i],
                     paddingInline: "0.025em",
-                    textShadow: "0 2px 40px rgba(255,255,255,0.12)",
+                    textShadow: "0 2px 40px rgba(255,255,255,.12)",
                   }}
                 >
                   {char}
@@ -279,7 +339,7 @@ export function ImmersivePortfolio() {
           })}
         </div>
 
-        {/* ── Subheading ──────────────────────────────────── */}
+        {/* Subheading */}
         <motion.p
           initial={{ opacity: 0, y: 24 }}
           animate={subVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
@@ -293,13 +353,13 @@ export function ImmersivePortfolio() {
             fontWeight: 300,
             letterSpacing: "0.38em",
             textTransform: "uppercase",
-            color: "rgba(255, 255, 255, 0.55)",
+            color: "rgba(255,255,255,.55)",
           }}
         >
           Selected Works &amp; Experiments
         </motion.p>
 
-        {/* ── CTA ─────────────────────────────────────────── */}
+        {/* CTA */}
         <motion.button
           initial={{ opacity: 0, y: 12 }}
           animate={subVisible ? { opacity: 1, y: 0 } : { opacity: 0, y: 12 }}
@@ -314,7 +374,7 @@ export function ImmersivePortfolio() {
             textTransform: "uppercase",
             color: "#ffffff",
             background: "transparent",
-            border: "1px solid rgba(255, 255, 255, 0.45)",
+            border: "1px solid rgba(255,255,255,.45)",
             borderRadius: "1px",
             cursor: "pointer",
             fontFamily: "inherit",
@@ -324,7 +384,264 @@ export function ImmersivePortfolio() {
         >
           Explore
         </motion.button>
-      </div>
+      </motion.section>
+
+      {/* ── Project grid ─────────────────────────────────────── */}
+      <motion.section
+        layout
+        style={{
+          position: "relative",
+          zIndex: 1,
+          padding: "5rem 3rem 6rem",
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "1.25rem",
+            maxWidth: "1200px",
+            margin: "0 auto",
+          }}
+        >
+          {PROJECTS.map((project) => (
+            <motion.div
+              key={project.id}
+              layoutId={`${project.id}-card`}
+              onClick={() => handleCardClick(project.id)}
+              animate={{
+                scale: selectedId && selectedId !== project.id ? 0.94 : 1,
+                opacity: selectedId && selectedId !== project.id ? 0.45 : 1,
+                filter:
+                  selectedId && selectedId !== project.id
+                    ? "blur(3px) brightness(0.55)"
+                    : "blur(0px) brightness(1)",
+              }}
+              transition={{ type: "spring", stiffness: 200, damping: 28 }}
+              style={{
+                cursor: selectedId ? "default" : "pointer",
+                borderRadius: "10px",
+                overflow: "hidden",
+                background: "rgba(255,255,255,.06)",
+                border: "1px solid rgba(255,255,255,.10)",
+                backdropFilter: "blur(8px)",
+              }}
+            >
+              {/* Image */}
+              <motion.div
+                layoutId={`${project.id}-image`}
+                style={{
+                  height: "180px",
+                  background: project.gradient,
+                  flexShrink: 0,
+                }}
+              />
+
+              {/* Text */}
+              <div style={{ padding: "1.1rem 1.25rem 1.4rem" }}>
+                <motion.p
+                  layoutId={`${project.id}-category`}
+                  style={{
+                    margin: 0,
+                    fontSize: "0.62rem",
+                    letterSpacing: "0.22em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,.45)",
+                    fontWeight: 400,
+                  }}
+                >
+                  {project.category}
+                </motion.p>
+                <motion.p
+                  layoutId={`${project.id}-name`}
+                  style={{
+                    margin: "0.4rem 0 0",
+                    fontSize: "1.05rem",
+                    fontWeight: 700,
+                    color: "#ffffff",
+                    lineHeight: 1.2,
+                  }}
+                >
+                  {project.name}
+                </motion.p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* ── Fullscreen detail overlay ─────────────────────────── */}
+      <AnimatePresence>
+        {selectedId && selectedProject && (
+          <>
+            {/* Scrim */}
+            <motion.div
+              key="scrim"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              onClick={handleClose}
+              style={{
+                position: "fixed",
+                inset: 0,
+                background: "rgba(0,0,0,.80)",
+                zIndex: 99,
+                cursor: "pointer",
+              }}
+            />
+
+            {/* Expanded card — shares layoutId with its grid sibling */}
+            <motion.div
+              layoutId={`${selectedId}-card`}
+              onLayoutAnimationComplete={() => {
+                // Only set visible on the opening transition (not the close)
+                if (selectedIdRef.current) setDetailVisible(true);
+              }}
+              style={{
+                position: "fixed",
+                top: "5vh",
+                left: "5vw",
+                width: "90vw",
+                height: "88vh",
+                zIndex: 100,
+                borderRadius: "14px",
+                overflow: "hidden",
+                background: "rgba(12,12,18,.97)",
+                display: "flex",
+                flexDirection: "row",
+              }}
+            >
+              {/* Left — image morphs from card */}
+              <motion.div
+                layoutId={`${selectedId}-image`}
+                style={{
+                  width: "48%",
+                  background: selectedProject.gradient,
+                  flexShrink: 0,
+                }}
+              />
+
+              {/* Right — text content */}
+              <div
+                style={{
+                  flex: 1,
+                  padding: "3.5rem 3rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Category — morphs from card */}
+                <motion.p
+                  layoutId={`${selectedId}-category`}
+                  style={{
+                    margin: 0,
+                    fontSize: "0.72rem",
+                    letterSpacing: "0.28em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,.48)",
+                  }}
+                >
+                  {selectedProject.category}
+                </motion.p>
+
+                {/* Name — morphs from card */}
+                <motion.p
+                  layoutId={`${selectedId}-name`}
+                  style={{
+                    margin: "0.6rem 0 0",
+                    fontSize: "clamp(1.8rem, 3.5vw, 3rem)",
+                    fontWeight: 900,
+                    color: "#ffffff",
+                    lineHeight: 1.1,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  {selectedProject.name}
+                </motion.p>
+
+                {/* Extra detail — fades in only after layout animation completes */}
+                <AnimatePresence initial={false}>
+                  {detailVisible && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 18 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      <p
+                        style={{
+                          marginTop: "1.6rem",
+                          fontSize: "0.92rem",
+                          lineHeight: 1.75,
+                          color: "rgba(255,255,255,.62)",
+                          maxWidth: "38ch",
+                        }}
+                      >
+                        {selectedProject.description}
+                      </p>
+
+                      {/* Tags */}
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "0.5rem",
+                          marginTop: "1.6rem",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {selectedProject.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            style={{
+                              padding: "0.3rem 0.85rem",
+                              border: "1px solid rgba(255,255,255,.18)",
+                              borderRadius: "100px",
+                              fontSize: "0.7rem",
+                              letterSpacing: "0.08em",
+                              color: "rgba(255,255,255,.55)",
+                            }}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Close */}
+                      <motion.button
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClose();
+                        }}
+                        style={{
+                          marginTop: "2.5rem",
+                          padding: "0.75rem 2.2rem",
+                          background: "transparent",
+                          border: "1px solid rgba(255,255,255,.35)",
+                          color: "#ffffff",
+                          cursor: "pointer",
+                          fontSize: "0.72rem",
+                          letterSpacing: "0.2em",
+                          textTransform: "uppercase",
+                          fontFamily: "inherit",
+                          borderRadius: "2px",
+                          alignSelf: "flex-start",
+                        }}
+                      >
+                        Close
+                      </motion.button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

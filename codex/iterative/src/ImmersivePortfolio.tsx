@@ -1,5 +1,7 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  AnimatePresence,
+  LayoutGroup,
   motion,
   useMotionTemplate,
   useMotionValue,
@@ -20,6 +22,7 @@ const MIN_FREQUENCY_X = 0.01;
 const MAX_DISPLACEMENT = 40;
 const NEUTRAL_CURSOR_X = (NEUTRAL_FREQUENCY_X - MIN_FREQUENCY_X) / (MAX_FREQUENCY_X - MIN_FREQUENCY_X);
 const LIQUID_SPRING = { stiffness: 60, damping: 20 };
+const LAYOUT_TRANSITION = { type: "spring", stiffness: 220, damping: 28 } as const;
 const HERO_IMAGE = `data:image/svg+xml;utf8,${encodeURIComponent(`
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200">
     <defs>
@@ -51,6 +54,118 @@ const HERO_IMAGE = `data:image/svg+xml;utf8,${encodeURIComponent(`
     </g>
   </svg>
 `)}`;
+
+type Project = {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  tags: string[];
+  image: string;
+};
+
+type ProjectSeed = {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  tags: string[];
+  palette: [string, string, string];
+};
+
+function createProjectImage(
+  name: string,
+  category: string,
+  [primary, secondary, accent]: ProjectSeed["palette"],
+) {
+  return `data:image/svg+xml;utf8,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${primary}" />
+          <stop offset="100%" stop-color="${secondary}" />
+        </linearGradient>
+        <radialGradient id="flare" cx="68%" cy="22%" r="52%">
+          <stop offset="0%" stop-color="${accent}" stop-opacity="0.92" />
+          <stop offset="100%" stop-color="${accent}" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="1200" height="900" rx="56" fill="url(#bg)" />
+      <circle cx="910" cy="210" r="260" fill="url(#flare)" />
+      <g opacity="0.92">
+        <rect x="104" y="124" width="364" height="560" rx="38" fill="rgba(255,255,255,0.12)" transform="rotate(-9 286 404)" />
+        <rect x="418" y="92" width="348" height="650" rx="42" fill="rgba(255,255,255,0.18)" transform="rotate(6 592 417)" />
+        <rect x="736" y="168" width="306" height="486" rx="34" fill="rgba(15,15,18,0.36)" transform="rotate(-8 889 411)" />
+      </g>
+      <g fill="none" stroke="rgba(255,255,255,0.2)">
+        <path d="M94 744c203-148 384-170 560-76 176 94 326 99 450 28" stroke-width="7" />
+        <path d="M142 810c168-78 324-101 468-68 144 33 297 16 464-78" stroke-width="3" />
+      </g>
+      <text x="100" y="748" fill="rgba(255,255,255,0.94)" font-size="104" font-family="Segoe UI, sans-serif" font-weight="800" letter-spacing="-4">${name}</text>
+      <text x="106" y="822" fill="rgba(255,255,255,0.66)" font-size="30" font-family="Segoe UI, sans-serif" letter-spacing="8">${category.toUpperCase()}</text>
+    </svg>
+  `)}`;
+}
+
+const PROJECTS: Project[] = ([
+  {
+    id: "atlas-frame",
+    name: "Atlas Frame",
+    category: "Campaign System",
+    description:
+      "A motion-first portfolio system for a global design studio, combining modular storytelling blocks with tactile media transitions and live editorial sequencing.",
+    tags: ["Motion Direction", "React", "Narrative UX"],
+    palette: ["#20141a", "#694035", "#ff7f4d"],
+  },
+  {
+    id: "northstar",
+    name: "Northstar",
+    category: "Brand Platform",
+    description:
+      "An immersive launch surface for a fashion label, pairing oversized typography, fluid imagery, and spatial transitions across lookbooks and commerce entry points.",
+    tags: ["Art Direction", "Motion Systems", "Commerce"],
+    palette: ["#121824", "#28526d", "#7fd2ff"],
+  },
+  {
+    id: "cinder",
+    name: "Cinder",
+    category: "Editorial Experience",
+    description:
+      "A cinematic magazine interface where long-form pieces unfold through layered media, responsive pacing, and atmospheric motion cues.",
+    tags: ["Editorial", "Prototyping", "Design Engineering"],
+    palette: ["#180f12", "#5d2b2e", "#ffaf6d"],
+  },
+  {
+    id: "aeris",
+    name: "Aeris",
+    category: "Spatial Showcase",
+    description:
+      "A high-gloss environment for architectural work, designed to make still renders feel physical through depth, inertia, and measured reveal timing.",
+    tags: ["Architecture", "3D-ready UI", "Interaction"],
+    palette: ["#0e1620", "#2b3e59", "#8cd7ff"],
+  },
+  {
+    id: "sonder",
+    name: "Sonder",
+    category: "Film Archive",
+    description:
+      "A living archive for moving image projects with expandable credits, programmable motion choreography, and a timeline tuned for browsing and discovery.",
+    tags: ["Archive", "Media Systems", "Type"],
+    palette: ["#191612", "#5a4a38", "#f6d189"],
+  },
+  {
+    id: "fluxline",
+    name: "Fluxline",
+    category: "Interactive Identity",
+    description:
+      "A responsive identity lab where every surface reacts to presence, using soft physics, liquid distortion, and adaptive layouts to keep the brand in motion.",
+    tags: ["Identity", "Motion.dev", "Frontend"],
+    palette: ["#13131c", "#3a2c64", "#8f90ff"],
+  },
+ ] satisfies ProjectSeed[]).map((project) => ({
+  ...project,
+  image: createProjectImage(project.name, project.category, project.palette),
+}));
 
 function createSeededRandom(seed: number) {
   let state = (seed + 1) * 1779033703;
@@ -131,12 +246,16 @@ export function ImmersivePortfolio() {
   const pointerXRatio = useMotionValue(NEUTRAL_CURSOR_X);
   const pointerYRatio = useMotionValue(0);
   const characters = useMemo(() => Array.from(HERO_TITLE), []);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [detailReady, setDetailReady] = useState(false);
   const revealDelay = characters.length * STAGGER_SECONDS + ENTRANCE_SECONDS * 0.7;
   const turbulenceTargetX = useTransform(pointerXRatio, [0, 1], [MIN_FREQUENCY_X, MAX_FREQUENCY_X]);
   const displacementTarget = useTransform(pointerYRatio, [0, 1], [0, MAX_DISPLACEMENT]);
   const turbulenceX = useSpring(turbulenceTargetX, LIQUID_SPRING);
   const displacementScale = useSpring(displacementTarget, LIQUID_SPRING);
   const baseFrequency = useMotionTemplate`${turbulenceX} 0.02`;
+  const selectedProject = PROJECTS.find((project) => project.id === selectedProjectId) ?? null;
+  const heroSupportVisible = selectedProjectId === null;
 
   useEffect(() => {
     let frameId = 0;
@@ -154,6 +273,10 @@ export function ImmersivePortfolio() {
     };
   }, [timeline]);
 
+  useEffect(() => {
+    setDetailReady(false);
+  }, [selectedProjectId]);
+
   const handlePointerMove = (event: React.PointerEvent<HTMLElement>) => {
     const bounds = event.currentTarget.getBoundingClientRect();
     const nextX = (event.clientX - bounds.left) / bounds.width;
@@ -168,237 +291,651 @@ export function ImmersivePortfolio() {
     pointerYRatio.set(0);
   };
 
+  const closeProject = () => {
+    setDetailReady(false);
+    setSelectedProjectId(null);
+  };
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background:
-          "radial-gradient(circle at top, rgba(255, 119, 48, 0.16), transparent 28%), linear-gradient(135deg, #09090b 0%, #121217 42%, #1b1010 100%)",
-        color: "#f6efe8",
-        fontFamily: '"Segoe UI", sans-serif',
-      }}
-    >
-      <section
-        onPointerMove={handlePointerMove}
-        onPointerLeave={handlePointerLeave}
+    <LayoutGroup id="immersive-portfolio-layout">
+      <main
         style={{
-          width: "min(1120px, 100%)",
-          minHeight: "min(78vh, 880px)",
+          minHeight: "100vh",
           display: "flex",
-          alignItems: "flex-end",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
-          borderRadius: "32px",
-          padding: "clamp(32px, 5vw, 72px)",
-          background: "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-          boxShadow: "0 24px 90px rgba(0, 0, 0, 0.35)",
-          overflow: "hidden",
-          position: "relative",
-          isolation: "isolate",
+          justifyContent: "center",
+          padding: "24px",
+          background:
+            "radial-gradient(circle at top, rgba(255, 119, 48, 0.16), transparent 28%), linear-gradient(135deg, #09090b 0%, #121217 42%, #1b1010 100%)",
+          color: "#f6efe8",
+          fontFamily: '"Segoe UI", sans-serif',
         }}
       >
-        <motion.svg
-          aria-hidden="true"
-          viewBox="0 0 1600 1200"
-          preserveAspectRatio="xMidYMid slice"
+        <motion.div
+          layout
+          transition={LAYOUT_TRANSITION}
           style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
-            pointerEvents: "none",
-          }}
-        >
-          <defs>
-            <filter
-              id="portfolio-liquid-filter"
-              x="-10%"
-              y="-10%"
-              width="120%"
-              height="120%"
-              colorInterpolationFilters="sRGB"
-            >
-              <motion.feTurbulence
-                type="fractalNoise"
-                baseFrequency={baseFrequency}
-                numOctaves={2}
-                seed={7}
-                stitchTiles="stitch"
-                result="noise"
-              />
-              <motion.feDisplacementMap
-                in="SourceGraphic"
-                in2="noise"
-                scale={displacementScale}
-                xChannelSelector="R"
-                yChannelSelector="B"
-              />
-            </filter>
-            <linearGradient id="portfolio-image-fade" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="rgba(8, 8, 10, 0.15)" />
-              <stop offset="58%" stopColor="rgba(8, 8, 10, 0.3)" />
-              <stop offset="100%" stopColor="rgba(8, 8, 10, 0.84)" />
-            </linearGradient>
-          </defs>
-
-          <image
-            href={HERO_IMAGE}
-            x="0"
-            y="0"
-            width="1600"
-            height="1200"
-            preserveAspectRatio="xMidYMid slice"
-            filter="url(#portfolio-liquid-filter)"
-            opacity="0.92"
-          />
-          <rect x="0" y="0" width="1600" height="1200" fill="url(#portfolio-image-fade)" />
-        </motion.svg>
-
-        <div
-          style={{
-            position: "absolute",
-            inset: "auto -12% -18% auto",
-            width: "42vw",
-            height: "42vw",
-            maxWidth: "460px",
-            maxHeight: "460px",
-            borderRadius: "999px",
-            background:
-              "radial-gradient(circle, rgba(255, 119, 48, 0.22), rgba(255, 119, 48, 0) 68%)",
-            pointerEvents: "none",
-            zIndex: 1,
-          }}
-        />
-
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(90deg, rgba(8, 8, 10, 0.82) 0%, rgba(8, 8, 10, 0.54) 38%, rgba(8, 8, 10, 0.3) 100%)",
-            pointerEvents: "none",
-            zIndex: 1,
-          }}
-        />
-
-        <div
-          style={{
+            width: "min(1180px, 100%)",
             display: "grid",
-            gap: "28px",
-            position: "relative",
-            zIndex: 2,
-            maxWidth: "760px",
+            alignContent: "start",
+            gap: "22px",
           }}
         >
-          <div
+          <motion.section
+            layout
+            transition={LAYOUT_TRANSITION}
+            onPointerMove={handlePointerMove}
+            onPointerLeave={handlePointerLeave}
             style={{
-              display: "inline-flex",
-              width: "fit-content",
-              padding: "8px 14px",
-              borderRadius: "999px",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "rgba(246, 239, 232, 0.7)",
-              letterSpacing: "0.22em",
-              fontSize: "12px",
-              textTransform: "uppercase",
-            }}
-          >
-            Selected Portfolio 2026
-          </div>
-
-          <h1
-            style={{
-              margin: 0,
+              width: "100%",
               display: "flex",
-              flexWrap: "wrap",
               alignItems: "flex-end",
-              gap: "0.01em",
-              fontSize: "clamp(4.6rem, 18vw, 11rem)",
-              lineHeight: 0.9,
-              letterSpacing: "-0.08em",
-              textTransform: "uppercase",
-              fontWeight: 900,
-              perspective: "1200px",
-              textShadow: "0 10px 38px rgba(0, 0, 0, 0.24)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: "32px",
+              padding: "clamp(32px, 5vw, 72px)",
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+              boxShadow: "0 24px 90px rgba(0, 0, 0, 0.35)",
+              overflow: "hidden",
+              position: "relative",
+              isolation: "isolate",
             }}
           >
-            {characters.map((character, index) => (
-              <AnimatedCharacter
-                key={`${character}-${index}`}
-                character={character}
-                index={index}
-                timeline={timeline}
+            <motion.svg
+              aria-hidden="true"
+              viewBox="0 0 1600 1200"
+              preserveAspectRatio="xMidYMid slice"
+              style={{
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%",
+                pointerEvents: "none",
+              }}
+            >
+              <defs>
+                <filter
+                  id="portfolio-liquid-filter"
+                  x="-10%"
+                  y="-10%"
+                  width="120%"
+                  height="120%"
+                  colorInterpolationFilters="sRGB"
+                >
+                  <motion.feTurbulence
+                    type="fractalNoise"
+                    baseFrequency={baseFrequency}
+                    numOctaves={2}
+                    seed={7}
+                    stitchTiles="stitch"
+                    result="noise"
+                  />
+                  <motion.feDisplacementMap
+                    in="SourceGraphic"
+                    in2="noise"
+                    scale={displacementScale}
+                    xChannelSelector="R"
+                    yChannelSelector="B"
+                  />
+                </filter>
+                <linearGradient id="portfolio-image-fade" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="rgba(8, 8, 10, 0.15)" />
+                  <stop offset="58%" stopColor="rgba(8, 8, 10, 0.3)" />
+                  <stop offset="100%" stopColor="rgba(8, 8, 10, 0.84)" />
+                </linearGradient>
+              </defs>
+
+              <image
+                href={HERO_IMAGE}
+                x="0"
+                y="0"
+                width="1600"
+                height="1200"
+                preserveAspectRatio="xMidYMid slice"
+                filter="url(#portfolio-liquid-filter)"
+                opacity="0.92"
               />
-            ))}
-          </h1>
+              <rect x="0" y="0" width="1600" height="1200" fill="url(#portfolio-image-fade)" />
+            </motion.svg>
 
-          <motion.p
-            initial={{ opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: revealDelay, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              margin: 0,
-              maxWidth: "640px",
-              color: "rgba(246, 239, 232, 0.78)",
-              fontSize: "clamp(1rem, 2.6vw, 1.35rem)",
-              lineHeight: 1.55,
-            }}
-          >
-            Cinematic interfaces, tactile motion systems, and deliberate visual
-            narratives for brands that want their portfolio to feel alive before
-            a single case study opens.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: revealDelay + 0.14,
-              duration: 0.65,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "16px",
-              flexWrap: "wrap",
-            }}
-          >
-            <motion.button
-              whileHover={{ y: -2, scale: 1.01 }}
-              whileTap={{ scale: 0.985 }}
+            <div
               style={{
-                border: 0,
+                position: "absolute",
+                inset: "auto -12% -18% auto",
+                width: "42vw",
+                height: "42vw",
+                maxWidth: "460px",
+                maxHeight: "460px",
                 borderRadius: "999px",
-                padding: "16px 24px",
-                background: "linear-gradient(135deg, #ff7730, #ff5a36)",
-                color: "#120a07",
-                fontSize: "0.96rem",
-                fontWeight: 800,
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                boxShadow: "0 18px 40px rgba(255, 107, 43, 0.28)",
+                background:
+                  "radial-gradient(circle, rgba(255, 119, 48, 0.22), rgba(255, 119, 48, 0) 68%)",
+                pointerEvents: "none",
+                zIndex: 1,
               }}
-            >
-              View Projects
-            </motion.button>
+            />
 
-            <span
+            <div
               style={{
-                color: "rgba(246, 239, 232, 0.54)",
-                fontSize: "0.95rem",
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(90deg, rgba(8, 8, 10, 0.82) 0%, rgba(8, 8, 10, 0.54) 38%, rgba(8, 8, 10, 0.3) 100%)",
+                pointerEvents: "none",
+                zIndex: 1,
+              }}
+            />
+
+            <motion.div
+              layout
+              transition={LAYOUT_TRANSITION}
+              style={{
+                display: "grid",
+                gap: "28px",
+                position: "relative",
+                zIndex: 2,
+                maxWidth: "760px",
               }}
             >
-              Direction, code, and motion systems
-            </span>
-          </motion.div>
-        </div>
-      </section>
-    </main>
+              <motion.div
+                layout
+                transition={LAYOUT_TRANSITION}
+                style={{
+                  display: "inline-flex",
+                  width: "fit-content",
+                  padding: "8px 14px",
+                  borderRadius: "999px",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  color: "rgba(246, 239, 232, 0.7)",
+                  letterSpacing: "0.22em",
+                  fontSize: "12px",
+                  textTransform: "uppercase",
+                }}
+              >
+                Selected Portfolio 2026
+              </motion.div>
+
+              <motion.h1
+                layout
+                transition={LAYOUT_TRANSITION}
+                style={{
+                  margin: 0,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  alignItems: "flex-end",
+                  gap: "0.01em",
+                  fontSize: "clamp(4.6rem, 18vw, 11rem)",
+                  lineHeight: 0.9,
+                  letterSpacing: "-0.08em",
+                  textTransform: "uppercase",
+                  fontWeight: 900,
+                  perspective: "1200px",
+                  textShadow: "0 10px 38px rgba(0, 0, 0, 0.24)",
+                }}
+              >
+                {characters.map((character, index) => (
+                  <AnimatedCharacter
+                    key={`${character}-${index}`}
+                    character={character}
+                    index={index}
+                    timeline={timeline}
+                  />
+                ))}
+              </motion.h1>
+
+              <AnimatePresence initial={false}>
+                {heroSupportVisible ? (
+                  <motion.div
+                    key="hero-support"
+                    layout
+                    transition={LAYOUT_TRANSITION}
+                    initial={{ opacity: 0, y: 22 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -18 }}
+                    style={{
+                      display: "grid",
+                      gap: "20px",
+                    }}
+                  >
+                    <motion.p
+                      initial={false}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: revealDelay,
+                        duration: 0.7,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      style={{
+                        margin: 0,
+                        maxWidth: "640px",
+                        color: "rgba(246, 239, 232, 0.78)",
+                        fontSize: "clamp(1rem, 2.6vw, 1.35rem)",
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      Cinematic interfaces, tactile motion systems, and deliberate visual
+                      narratives for brands that want their portfolio to feel alive before
+                      a single case study opens.
+                    </motion.p>
+
+                    <motion.div
+                      initial={false}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: revealDelay + 0.14,
+                        duration: 0.65,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "16px",
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <motion.button
+                        whileHover={{ y: -2, scale: 1.01 }}
+                        whileTap={{ scale: 0.985 }}
+                        style={{
+                          border: 0,
+                          borderRadius: "999px",
+                          padding: "16px 24px",
+                          background: "linear-gradient(135deg, #ff7730, #ff5a36)",
+                          color: "#120a07",
+                          fontSize: "0.96rem",
+                          fontWeight: 800,
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          cursor: "pointer",
+                          boxShadow: "0 18px 40px rgba(255, 107, 43, 0.28)",
+                        }}
+                        onClick={() => {
+                          const grid = document.getElementById("project-grid");
+                          grid?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        }}
+                      >
+                        View Projects
+                      </motion.button>
+
+                      <span
+                        style={{
+                          color: "rgba(246, 239, 232, 0.54)",
+                          fontSize: "0.95rem",
+                          letterSpacing: "0.04em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Direction, code, and motion systems
+                      </span>
+                    </motion.div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </motion.div>
+          </motion.section>
+
+          <motion.section
+            id="project-grid"
+            layout
+            transition={LAYOUT_TRANSITION}
+            style={{
+              borderRadius: "32px",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              background: "rgba(12, 12, 16, 0.72)",
+              boxShadow: "0 24px 90px rgba(0, 0, 0, 0.28)",
+              padding: "clamp(24px, 4vw, 36px)",
+              display: "grid",
+              gap: "24px",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <motion.div
+              layout
+              transition={LAYOUT_TRANSITION}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                gap: "20px",
+                flexWrap: "wrap",
+                alignItems: "end",
+              }}
+            >
+              <div style={{ display: "grid", gap: "8px" }}>
+                <span
+                  style={{
+                    fontSize: "0.78rem",
+                    letterSpacing: "0.22em",
+                    textTransform: "uppercase",
+                    color: "rgba(246, 239, 232, 0.48)",
+                  }}
+                >
+                  Featured projects
+                </span>
+                <h2
+                  style={{
+                    margin: 0,
+                    fontSize: "clamp(1.9rem, 4vw, 3.1rem)",
+                    letterSpacing: "-0.04em",
+                  }}
+                >
+                  Spatial case studies built to open like scenes.
+                </h2>
+              </div>
+
+              <p
+                style={{
+                  margin: 0,
+                  maxWidth: "420px",
+                  color: "rgba(246, 239, 232, 0.62)",
+                  lineHeight: 1.5,
+                }}
+              >
+                Each tile is a living entry point. Expand any project to move from
+                overview into the full narrative without breaking spatial continuity.
+              </p>
+            </motion.div>
+
+            <motion.div
+              layout
+              transition={LAYOUT_TRANSITION}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                gap: "18px",
+              }}
+            >
+              {PROJECTS.map((project) => {
+                const isSelected = project.id === selectedProjectId;
+                const isDimmed = selectedProjectId !== null && !isSelected;
+
+                return (
+                  <motion.button
+                    key={project.id}
+                    layout
+                    transition={LAYOUT_TRANSITION}
+                    onClick={() => setSelectedProjectId(project.id)}
+                    animate={
+                      isDimmed
+                        ? { scale: 0.92, opacity: 0.22, filter: "blur(10px)" }
+                        : { scale: 1, opacity: isSelected ? 0 : 1, filter: "blur(0px)" }
+                    }
+                    style={{
+                      border: 0,
+                      padding: 0,
+                      textAlign: "left",
+                      cursor: "pointer",
+                      background: "transparent",
+                      pointerEvents: isSelected ? "none" : "auto",
+                    }}
+                  >
+                    <motion.article
+                      layoutId={`project-card-${project.id}`}
+                      transition={LAYOUT_TRANSITION}
+                      style={{
+                        minHeight: "340px",
+                        borderRadius: "26px",
+                        overflow: "hidden",
+                        background: "rgba(18, 18, 24, 0.88)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        display: "grid",
+                        gridTemplateRows: "220px auto",
+                        boxShadow: "0 16px 36px rgba(0,0,0,0.22)",
+                      }}
+                    >
+                      <motion.img
+                        layoutId={`project-image-${project.id}`}
+                        transition={LAYOUT_TRANSITION}
+                        src={project.image}
+                        alt={project.name}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gap: "14px",
+                          padding: "18px 18px 20px",
+                          alignContent: "start",
+                        }}
+                      >
+                        <motion.span
+                          layoutId={`project-category-${project.id}`}
+                          transition={LAYOUT_TRANSITION}
+                          style={{
+                            display: "inline-flex",
+                            width: "fit-content",
+                            padding: "7px 12px",
+                            borderRadius: "999px",
+                            background: "rgba(255,255,255,0.08)",
+                            color: "rgba(246, 239, 232, 0.76)",
+                            fontSize: "0.78rem",
+                            letterSpacing: "0.14em",
+                            textTransform: "uppercase",
+                          }}
+                        >
+                          {project.category}
+                        </motion.span>
+
+                        <motion.h3
+                          layoutId={`project-title-${project.id}`}
+                          transition={LAYOUT_TRANSITION}
+                          style={{
+                            margin: 0,
+                            fontSize: "1.65rem",
+                            lineHeight: 0.96,
+                            letterSpacing: "-0.05em",
+                          }}
+                        >
+                          {project.name}
+                        </motion.h3>
+                      </div>
+                    </motion.article>
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+          </motion.section>
+        </motion.div>
+
+        <AnimatePresence initial={false}>
+          {selectedProject ? (
+            <motion.div
+              key="project-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 30,
+                padding: "24px",
+                background: "rgba(5, 5, 8, 0.52)",
+                backdropFilter: "blur(20px)",
+                display: "flex",
+                alignItems: "stretch",
+                justifyContent: "center",
+              }}
+            >
+              <motion.button
+                aria-label="Close project"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  border: 0,
+                  background: "transparent",
+                  cursor: "pointer",
+                }}
+                onClick={closeProject}
+              />
+
+              <motion.article
+                layoutId={`project-card-${selectedProject.id}`}
+                transition={LAYOUT_TRANSITION}
+                onLayoutAnimationComplete={() => {
+                  if (!detailReady) {
+                    setDetailReady(true);
+                  }
+                }}
+                style={{
+                  position: "relative",
+                  width: "min(1220px, 100%)",
+                  minHeight: "min(88vh, 940px)",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
+                  gap: "24px",
+                  padding: "24px",
+                  borderRadius: "32px",
+                  background: "rgba(12, 12, 16, 0.96)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  boxShadow: "0 32px 120px rgba(0,0,0,0.42)",
+                  overflow: "hidden",
+                }}
+                onClick={(event) => {
+                  event.stopPropagation();
+                }}
+              >
+                <motion.img
+                  layoutId={`project-image-${selectedProject.id}`}
+                  transition={LAYOUT_TRANSITION}
+                  src={selectedProject.image}
+                  alt={selectedProject.name}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    minHeight: "320px",
+                    objectFit: "cover",
+                    borderRadius: "24px",
+                    display: "block",
+                  }}
+                />
+
+                <div
+                  style={{
+                    display: "grid",
+                    alignContent: "start",
+                    gap: "18px",
+                    padding: "4px 4px 4px 0",
+                  }}
+                >
+                  <motion.span
+                    layoutId={`project-category-${selectedProject.id}`}
+                    transition={LAYOUT_TRANSITION}
+                    style={{
+                      display: "inline-flex",
+                      width: "fit-content",
+                      padding: "9px 14px",
+                      borderRadius: "999px",
+                      background: "rgba(255,255,255,0.08)",
+                      color: "rgba(246, 239, 232, 0.76)",
+                      fontSize: "0.82rem",
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {selectedProject.category}
+                  </motion.span>
+
+                  <motion.h2
+                    layoutId={`project-title-${selectedProject.id}`}
+                    transition={LAYOUT_TRANSITION}
+                    style={{
+                      margin: 0,
+                      fontSize: "clamp(3rem, 7vw, 5.5rem)",
+                      lineHeight: 0.9,
+                      letterSpacing: "-0.07em",
+                    }}
+                  >
+                    {selectedProject.name}
+                  </motion.h2>
+
+                  <AnimatePresence initial={false}>
+                    {detailReady ? (
+                      <motion.div
+                        key={`project-details-${selectedProject.id}`}
+                        initial={{ opacity: 0, y: 24 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 12 }}
+                        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                        style={{
+                          display: "grid",
+                          gap: "24px",
+                        }}
+                      >
+                        <p
+                          style={{
+                            margin: 0,
+                            color: "rgba(246, 239, 232, 0.72)",
+                            fontSize: "1.04rem",
+                            lineHeight: 1.65,
+                            maxWidth: "46ch",
+                          }}
+                        >
+                          {selectedProject.description}
+                        </p>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: "10px",
+                          }}
+                        >
+                          {selectedProject.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              style={{
+                                padding: "10px 14px",
+                                borderRadius: "999px",
+                                background: "rgba(255,255,255,0.06)",
+                                color: "rgba(246,239,232,0.74)",
+                                letterSpacing: "0.08em",
+                                textTransform: "uppercase",
+                                fontSize: "0.78rem",
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+
+                        <motion.button
+                          whileHover={{ y: -2, scale: 1.01 }}
+                          whileTap={{ scale: 0.985 }}
+                          onClick={closeProject}
+                          style={{
+                            border: 0,
+                            width: "fit-content",
+                            borderRadius: "999px",
+                            padding: "15px 22px",
+                            background: "linear-gradient(135deg, #ff7730, #ff5a36)",
+                            color: "#120a07",
+                            fontSize: "0.92rem",
+                            fontWeight: 800,
+                            letterSpacing: "0.08em",
+                            textTransform: "uppercase",
+                            cursor: "pointer",
+                            boxShadow: "0 18px 40px rgba(255, 107, 43, 0.28)",
+                          }}
+                        >
+                          Close Project
+                        </motion.button>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </div>
+              </motion.article>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </main>
+    </LayoutGroup>
   );
 }
