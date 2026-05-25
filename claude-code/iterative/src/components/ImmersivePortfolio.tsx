@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import {
   motion,
+  animate,
   motionValue,
   useMotionValue,
   useSpring,
@@ -128,6 +129,30 @@ const STEPS = [
 const PROCESS_PATH =
   "M 50 50 C 64 90 36 110 50 150 C 64 190 36 210 50 250 C 64 290 36 310 50 350 C 64 390 36 410 50 450";
 const NODE_CYS = [50, 150, 250, 350, 450];
+
+// ─── Clients carousel data ────────────────────────────────────────────────────
+
+const CLIENTS = [
+  { name: "Arc Studio", abbr: "AS", accent: "#7c3aed" },
+  { name: "Meridian",   abbr: "ME", accent: "#db2777" },
+  { name: "Forma",      abbr: "FM", accent: "#0891b2" },
+  { name: "Luma",       abbr: "LM", accent: "#059669" },
+  { name: "Strand",     abbr: "ST", accent: "#d97706" },
+  { name: "Axis",       abbr: "AX", accent: "#6d28d9" },
+  { name: "Veil",       abbr: "VL", accent: "#be185d" },
+  { name: "Coda",       abbr: "CD", accent: "#0284c7" },
+  { name: "Rune",       abbr: "RN", accent: "#16a34a" },
+  { name: "Echo",       abbr: "EC", accent: "#c2410c" },
+] as const;
+type Client = (typeof CLIENTS)[number];
+
+const C_W      = 220;
+const C_H      = 140;
+const C_GAP    = 24;
+const C_STRIDE = C_W + C_GAP;
+const C_N      = CLIENTS.length;       // 10 unique clients
+const C_COPIES = 5;                     // render 5 × 10 = 50 cards for infinite feel
+const C_MID    = Math.floor(C_COPIES / 2); // 2 — the middle copy index
 
 // ─── Process section component ────────────────────────────────────────────────
 
@@ -444,6 +469,292 @@ function ProcessSection() {
         </div>
       </div>
     </motion.section>
+  );
+}
+
+// ─── Carousel: single card ────────────────────────────────────────────────────
+
+interface CarouselCardProps {
+  client: Client;
+  cardAbsX: number;
+  trackX: MotionValue<number>;
+}
+
+function CarouselCard({ client, cardAbsX, trackX }: CarouselCardProps) {
+  // Distance of this card's centre from the viewport centre, derived live from trackX
+  const dist = useTransform(trackX, (x) => {
+    return cardAbsX + C_W / 2 + x - window.innerWidth / 2;
+  });
+
+  const scale   = useTransform(dist, [-600, 0, 600], [0.82, 1.18, 0.82]);
+  const opacity = useTransform(dist, [-600, 0, 600], [0.30, 1.0, 0.30]);
+  const rotateY = useTransform(dist, [-400, 0, 400], [15, 0, -15]);
+
+  return (
+    <motion.div
+      style={{
+        position: "absolute",
+        left: cardAbsX,
+        top: 0,
+        width: C_W,
+        height: C_H,
+        borderRadius: "12px",
+        background: "rgba(255,255,255,0.05)",
+        border: "1px solid rgba(255,255,255,0.10)",
+        backdropFilter: "blur(12px)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "0.6rem",
+        scale,
+        opacity,
+        rotateY,
+        transformPerspective: 900,
+        userSelect: "none",
+        pointerEvents: "none",
+      }}
+    >
+      <div
+        style={{
+          width: "44px",
+          height: "44px",
+          borderRadius: "50%",
+          background: `${client.accent}22`,
+          border: `1.5px solid ${client.accent}66`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "0.78rem",
+          fontWeight: 700,
+          letterSpacing: "0.06em",
+          color: client.accent,
+          flexShrink: 0,
+        }}
+      >
+        {client.abbr}
+      </div>
+      <p
+        style={{
+          margin: 0,
+          fontSize: "0.66rem",
+          fontWeight: 500,
+          letterSpacing: "0.12em",
+          color: "rgba(255,255,255,0.58)",
+          textTransform: "uppercase",
+        }}
+      >
+        {client.name}
+      </p>
+    </motion.div>
+  );
+}
+
+// ─── Carousel: full section ───────────────────────────────────────────────────
+
+function ClientsCarousel() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const trackX       = useMotionValue(0);
+  const [ready, setReady] = useState(false);
+
+  // Interaction refs (no re-renders needed for mid-gesture state)
+  const startRef   = useRef({ x: 0, y: 0, tx: 0 });
+  const recentPts  = useRef<Array<{ x: number; t: number }>>([]);
+  const isDragging = useRef(false);
+  const dirLocked  = useRef<"h" | "v" | null>(null);
+  const inertiaRaf = useRef(0);
+  const snapAnim   = useRef<{ stop: () => void } | null>(null);
+
+  // Centre card 0 of the middle copy on mount
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const w = el.offsetWidth;
+    trackX.set(w / 2 - (C_MID * C_N * C_STRIDE + C_W / 2));
+    setReady(true);
+  }, [trackX]);
+
+  // After snap settles, silently jump to the equivalent middle-copy position
+  const normalize = useCallback((w: number) => {
+    const curr   = trackX.get();
+    const refX   = w / 2 - (C_MID * C_N * C_STRIDE + C_W / 2);
+    const cycles = Math.round((curr - refX) / (C_N * C_STRIDE));
+    if (Math.abs(cycles) >= 1) trackX.set(curr - cycles * C_N * C_STRIDE);
+  }, [trackX]);
+
+  const doSnap = useCallback(() => {
+    const w     = containerRef.current?.offsetWidth ?? window.innerWidth;
+    const x     = trackX.get();
+    const viewCx = w / 2;
+
+    let nearest = C_MID * C_N;
+    let minDist = Infinity;
+    for (let i = 0; i < C_N * C_COPIES; i++) {
+      const d = Math.abs(i * C_STRIDE + C_W / 2 + x - viewCx);
+      if (d < minDist) { minDist = d; nearest = i; }
+    }
+
+    const targetX = viewCx - (nearest * C_STRIDE + C_W / 2);
+    snapAnim.current = animate(trackX, targetX, {
+      type: "spring",
+      stiffness: 300,
+      damping: 30,
+      onComplete: () => normalize(w),
+    });
+  }, [trackX, normalize]);
+
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      cancelAnimationFrame(inertiaRaf.current);
+      snapAnim.current?.stop();
+      startRef.current  = { x: e.clientX, y: e.clientY, tx: trackX.get() };
+      recentPts.current = [{ x: e.clientX, t: Date.now() }];
+      isDragging.current = false;
+      dirLocked.current  = null;
+    },
+    [trackX]
+  );
+
+  const handlePointerMove = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const s  = startRef.current;
+      const dx = e.clientX - s.x;
+      const dy = e.clientY - s.y;
+
+      if (!dirLocked.current) {
+        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+        dirLocked.current = Math.abs(dx) >= Math.abs(dy) ? "h" : "v";
+        if (dirLocked.current === "h") {
+          isDragging.current = true;
+          e.currentTarget.setPointerCapture(e.pointerId);
+        }
+      }
+      if (dirLocked.current !== "h") return;
+
+      trackX.set(s.tx + dx);
+      const pts = recentPts.current;
+      pts.push({ x: e.clientX, t: Date.now() });
+      if (pts.length > 5) pts.shift();
+    },
+    [trackX]
+  );
+
+  const handlePointerUp = useCallback(() => {
+    if (!isDragging.current) { dirLocked.current = null; return; }
+    isDragging.current = false;
+    dirLocked.current  = null;
+
+    // Velocity from last ≤5 pointer samples, capped to prevent runaway inertia
+    const pts = recentPts.current;
+    let vel   = 0;
+    if (pts.length >= 2) {
+      const first = pts[0];
+      const last  = pts[pts.length - 1];
+      const dt    = last.t - first.t;
+      if (dt > 0 && dt < 300) vel = ((last.x - first.x) / dt) * 16;
+    }
+    vel = Math.max(-300, Math.min(300, vel));
+
+    if (Math.abs(vel) < 0.5) { doSnap(); return; }
+
+    // Manual inertia: decay velocity × 0.95 per frame until |v| < 0.5 px/frame
+    const decay = () => {
+      vel *= 0.95;
+      if (Math.abs(vel) < 0.5) { doSnap(); return; }
+      trackX.set(trackX.get() + vel);
+      inertiaRaf.current = requestAnimationFrame(decay);
+    };
+    inertiaRaf.current = requestAnimationFrame(decay);
+  }, [trackX, doSnap]);
+
+  useEffect(() => () => {
+    cancelAnimationFrame(inertiaRaf.current);
+    snapAnim.current?.stop();
+  }, []);
+
+  // 5 copies × 10 clients = 50 rendered cards
+  const cards: Array<{ key: string; client: Client; cardAbsX: number }> = [];
+  for (let c = 0; c < C_COPIES; c++) {
+    for (let i = 0; i < C_N; i++) {
+      cards.push({
+        key:      `${c}-${i}`,
+        client:   CLIENTS[i],
+        cardAbsX: (c * C_N + i) * C_STRIDE,
+      });
+    }
+  }
+
+  const EXTRA = 50;  // vertical breathing room for scale(1.18) overflow
+
+  return (
+    <section
+      style={{
+        position: "relative",
+        zIndex: 1,
+        padding: "6rem 0 8rem",
+        overflow: "hidden",
+        opacity: ready ? 1 : 0,
+        transition: "opacity 0.3s",
+      }}
+    >
+      {/* Section header */}
+      <div style={{ padding: "0 3rem", maxWidth: "1200px", margin: "0 auto 3.5rem" }}>
+        <p
+          style={{
+            fontSize: "0.62rem",
+            letterSpacing: "0.28em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,.35)",
+            margin: "0 0 0.75rem",
+          }}
+        >
+          Trusted By
+        </p>
+        <h2
+          style={{
+            fontSize: "clamp(2rem, 4vw, 3.5rem)",
+            fontWeight: 900,
+            color: "#ffffff",
+            margin: 0,
+            letterSpacing: "-0.03em",
+            lineHeight: 1.05,
+          }}
+        >
+          Clients
+        </h2>
+      </div>
+
+      {/* Drag surface */}
+      <div
+        ref={containerRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        style={{
+          position: "relative",
+          height: C_H + EXTRA,
+          touchAction: "pan-y",   // allow vertical page scroll on touch
+          cursor: "grab",
+        }}
+      >
+        {/* Track — translateX driven by MotionValue */}
+        <motion.div
+          style={{
+            position: "absolute",
+            top: EXTRA / 2,
+            left: 0,
+            width: C_N * C_COPIES * C_STRIDE,
+            height: C_H,
+            x: trackX,
+          }}
+        >
+          {cards.map(({ key, client, cardAbsX }) => (
+            <CarouselCard key={key} client={client} cardAbsX={cardAbsX} trackX={trackX} />
+          ))}
+        </motion.div>
+      </div>
+    </section>
   );
 }
 
@@ -826,6 +1137,9 @@ export function ImmersivePortfolio() {
 
       {/* ── Process section ──────────────────────────────────── */}
       <ProcessSection />
+
+      {/* ── Clients carousel ─────────────────────────────────── */}
+      <ClientsCarousel />
 
       {/* ── Fullscreen detail overlay ─────────────────────────── */}
       <AnimatePresence>

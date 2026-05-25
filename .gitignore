@@ -4,6 +4,7 @@ docs/
 motion-dev-mcp/
 dist/
 *.log
+*.err
 .claude/
 .playwright*/
 *.png
