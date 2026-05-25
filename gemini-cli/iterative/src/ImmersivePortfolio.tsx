@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { motion, useMotionValue, useAnimationFrame, useSpring, useTransform, AnimatePresence, useScroll } from 'motion/react';
+import { motion, useMotionValue, useAnimationFrame, useSpring, useTransform, AnimatePresence, useScroll, animate } from 'motion/react';
 
 const MotionFeTurbulence = motion.create("feTurbulence");
 const MotionFeDisplacementMap = motion.create("feDisplacementMap");
@@ -266,6 +266,7 @@ export const ImmersivePortfolio: React.FC = () => {
       </AnimatePresence>
 
       <ProcessSection />
+      <ClientsCarousel />
     </div>
   )
 }
@@ -571,6 +572,137 @@ const ProcessSection = () => {
           </React.Fragment>
         )
       })}
+    </motion.div>
+  )
+}
+
+const itemWidth = 300 + 40; // 300px card + 40px gap
+const totalWidth = itemWidth * 10;
+
+const ClientsCarousel = () => {
+  const x = useMotionValue(0);
+  const isDragging = useRef(false);
+  const pointerHistory = useRef<{time: number, x: number}[]>([]);
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    isDragging.current = true;
+    pointerHistory.current = [{ time: performance.now(), x: e.clientX }];
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging.current) return;
+    const currentX = e.clientX;
+    const last = pointerHistory.current[pointerHistory.current.length - 1];
+    const delta = currentX - last.x;
+    x.set(x.get() + delta);
+    
+    pointerHistory.current.push({ time: performance.now(), x: currentX });
+    if (pointerHistory.current.length > 5) {
+      pointerHistory.current.shift();
+    }
+  };
+
+  const handlePointerUp = () => {
+    isDragging.current = false;
+    let v = 0;
+    if (pointerHistory.current.length >= 2) {
+      const first = pointerHistory.current[0];
+      const last = pointerHistory.current[pointerHistory.current.length - 1];
+      const dt = performance.now() - first.time;
+      if (dt > 0) {
+        v = ((last.x - first.x) / dt) * 16.66;
+      }
+    }
+    
+    const decay = () => {
+      if (isDragging.current) return;
+      if (Math.abs(v) >= 0.5) {
+        x.set(x.get() + v);
+        v *= 0.95;
+        requestAnimationFrame(decay);
+      } else {
+        const currentX = x.get();
+        const remainder = currentX % itemWidth;
+        let snapX = currentX - remainder;
+        if (remainder > itemWidth / 2) snapX += itemWidth;
+        else if (remainder < -itemWidth / 2) snapX -= itemWidth;
+        
+        animate(x, snapX, { type: 'spring', stiffness: 300, damping: 30 });
+      }
+    };
+    
+    requestAnimationFrame(decay);
+  };
+
+  return (
+    <div style={{ padding: '10vh 0', backgroundColor: '#050505', overflow: 'hidden' }}>
+      <h2 style={{ textAlign: 'center', fontSize: '3rem', marginBottom: '4rem', color: '#fff' }}>Our Clients</h2>
+      <div 
+        style={{ 
+          position: 'relative', 
+          height: '250px', 
+          width: '100%', 
+          touchAction: 'pan-y', 
+          perspective: '1200px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'grab'
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      >
+        {Array.from({ length: 10 }).map((_, i) => (
+          <ClientCard key={i} index={i} x={x} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const ClientCard = ({ index, x }: { index: number, x: any }) => {
+  const basePosition = index * itemWidth;
+  
+  const distance = useTransform(x, (currentX: number) => {
+    const globalPos = currentX + basePosition;
+    const halfTotal = totalWidth / 2;
+    let wrappedOffset = globalPos % totalWidth;
+    if (wrappedOffset > halfTotal) wrappedOffset -= totalWidth;
+    if (wrappedOffset < -halfTotal) wrappedOffset += totalWidth;
+    return wrappedOffset;
+  });
+
+  const scale = useTransform(distance, [-itemWidth * 1.5, 0, itemWidth * 1.5], [0.8, 1.2, 0.8], { clamp: true });
+  const opacity = useTransform(distance, [-itemWidth * 2, 0, itemWidth * 2], [0, 1, 0], { clamp: true });
+  const rotateY = useTransform(distance, [-itemWidth, 0, itemWidth], [15, 0, -15], { clamp: true });
+  
+  return (
+    <motion.div 
+      style={{ 
+        position: 'absolute', 
+        x: distance, 
+        scale, 
+        opacity, 
+        rotateY,
+        width: 300,
+        height: 180,
+        backgroundColor: '#1a1a1a',
+        borderRadius: '24px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        transformStyle: 'preserve-3d',
+        left: '50%',
+        marginLeft: -150, 
+        boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)',
+        userSelect: 'none',
+        pointerEvents: 'none'
+      }}
+    >
+      <span style={{ fontSize: '2.5rem', fontWeight: 800, color: '#555' }}>LOGO {index + 1}</span>
     </motion.div>
   )
 }

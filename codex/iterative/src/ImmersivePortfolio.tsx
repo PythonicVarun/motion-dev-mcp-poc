@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AnimatePresence,
   LayoutGroup,
+  animate,
   motion,
   useScroll,
   useMotionTemplate,
@@ -95,6 +96,14 @@ type ProcessStepSeed = {
   nodeLeft: number;
   nodeTop: number;
   cardSide: "left" | "right";
+};
+
+type ClientLogo = {
+  id: string;
+  name: string;
+  mark: string;
+  sector: string;
+  palette: [string, string, string];
 };
 
 function createProjectImage(
@@ -238,6 +247,23 @@ const PROJECTS: Project[] = ([
   ...project,
   image: createProjectImage(project.name, project.category, project.palette),
 }));
+
+const CLIENT_LOGOS: ClientLogo[] = [
+  { id: "solstice", name: "Solstice", mark: "SO", sector: "Fashion House", palette: ["#171118", "#4e2945", "#ff9c6e"] },
+  { id: "meridian", name: "Meridian", mark: "ME", sector: "Spatial Studio", palette: ["#101722", "#214f65", "#8ad9ff"] },
+  { id: "stanza", name: "Stanza", mark: "ST", sector: "Editorial Lab", palette: ["#181210", "#554434", "#f3c987"] },
+  { id: "orbit", name: "Orbit", mark: "OR", sector: "Media Network", palette: ["#111320", "#303e72", "#9eabff"] },
+  { id: "hinter", name: "Hinter", mark: "HI", sector: "Architecture", palette: ["#15151a", "#504b5c", "#d7dde9"] },
+  { id: "fenne", name: "Fenne", mark: "FE", sector: "Product Brand", palette: ["#180f12", "#66363f", "#ffad83"] },
+  { id: "vellum", name: "Vellum", mark: "VE", sector: "Publishing", palette: ["#111620", "#2e5066", "#84d0f4"] },
+  { id: "kinetic", name: "Kinetic", mark: "KI", sector: "Motion Lab", palette: ["#15111c", "#4a2e74", "#a695ff"] },
+  { id: "north", name: "North", mark: "NO", sector: "Venture Studio", palette: ["#151412", "#4f4a3a", "#f4d28e"] },
+  { id: "luma", name: "Luma", mark: "LU", sector: "Film Collective", palette: ["#131017", "#5e3346", "#ff8d78"] },
+];
+
+const CLIENT_CARD_WIDTH = 216;
+const CLIENT_CARD_GAP = 18;
+const CLIENT_CARD_SPAN = CLIENT_CARD_WIDTH + CLIENT_CARD_GAP;
 
 const PROCESS_STEPS: ProcessStep[] = ([
   {
@@ -689,6 +715,404 @@ function ProcessSection() {
           ))}
         </div>
       </motion.div>
+    </section>
+  );
+}
+
+type ClientCarouselCardProps = {
+  client: ClientLogo;
+  index: number;
+  trackX: MotionValue<number>;
+  viewportCenter: MotionValue<number>;
+};
+
+function ClientCarouselCard({
+  client,
+  index,
+  trackX,
+  viewportCenter,
+}: ClientCarouselCardProps) {
+  const distanceFromCenter = useTransform(
+    [trackX, viewportCenter],
+    ([track, center]: number[]) =>
+      track + index * CLIENT_CARD_SPAN + CLIENT_CARD_WIDTH / 2 - center,
+  );
+  const scale = useTransform(
+    distanceFromCenter,
+    [-540, -160, 0, 160, 540],
+    [0.82, 0.96, 1.2, 0.96, 0.82],
+  );
+  const opacity = useTransform(
+    distanceFromCenter,
+    [-540, -180, 0, 180, 540],
+    [0.28, 0.64, 1, 0.64, 0.28],
+  );
+  const rotateY = useTransform(distanceFromCenter, [-420, 0, 420], [15, 0, -15]);
+  const translateZ = useTransform(scale, [0.82, 1.2], [0, 34]);
+  const borderGlow = useMotionTemplate`0 14px 34px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(255,255,255,${opacity}) inset`;
+
+  return (
+    <div
+      data-client-card={client.id}
+      style={{
+        width: `${CLIENT_CARD_WIDTH}px`,
+        flex: `0 0 ${CLIENT_CARD_WIDTH}px`,
+        perspective: "1400px",
+      }}
+    >
+      <motion.article
+        style={{
+          scale,
+          opacity,
+          rotateY,
+          z: translateZ,
+          transformStyle: "preserve-3d",
+          minHeight: "168px",
+          borderRadius: "24px",
+          padding: "18px",
+          display: "grid",
+          alignContent: "space-between",
+          gap: "20px",
+          background: `linear-gradient(135deg, ${client.palette[0]}, ${client.palette[1]})`,
+          boxShadow: borderGlow,
+          border: `1px solid ${client.palette[2]}24`,
+        }}
+      >
+        <div
+          style={{
+            width: "64px",
+            height: "64px",
+            borderRadius: "18px",
+            display: "grid",
+            placeItems: "center",
+            background: `linear-gradient(135deg, ${client.palette[2]}, rgba(255,255,255,0.14))`,
+            color: "#0d0a09",
+            fontSize: "1.08rem",
+            fontWeight: 900,
+            letterSpacing: "0.08em",
+          }}
+        >
+          {client.mark}
+        </div>
+
+        <div style={{ display: "grid", gap: "6px" }}>
+          <h3
+            style={{
+              margin: 0,
+              fontSize: "1.42rem",
+              lineHeight: 0.96,
+              letterSpacing: "-0.04em",
+            }}
+          >
+            {client.name}
+          </h3>
+          <span
+            style={{
+              color: "rgba(246,239,232,0.58)",
+              fontSize: "0.76rem",
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+            }}
+          >
+            {client.sector}
+          </span>
+        </div>
+      </motion.article>
+    </div>
+  );
+}
+
+function ClientsCarousel() {
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const trackX = useMotionValue(0);
+  const viewportCenter = useMotionValue(0);
+  const [orderedClients, setOrderedClients] = useState(CLIENT_LOGOS);
+  const initializedRef = useRef(false);
+  const pointerStateRef = useRef({
+    active: false,
+    horizontal: false,
+    pointerId: -1,
+    startX: 0,
+    startY: 0,
+    startTrackX: 0,
+    lastX: 0,
+    events: [] as Array<{ x: number; time: number }>,
+  });
+  const inertiaRef = useRef<ReturnType<typeof animate> | null>(null);
+  const snapRef = useRef<ReturnType<typeof animate> | null>(null);
+  const clientsRef = useRef(orderedClients);
+
+  useEffect(() => {
+    clientsRef.current = orderedClients;
+  }, [orderedClients]);
+
+  const stopMotion = () => {
+    inertiaRef.current?.stop();
+    snapRef.current?.stop();
+    inertiaRef.current = null;
+    snapRef.current = null;
+  };
+
+  const normalizeTrack = (value: number) => {
+    let nextValue = value;
+    let nextClients = clientsRef.current;
+    let changed = false;
+
+    while (nextValue <= -CLIENT_CARD_SPAN) {
+      nextClients = [...nextClients.slice(1), nextClients[0]];
+      nextValue += CLIENT_CARD_SPAN;
+      changed = true;
+    }
+
+    while (nextValue >= CLIENT_CARD_SPAN) {
+      nextClients = [nextClients[nextClients.length - 1], ...nextClients.slice(0, -1)];
+      nextValue -= CLIENT_CARD_SPAN;
+      changed = true;
+    }
+
+    if (changed) {
+      clientsRef.current = nextClients;
+      setOrderedClients(nextClients);
+    }
+
+    trackX.set(nextValue);
+    return nextValue;
+  };
+
+  const snapToNearest = () => {
+    const center = viewportCenter.get();
+    const rawIndex = (center - CLIENT_CARD_WIDTH / 2 - trackX.get()) / CLIENT_CARD_SPAN;
+    const nearestIndex = Math.round(rawIndex);
+    const targetX = center - CLIENT_CARD_WIDTH / 2 - nearestIndex * CLIENT_CARD_SPAN;
+
+    snapRef.current = animate(trackX, targetX, {
+      type: "spring",
+      stiffness: 300,
+      damping: 30,
+      onUpdate: (latest) => {
+        normalizeTrack(latest);
+      },
+    });
+  };
+
+  const startInertia = (velocityPerFrame: number) => {
+    let velocity = velocityPerFrame;
+    stopMotion();
+
+    inertiaRef.current = animate(0, 1, {
+      duration: 20,
+      ease: "linear",
+      onUpdate: () => {
+        velocity *= 0.95;
+        const nextValue = trackX.get() + velocity;
+        normalizeTrack(nextValue);
+
+        if (Math.abs(velocity) < 0.5) {
+          inertiaRef.current?.stop();
+          inertiaRef.current = null;
+          snapToNearest();
+        }
+      },
+    });
+  };
+
+  useEffect(() => {
+    const measure = () => {
+      const viewportWidth = viewportRef.current?.getBoundingClientRect().width ?? 0;
+      viewportCenter.set(viewportWidth / 2);
+
+      if (!initializedRef.current && viewportWidth > 0) {
+        const initialX = viewportWidth / 2 - CLIENT_CARD_WIDTH / 2 - 2 * CLIENT_CARD_SPAN;
+        trackX.set(initialX);
+        initializedRef.current = true;
+      }
+    };
+
+    measure();
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("resize", measure);
+      stopMotion();
+    };
+  }, [trackX, viewportCenter]);
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (event.button !== 0) {
+      return;
+    }
+
+    stopMotion();
+    pointerStateRef.current = {
+      active: true,
+      horizontal: false,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startTrackX: trackX.get(),
+      lastX: event.clientX,
+      events: [{ x: event.clientX, time: event.timeStamp }],
+    };
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const pointer = pointerStateRef.current;
+    if (!pointer.active || pointer.pointerId !== event.pointerId) {
+      return;
+    }
+
+    const deltaX = event.clientX - pointer.startX;
+    const deltaY = event.clientY - pointer.startY;
+
+    if (!pointer.horizontal) {
+      if (Math.abs(deltaX) < 6 && Math.abs(deltaY) < 6) {
+        return;
+      }
+
+      if (Math.abs(deltaX) <= Math.abs(deltaY)) {
+        pointer.active = false;
+        return;
+      }
+
+      pointer.horizontal = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+    }
+
+    event.preventDefault();
+    pointer.lastX = event.clientX;
+    pointer.events = [...pointer.events, { x: event.clientX, time: event.timeStamp }].slice(-5);
+    normalizeTrack(pointer.startTrackX + deltaX);
+  };
+
+  const releasePointer = (event: React.PointerEvent<HTMLDivElement>) => {
+    const pointer = pointerStateRef.current;
+    if (pointer.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+
+    if (pointer.horizontal) {
+      const samples = pointer.events;
+      const first = samples[0];
+      const last = samples[samples.length - 1];
+      const frameSpan = Math.max((last.time - first.time) / (1000 / 60), 1);
+      const velocityPerFrame = (last.x - first.x) / frameSpan;
+
+      if (Math.abs(velocityPerFrame) >= 0.5) {
+        startInertia(velocityPerFrame);
+      } else {
+        snapToNearest();
+      }
+    }
+
+    pointerStateRef.current = {
+      active: false,
+      horizontal: false,
+      pointerId: -1,
+      startX: 0,
+      startY: 0,
+      startTrackX: trackX.get(),
+      lastX: 0,
+      events: [],
+    };
+  };
+
+  return (
+    <section
+      id="clients-carousel"
+      style={{
+        borderRadius: "32px",
+        border: "1px solid rgba(255,255,255,0.08)",
+        background:
+          "radial-gradient(circle at top right, rgba(136, 196, 255, 0.12), transparent 30%), linear-gradient(180deg, rgba(14,14,18,0.98), rgba(10,10,14,0.94))",
+        boxShadow: "0 24px 90px rgba(0, 0, 0, 0.28)",
+        padding: "clamp(24px, 4vw, 36px)",
+        display: "grid",
+        gap: "28px",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          gap: "20px",
+          flexWrap: "wrap",
+          alignItems: "end",
+        }}
+      >
+        <div style={{ display: "grid", gap: "10px" }}>
+          <span
+            style={{
+              color: "rgba(246,239,232,0.48)",
+              fontSize: "0.78rem",
+              letterSpacing: "0.24em",
+              textTransform: "uppercase",
+            }}
+          >
+            Clients
+          </span>
+          <h2
+            style={{
+              margin: 0,
+              fontSize: "clamp(2.1rem, 4vw, 3.8rem)",
+              lineHeight: 0.92,
+              letterSpacing: "-0.06em",
+            }}
+          >
+            Drag through the partners this system was built for.
+          </h2>
+        </div>
+
+        <p
+          style={{
+            margin: 0,
+            maxWidth: "420px",
+            color: "rgba(246,239,232,0.64)",
+            lineHeight: 1.55,
+          }}
+        >
+          The track keeps moving without edges. Throw it, let it decay, and it will
+          settle back onto the nearest card without interrupting the vertical page flow.
+        </p>
+      </div>
+
+      <div
+        ref={viewportRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={releasePointer}
+        onPointerCancel={releasePointer}
+        style={{
+          overflow: "hidden",
+          cursor: "grab",
+          padding: "18px 0 22px",
+          touchAction: "pan-y",
+          userSelect: "none",
+        }}
+      >
+        <motion.div
+          data-client-track="true"
+          style={{
+            display: "flex",
+            gap: `${CLIENT_CARD_GAP}px`,
+            x: trackX,
+            willChange: "transform",
+          }}
+        >
+          {orderedClients.map((client, index) => (
+            <ClientCarouselCard
+              key={client.id}
+              client={client}
+              index={index}
+              trackX={trackX}
+              viewportCenter={viewportCenter}
+            />
+          ))}
+        </motion.div>
+      </div>
     </section>
   );
 }
@@ -1193,6 +1617,8 @@ export function ImmersivePortfolio() {
           </motion.section>
 
           <ProcessSection />
+
+          <ClientsCarousel />
         </motion.div>
 
         <AnimatePresence initial={false}>
