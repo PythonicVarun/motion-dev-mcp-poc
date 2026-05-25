@@ -391,6 +391,14 @@ function createSeededRandom(seed: number) {
   };
 }
 
+function getProcessScrollWindow(trigger: number, radius: number) {
+  const start = Math.max(0, trigger - radius);
+  const end = Math.min(1, trigger + radius);
+  const mid = Math.min(end - 0.001, Math.max(start + 0.001, trigger));
+
+  return [start, mid, end];
+}
+
 function getCharacterDirection(index: number) {
   const random = createSeededRandom(index);
   return random() > 0.5 ? 1 : -1;
@@ -458,121 +466,136 @@ function AnimatedCharacter({
 type ProcessStepCardProps = {
   step: ProcessStep;
   progress: MotionValue<number>;
-  index: number;
 };
 
-function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
+function ProcessStepCard({ step, progress }: ProcessStepCardProps) {
   const { reduced } = usePortfolioMotionConfig();
-  const trigger = index / (PROCESS_STEPS.length - 1);
-  const inputRange = [
-    Math.max(0, trigger - 0.17),
-    trigger,
-    Math.min(1, trigger + 0.17),
-  ];
+  const trigger = step.nodeTop / 100;
+  const inputRange = getProcessScrollWindow(trigger, 0.22);
+  const sideDirection = step.cardSide === "left" ? -1 : 1;
   const localOffset = useTransform(progress, inputRange, [-1, 0, 1]);
-  const backgroundY = useTransform(localOffset, [-1, 1], reduced ? [0, 0] : [-32, 32]);
-  const illustrationY = useTransform(localOffset, [-1, 1], reduced ? [0, 0] : [-74, 74]);
-  const textY = useTransform(localOffset, [-1, 1], reduced ? [0, 0] : [-2, 2]);
+  const cardY = useTransform(localOffset, [-1, 0, 1], reduced ? [0, 0, 0] : [42, 0, -42]);
+  const cardX = useTransform(
+    localOffset,
+    [-1, 0, 1],
+    reduced ? [0, 0, 0] : [sideDirection * 14, 0, sideDirection * -14],
+  );
+  const cardScale = useTransform(localOffset, [-1, 0, 1], reduced ? [1, 1, 1] : [0.96, 1, 0.96]);
+  const cardOpacity = useTransform(localOffset, [-1, 0, 1], [0.72, 1, 0.72]);
+  const cardBlur = useTransform(localOffset, () => "blur(0px)");
+  const backgroundY = useTransform(localOffset, [-1, 1], reduced ? [0, 0] : [-44, 44]);
+  const illustrationY = useTransform(localOffset, [-1, 1], reduced ? [0, 0] : [-72, 72]);
+  const textY = useTransform(localOffset, [-1, 1], reduced ? [0, 0] : [-18, 18]);
 
   return (
-    <motion.article
+    <div
       style={{
         position: "absolute",
         top: `${step.cardTop}%`,
         [step.cardSide]: "7%",
         width: "min(38vw, 430px)",
-        minHeight: "208px",
-        y: "-50%",
-        borderRadius: "28px",
-        overflow: "hidden",
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: "rgba(14, 14, 18, 0.7)",
-        boxShadow: "0 18px 48px rgba(0, 0, 0, 0.28)",
+        transform: "translateY(-50%)",
       }}
     >
-      <motion.div
+      <motion.article
         style={{
-          position: "absolute",
-          inset: 0,
-          y: backgroundY,
-          backgroundImage: `url("${step.backgroundImage}")`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          opacity: 0.58,
-        }}
-      />
-      <motion.div
-        style={{
-          position: "absolute",
-          inset: "12% 12% auto auto",
-          width: "40%",
-          y: illustrationY,
-          opacity: 0.78,
+          minHeight: "208px",
+          borderRadius: "28px",
+          overflow: "hidden",
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(14, 14, 18, 0.7)",
+          boxShadow: "0 18px 48px rgba(0, 0, 0, 0.28)",
+          y: cardY,
+          x: cardX,
+          scale: cardScale,
+          opacity: cardOpacity,
+          filter: cardBlur,
         }}
       >
-        <img
-          src={step.illustrationImage}
-          alt=""
+        <motion.div
           style={{
-            width: "100%",
-            display: "block",
-            pointerEvents: "none",
+            position: "absolute",
+            inset: 0,
+            y: backgroundY,
+            backgroundImage: `url("${step.backgroundImage}")`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            opacity: 0.58,
           }}
         />
-      </motion.div>
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(180deg, rgba(6,6,8,0.14), rgba(6,6,8,0.26) 44%, rgba(6,6,8,0.82) 100%)",
-        }}
-      />
-      <motion.div
-        style={{
-          position: "relative",
-          zIndex: 1,
-          display: "grid",
-          alignContent: "start",
-          gap: "10px",
-          padding: "24px",
-          y: textY,
-        }}
-      >
-        <span
+        <motion.div
           style={{
-            color: "rgba(246,239,232,0.52)",
-            fontSize: "0.76rem",
-            letterSpacing: "0.22em",
-            textTransform: "uppercase",
+            position: "absolute",
+            inset: "12% 12% auto auto",
+            width: "40%",
+            y: illustrationY,
+            opacity: 0.78,
           }}
         >
-          {step.phase}
-        </span>
-        <h3
+          <img
+            src={step.illustrationImage}
+            alt=""
+            style={{
+              width: "100%",
+              display: "block",
+              pointerEvents: "none",
+            }}
+          />
+        </motion.div>
+        <div
           style={{
-            margin: 0,
-            fontSize: "clamp(1.6rem, 2.3vw, 2.2rem)",
-            lineHeight: 0.98,
-            letterSpacing: "-0.05em",
-            maxWidth: "10ch",
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(6,6,8,0.08), rgba(6,6,8,0.22) 38%, rgba(6,6,8,0.84) 100%)",
+          }}
+        />
+        <motion.div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            display: "grid",
+            alignContent: "start",
+            gap: "10px",
+            padding: "24px",
+            y: textY,
           }}
         >
-          {step.title}
-        </h3>
-        <p
-          style={{
-            margin: 0,
-            color: "rgba(246,239,232,0.7)",
-            fontSize: "0.94rem",
-            lineHeight: 1.45,
-            maxWidth: "32ch",
-          }}
-        >
-          {step.description}
-        </p>
-      </motion.div>
-    </motion.article>
+          <span
+            style={{
+              color: "rgba(246,239,232,0.52)",
+              fontSize: "0.76rem",
+              letterSpacing: "0.22em",
+              textTransform: "uppercase",
+            }}
+          >
+            {step.phase}
+          </span>
+          <h3
+            style={{
+              margin: 0,
+              fontSize: "clamp(1.6rem, 2.3vw, 2.2rem)",
+              lineHeight: 0.98,
+              letterSpacing: "-0.05em",
+              maxWidth: "10ch",
+            }}
+          >
+            {step.title}
+          </h3>
+          <p
+            style={{
+              margin: 0,
+              color: "rgba(246,239,232,0.7)",
+              fontSize: "0.94rem",
+              lineHeight: 1.45,
+              maxWidth: "32ch",
+            }}
+          >
+            {step.description}
+          </p>
+        </motion.div>
+      </motion.article>
+    </div>
   );
 }
 
@@ -585,14 +608,10 @@ type ProcessNodeProps = {
 
 function ProcessNode({ progress, trigger, left, top }: ProcessNodeProps) {
   const { reduced } = usePortfolioMotionConfig();
-  const pulse = useTransform(
-    progress,
-    [Math.max(0, trigger - 0.045), trigger, Math.min(1, trigger + 0.045)],
-    [0, 1, 0],
-  );
-  const scale = useTransform(pulse, [0, 1], reduced ? [1, 1] : [1, 1.45]);
-  const glowSize = useTransform(pulse, [0, 1], [12, 42]);
-  const glowAlpha = useTransform(pulse, [0, 1], reduced ? [0.2, 0.6] : [0.24, 0.9]);
+  const pulse = useTransform(progress, getProcessScrollWindow(trigger, 0.085), [0, 1, 0]);
+  const scale = useTransform(pulse, [0, 1], reduced ? [1, 1] : [1, 1.7]);
+  const glowSize = useTransform(pulse, [0, 1], [12, 64]);
+  const glowAlpha = useTransform(pulse, [0, 1], reduced ? [0.2, 0.6] : [0.24, 1]);
   const boxShadow = useMotionTemplate`0 0 ${glowSize}px rgba(255, 140, 82, ${glowAlpha})`;
 
   return (
@@ -627,6 +646,11 @@ function ProcessSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
   const pathRef = useRef<SVGPathElement | null>(null);
   const [pathLength, setPathLength] = useState(0);
+  const [stageFrame, setStageFrame] = useState({
+    mode: "before" as "before" | "fixed" | "after",
+    left: 0,
+    width: 0,
+  });
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"],
@@ -639,7 +663,62 @@ function ProcessSection() {
 
     setPathLength(pathRef.current.getTotalLength());
   }, []);
+  useEffect(() => {
+    const element = sectionRef.current;
+    if (!element) {
+      return;
+    }
 
+    let frame = 0;
+
+    const updateStageFrame = () => {
+      frame = 0;
+      const rect = element.getBoundingClientRect();
+      const nextMode =
+        rect.top >= 0 ? "before" : rect.bottom <= window.innerHeight ? "after" : "fixed";
+      const nextLeft = rect.left;
+      const nextWidth = rect.width;
+
+      setStageFrame((current) => {
+        const widthChanged = Math.abs(current.width - nextWidth) > 0.5;
+        const leftChanged = Math.abs(current.left - nextLeft) > 0.5;
+
+        if (
+          current.mode === nextMode &&
+          (!widthChanged || nextMode !== "fixed") &&
+          (!leftChanged || nextMode !== "fixed")
+        ) {
+          return current;
+        }
+
+        return {
+          mode: nextMode,
+          left: nextLeft,
+          width: nextWidth,
+        };
+      });
+    };
+
+    const requestUpdate = () => {
+      if (frame !== 0) {
+        return;
+      }
+
+      frame = window.requestAnimationFrame(updateStageFrame);
+    };
+
+    updateStageFrame();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+
+    return () => {
+      if (frame !== 0) {
+        window.cancelAnimationFrame(frame);
+      }
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+    };
+  }, []);
   const strokeDashoffset = useTransform(
     scrollYProgress,
     [0, 1],
@@ -661,8 +740,12 @@ function ProcessSection() {
       <motion.div
         data-process-stage="true"
         style={{
-          position: "sticky",
-          top: 0,
+          position: stageFrame.mode === "fixed" ? "fixed" : "absolute",
+          top: stageFrame.mode === "fixed" ? 0 : stageFrame.mode === "before" ? 0 : undefined,
+          bottom: stageFrame.mode === "after" ? 0 : undefined,
+          left: stageFrame.mode === "fixed" ? stageFrame.left : 0,
+          right: stageFrame.mode === "fixed" ? undefined : 0,
+          width: stageFrame.mode === "fixed" ? stageFrame.width : undefined,
           height: "100vh",
           overflow: "hidden",
           clipPath: sectionClipPath,
@@ -671,6 +754,8 @@ function ProcessSection() {
           background:
             "radial-gradient(circle at top, rgba(255, 136, 72, 0.14), transparent 30%), linear-gradient(180deg, rgba(15,15,21,0.98), rgba(10,10,14,0.94))",
           boxShadow: "0 24px 90px rgba(0, 0, 0, 0.3)",
+          willChange: "clip-path",
+          zIndex: stageFrame.mode === "fixed" ? 20 : "auto",
         }}
       >
         <div
@@ -764,7 +849,7 @@ function ProcessSection() {
           <ProcessNode
             key={step.id}
             progress={scrollYProgress}
-            trigger={index / (PROCESS_STEPS.length - 1)}
+            trigger={step.nodeTop / 100}
             left={step.nodeLeft}
             top={step.nodeTop}
           />
@@ -781,7 +866,6 @@ function ProcessSection() {
             <ProcessStepCard
               key={step.id}
               step={step}
-              index={index}
               progress={scrollYProgress}
             />
           ))}
@@ -1240,16 +1324,23 @@ type ScatterSectionProps = {
   children: React.ReactNode;
   index: number;
   contactActive: boolean;
+  allowTransforms?: boolean;
 };
 
-function ScatterSection({ children, index, contactActive }: ScatterSectionProps) {
+function ScatterSection({
+  children,
+  index,
+  contactActive,
+  allowTransforms = true,
+}: ScatterSectionProps) {
   const { reduced, sectionTransition } = usePortfolioMotionConfig();
   const vector = SCATTER_VECTORS[index % SCATTER_VECTORS.length];
+  const canTransform = allowTransforms && !reduced;
 
   return (
     <motion.div
       animate={
-        reduced
+        !canTransform
           ? { opacity: contactActive ? 0 : 1 }
           : {
             opacity: contactActive ? 0 : 1,
@@ -2081,9 +2172,15 @@ export function ImmersivePortfolio() {
               </motion.section>
             </ScatterSection>
 
-            <ScatterSection index={2} contactActive={contactActive}>
+            <div
+              style={{
+                opacity: contactActive ? 0 : 1,
+                pointerEvents: contactActive ? "none" : "auto",
+                transition: prefersReducedMotion ? "none" : "opacity 240ms ease",
+              }}
+            >
               <ProcessSection />
-            </ScatterSection>
+            </div>
 
             <ScatterSection index={3} contactActive={contactActive}>
               <ClientsCarousel />
