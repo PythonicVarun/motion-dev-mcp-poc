@@ -151,30 +151,74 @@ function ProcessSection() {
   const midY = useTransform(scrollYProgress, [0, 1], [100, -100]); // 0.7× relative
   const fgY = useTransform(scrollYProgress, [0, 1], [160, -160]);  // 1.15× relative
 
-  // Node pulse — each fires as the drawn path reaches it
-  const n0Scale = useTransform(scrollYProgress, [0.08, 0.14, 0.22], [1, 1.85, 1]);
-  const n1Scale = useTransform(scrollYProgress, [0.27, 0.33, 0.41], [1, 1.85, 1]);
-  const n2Scale = useTransform(scrollYProgress, [0.46, 0.52, 0.60], [1, 1.85, 1]);
-  const n3Scale = useTransform(scrollYProgress, [0.65, 0.71, 0.79], [1, 1.85, 1]);
-  const n4Scale = useTransform(scrollYProgress, [0.84, 0.90, 0.96], [1, 1.85, 1]);
-  const n0Op = useTransform(scrollYProgress, [0.08, 0.14, 0.22], [0.3, 1, 0.6]);
-  const n1Op = useTransform(scrollYProgress, [0.27, 0.33, 0.41], [0.3, 1, 0.6]);
-  const n2Op = useTransform(scrollYProgress, [0.46, 0.52, 0.60], [0.3, 1, 0.6]);
-  const n3Op = useTransform(scrollYProgress, [0.65, 0.71, 0.79], [0.3, 1, 0.6]);
-  const n4Op = useTransform(scrollYProgress, [0.84, 0.90, 0.96], [0.3, 1, 0.6]);
-  const nodeScales = [n0Scale, n1Scale, n2Scale, n3Scale, n4Scale];
-  const nodeOpacities = [n0Op, n1Op, n2Op, n3Op, n4Op];
+  // Node pulse MotionValues — driven by runtime-measured thresholds (viewport-independent)
+  const ns0 = useMotionValue(1), ns1 = useMotionValue(1), ns2 = useMotionValue(1);
+  const ns3 = useMotionValue(1), ns4 = useMotionValue(1);
+  const no0 = useMotionValue(0.3), no1 = useMotionValue(0.3), no2 = useMotionValue(0.3);
+  const no3 = useMotionValue(0.3), no4 = useMotionValue(0.3);
+  const nodeScales = [ns0, ns1, ns2, ns3, ns4];
+  const nodeOpacities = [no0, no1, no2, no3, no4];
 
-  // Sync strokeDashoffset to scroll progress after measuring path length
   useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
     const len = pathRef.current?.getTotalLength() ?? 420;
     setPathLen(len);
     strokeDashoffset.set(len);
+
+    // Measure each step's center scroll-progress threshold from live DOM positions.
+    // Recomputed on resize so viewport-height changes don't break alignment.
+    const computeThresholds = (): number[] => {
+      const vpH = window.innerHeight;
+      const sectionDocTop =
+        section.getBoundingClientRect().top + window.scrollY;
+      const sectionH = section.scrollHeight;
+      const scrollStart = sectionDocTop - vpH;           // progress = 0
+      const range = sectionDocTop + sectionH - scrollStart; // total range
+
+      const h3s = [...section.querySelectorAll("h3")] as HTMLElement[];
+      return ["Discover", "Define", "Design", "Develop", "Deploy"].map((title) => {
+        const h3 = h3s.find((el) => el.textContent?.trim() === title);
+        if (!h3) return 0.5;
+        // Walk up to the step container (first ancestor that has an inline minHeight)
+        let el: HTMLElement | null = h3;
+        while (el && !el.style?.minHeight) el = el.parentElement as HTMLElement | null;
+        if (!el) return 0.5;
+        const r = el.getBoundingClientRect();
+        const centerDocY = r.top + r.height / 2 + window.scrollY;
+        return (centerDocY - vpH / 2 - scrollStart) / range;
+      });
+    };
+
+    let thresholds = computeThresholds();
+    const scales = [ns0, ns1, ns2, ns3, ns4];
+    const opacities = [no0, no1, no2, no3, no4];
+    const HALF = 0.06;
+
     const unsub = scrollYProgress.on("change", (p) => {
-      const t = Math.max(0, Math.min(1, (p - 0.06) / 0.86));
+      // Stroke: draws from first-step threshold to last-step threshold
+      const t = Math.max(
+        0,
+        Math.min(1, (p - thresholds[0]) / (thresholds[4] - thresholds[0]))
+      );
       strokeDashoffset.set(len * (1 - t));
+
+      // Node pulses: peak at each step's threshold
+      thresholds.forEach((center, i) => {
+        const frac = Math.max(0, 1 - Math.abs(p - center) / HALF);
+        scales[i].set(1 + frac * 0.85);
+        opacities[i].set(0.3 + frac * 0.7);
+      });
     });
-    return unsub;
+
+    const onResize = () => { thresholds = computeThresholds(); };
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      unsub();
+      window.removeEventListener("resize", onResize);
+    };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -231,72 +275,73 @@ function ProcessSection() {
           gap: "2.5rem",
         }}
       >
-        {/* Sticky SVG path */}
-        <div style={{ width: "80px", flexShrink: 0 }}>
-          <div
-            style={{ position: "sticky", top: "10vh", height: "80vh" }}
+        {/* Full-height timeline column — spans entire steps column via flex stretch */}
+        <div style={{ width: "80px", flexShrink: 0, position: "relative", alignSelf: "stretch" }}>
+          {/* Path-only SVG — preserveAspectRatio="none" to span full height */}
+          <svg
+            viewBox="0 0 100 500"
+            preserveAspectRatio="none"
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", overflow: "visible" }}
           >
-            <svg
-              viewBox="0 0 100 500"
-              preserveAspectRatio="none"
-              style={{ width: "100%", height: "100%", overflow: "visible" }}
-            >
-              {/* Ghost track */}
-              <path
-                d={PROCESS_PATH}
-                stroke="rgba(255,255,255,0.07)"
-                strokeWidth="2"
-                fill="none"
+            <path
+              d={PROCESS_PATH}
+              stroke="rgba(255,255,255,0.07)"
+              strokeWidth="2"
+              fill="none"
+            />
+            <motion.path
+              ref={pathRef}
+              d={PROCESS_PATH}
+              stroke="rgba(139,92,246,0.8)"
+              strokeWidth="2"
+              fill="none"
+              strokeLinecap="round"
+              strokeDasharray={pathLen}
+              style={{ strokeDashoffset }}
+            />
+          </svg>
+
+          {/* HTML node circles — percentage-positioned so they stay circular
+              despite the SVG being stretched. cy/500 maps viewBox y → column %. */}
+          {NODE_CYS.map((cy, i) => (
+            <div key={i}>
+              {/* Glow ring */}
+              <motion.div
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: `${(cy / 500) * 100}%`,
+                  width: "28px",
+                  height: "28px",
+                  marginLeft: "-14px",
+                  marginTop: "-14px",
+                  borderRadius: "50%",
+                  border: "1px solid rgba(139,92,246,0.4)",
+                  scale: nodeScales[i],
+                  opacity: nodeOpacities[i],
+                  pointerEvents: "none",
+                }}
               />
-              {/* Animated drawn path */}
-              <motion.path
-                ref={pathRef}
-                d={PROCESS_PATH}
-                stroke="rgba(139,92,246,0.8)"
-                strokeWidth="2"
-                fill="none"
-                strokeLinecap="round"
-                strokeDasharray={pathLen}
-                style={{ strokeDashoffset }}
+              {/* Node */}
+              <motion.div
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  top: `${(cy / 500) * 100}%`,
+                  width: "12px",
+                  height: "12px",
+                  marginLeft: "-6px",
+                  marginTop: "-6px",
+                  borderRadius: "50%",
+                  background: "rgba(10,10,10,0.95)",
+                  border: "1.5px solid rgba(255,255,255,0.6)",
+                  scale: nodeScales[i],
+                  opacity: nodeOpacities[i],
+                  pointerEvents: "none",
+                }}
               />
-              {/* Glow rings */}
-              {NODE_CYS.map((cy, i) => (
-                <motion.circle
-                  key={`ring-${i}`}
-                  cx="50"
-                  cy={cy}
-                  r="15"
-                  fill="none"
-                  stroke="rgba(139,92,246,0.35)"
-                  strokeWidth="1"
-                  style={{
-                    scale: nodeScales[i],
-                    opacity: nodeOpacities[i],
-                    transformBox: "fill-box",
-                    transformOrigin: "center",
-                  }}
-                />
-              ))}
-              {/* Nodes */}
-              {NODE_CYS.map((cy, i) => (
-                <motion.circle
-                  key={`node-${i}`}
-                  cx="50"
-                  cy={cy}
-                  r="7"
-                  fill="rgba(10,10,10,0.95)"
-                  stroke="rgba(255,255,255,0.55)"
-                  strokeWidth="1.5"
-                  style={{
-                    scale: nodeScales[i],
-                    opacity: nodeOpacities[i],
-                    transformBox: "fill-box",
-                    transformOrigin: "center",
-                  }}
-                />
-              ))}
-            </svg>
-          </div>
+            </div>
+          ))}
         </div>
 
         {/* Steps */}

@@ -475,9 +475,9 @@ const ProcessSection = () => {
         marginTop: '10vh'
       }}
     >
-      <div style={{ position: 'absolute', left: '15%', top: '15%', bottom: '15%', width: '4px', zIndex: 10 }}>
-         <svg width="100%" height="100%" preserveAspectRatio="none">
-           <motion.line 
+      <div style={{ position: 'absolute', left: '15%', top: '15%', bottom: '15%', width: '4px', transform: 'translateX(-50%)', zIndex: 10 }}>
+         <svg width="100%" height="100%" style={{ overflow: 'visible' }}>
+           <line 
              x1="50%" y1="0%" x2="50%" y2="100%" 
              stroke="rgba(255,255,255,0.2)" 
              strokeWidth="2"
@@ -486,9 +486,9 @@ const ProcessSection = () => {
              x1="50%" y1="0%" x2="50%" y2="100%" 
              stroke="#fff" 
              strokeWidth="4"
+             pathLength={1}
+             strokeDasharray="1"
              style={{
-               pathLength: 1,
-               strokeDasharray: "1",
                strokeDashoffset: pathOffset
              }}
            />
@@ -502,9 +502,9 @@ const ProcessSection = () => {
         const nodeGlow = useTransform(scrollYProgress, [stepP - 0.02, stepP, stepP + 0.02], [0, 1, 0]);
         const boxShadow = useTransform(nodeGlow, (v) => `0 0 ${v * 30}px ${v * 15}px rgba(255,255,255,0.8)`);
 
-        const bgY = useTransform(scrollYProgress, [0, 1], ["-75vh", "75vh"]); 
-        const midY = useTransform(scrollYProgress, [0, 1], ["-175vh", "175vh"]); 
-        const fgY = useTransform(scrollYProgress, [0, 1], ["287.5vh", "-287.5vh"]); 
+        const bgY = useTransform(scrollYProgress, (v) => `${(v - stepP) * 350}vh`);
+        const midY = useTransform(scrollYProgress, (v) => `${(v - stepP) * 150}vh`);
+        const fgY = useTransform(scrollYProgress, (v) => `${(v - stepP) * -75}vh`);
 
         return (
           <React.Fragment key={i}>

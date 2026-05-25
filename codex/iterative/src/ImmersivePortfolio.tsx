@@ -414,18 +414,20 @@ function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
     trigger,
     Math.min(1, trigger + 0.17),
   ];
-  const backgroundY = useTransform(progress, inputRange, [90, 0, -90]);
-  const illustrationY = useTransform(progress, inputRange, [210, 0, -210]);
-  const textY = useTransform(progress, inputRange, [345, 0, -345]);
+  const localOffset = useTransform(progress, inputRange, [-1, 0, 1]);
+  const backgroundY = useTransform(localOffset, [-1, 1], [-32, 32]);
+  const illustrationY = useTransform(localOffset, [-1, 1], [-74, 74]);
+  const textY = useTransform(localOffset, [-1, 1], [-2, 2]);
 
   return (
     <motion.article
       style={{
         position: "absolute",
-        top: `calc(${step.nodeTop}% - 132px)`,
+        top: `${step.nodeTop}%`,
         [step.cardSide]: "7%",
         width: "min(38vw, 430px)",
-        minHeight: "264px",
+        minHeight: "288px",
+        y: "-50%",
         borderRadius: "28px",
         overflow: "hidden",
         border: "1px solid rgba(255,255,255,0.08)",
@@ -476,6 +478,7 @@ function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
           position: "relative",
           zIndex: 1,
           display: "grid",
+          alignContent: "start",
           gap: "14px",
           padding: "28px",
           y: textY,
