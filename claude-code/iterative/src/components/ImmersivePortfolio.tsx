@@ -140,23 +140,53 @@ export function ImmersivePortfolio() {
         <defs>
           <filter
             id="liquid-distort"
-            x="-25%"
-            y="-25%"
-            width="150%"
-            height="150%"
+            x="-10%"
+            y="-10%"
+            width="120%"
+            height="120%"
             colorInterpolationFilters="sRGB"
           >
+            {/*
+              Step 1 — generate fractal noise used both as a texture
+              overlay and as the displacement field.
+            */}
             <feTurbulence
               ref={turbRef}
               type="fractalNoise"
               baseFrequency="0.02 0.04"
-              numOctaves="4"
+              numOctaves="6"
               seed="3"
               result="noise"
             />
+            {/*
+              Step 2 — compress noise values to a narrow band around 0.5
+              (range ≈ 0.43–0.57) so that the soft-light blend below is
+              barely visible in the neutral state but still provides
+              enough local variation for displacement to distort visibly
+              across the entire image, not just at gradient edges.
+            */}
+            <feColorMatrix
+              in="noise"
+              type="matrix"
+              values="0.14 0 0 0 0.43
+                      0 0.14 0 0 0.43
+                      0 0 0.14 0 0.43
+                      0 0    0  1 0"
+              result="subtleNoise"
+            />
+            <feBlend
+              in="SourceGraphic"
+              in2="subtleNoise"
+              mode="soft-light"
+              result="textured"
+            />
+            {/*
+              Step 3 — displace the *textured* result so the liquid warp
+              is visible everywhere, not just where two gradient colors meet.
+            */}
             <feDisplacementMap
               ref={dispRef}
-              in="SourceGraphic"
+              in="textured"
               in2="noise"
               scale="0"
               xChannelSelector="R"
@@ -177,7 +207,7 @@ export function ImmersivePortfolio() {
         aria-hidden="true"
         style={{
           position: "absolute",
-          inset: 0,
+          inset: "-5%",   // oversized so edge-displaced pixels always sample real gradient content
           background: `
             radial-gradient(ellipse at 22% 38%, rgba(139, 92, 246, 0.90) 0%, transparent 52%),
             radial-gradient(ellipse at 80% 65%, rgba(236, 72, 153, 0.75) 0%, transparent 48%),
