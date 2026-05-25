@@ -1,5 +1,11 @@
 import { useEffect, useMemo } from "react";
-import { motion, useMotionValue, useTransform } from "motion/react";
+import {
+  motion,
+  useMotionTemplate,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "motion/react";
 import type { MotionValue } from "motion/react";
 
 const HERO_TITLE = "WORKS";
@@ -8,6 +14,43 @@ const ENTRANCE_SECONDS = 0.88;
 const BREATH_AMPLITUDE = 10;
 const BREATH_SPEED = 1.8;
 const WAVE_OFFSET = 0.48;
+const NEUTRAL_FREQUENCY_X = 0.02;
+const MAX_FREQUENCY_X = 0.08;
+const MIN_FREQUENCY_X = 0.01;
+const MAX_DISPLACEMENT = 40;
+const NEUTRAL_CURSOR_X = (NEUTRAL_FREQUENCY_X - MIN_FREQUENCY_X) / (MAX_FREQUENCY_X - MIN_FREQUENCY_X);
+const LIQUID_SPRING = { stiffness: 60, damping: 20 };
+const HERO_IMAGE = `data:image/svg+xml;utf8,${encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200">
+    <defs>
+      <linearGradient id="sky" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#201515" />
+        <stop offset="45%" stop-color="#593226" />
+        <stop offset="100%" stop-color="#0c111d" />
+      </linearGradient>
+      <radialGradient id="flare" cx="50%" cy="40%" r="50%">
+        <stop offset="0%" stop-color="#ff9e4a" stop-opacity="0.9" />
+        <stop offset="45%" stop-color="#ff6a3d" stop-opacity="0.35" />
+        <stop offset="100%" stop-color="#ff6a3d" stop-opacity="0" />
+      </radialGradient>
+      <linearGradient id="panel" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f4dfcb" stop-opacity="0.92" />
+        <stop offset="100%" stop-color="#8e5a48" stop-opacity="0.7" />
+      </linearGradient>
+    </defs>
+    <rect width="1600" height="1200" fill="url(#sky)" />
+    <circle cx="1040" cy="280" r="320" fill="url(#flare)" />
+    <g opacity="0.95">
+      <rect x="160" y="220" width="460" height="680" rx="40" fill="url(#panel)" transform="rotate(-8 390 560)" />
+      <rect x="540" y="160" width="400" height="780" rx="38" fill="#121927" fill-opacity="0.9" transform="rotate(4 740 550)" />
+      <rect x="920" y="250" width="520" height="630" rx="48" fill="#e6b693" fill-opacity="0.84" transform="rotate(-6 1180 565)" />
+    </g>
+    <g stroke="#fbe8d7" stroke-opacity="0.24" fill="none">
+      <path d="M95 970C310 790 516 831 726 660s321-322 779-259" stroke-width="10" />
+      <path d="M180 1048c179-121 354-149 533-90 180 59 345 32 625-94" stroke-width="6" />
+    </g>
+  </svg>
+`)}`;
 
 function createSeededRandom(seed: number) {
   let state = (seed + 1) * 1779033703;
@@ -85,8 +128,15 @@ function AnimatedCharacter({
 
 export function ImmersivePortfolio() {
   const timeline = useMotionValue(0);
+  const pointerXRatio = useMotionValue(NEUTRAL_CURSOR_X);
+  const pointerYRatio = useMotionValue(0);
   const characters = useMemo(() => Array.from(HERO_TITLE), []);
   const revealDelay = characters.length * STAGGER_SECONDS + ENTRANCE_SECONDS * 0.7;
+  const turbulenceTargetX = useTransform(pointerXRatio, [0, 1], [MIN_FREQUENCY_X, MAX_FREQUENCY_X]);
+  const displacementTarget = useTransform(pointerYRatio, [0, 1], [0, MAX_DISPLACEMENT]);
+  const turbulenceX = useSpring(turbulenceTargetX, LIQUID_SPRING);
+  const displacementScale = useSpring(displacementTarget, LIQUID_SPRING);
+  const baseFrequency = useMotionTemplate`${turbulenceX} 0.02`;
 
   useEffect(() => {
     let frameId = 0;
@@ -104,6 +154,20 @@ export function ImmersivePortfolio() {
     };
   }, [timeline]);
 
+  const handlePointerMove = (event: React.PointerEvent<HTMLElement>) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const nextX = (event.clientX - bounds.left) / bounds.width;
+    const nextY = (event.clientY - bounds.top) / bounds.height;
+
+    pointerXRatio.set(Math.min(Math.max(nextX, 0), 1));
+    pointerYRatio.set(Math.min(Math.max(nextY, 0), 1));
+  };
+
+  const handlePointerLeave = () => {
+    pointerXRatio.set(NEUTRAL_CURSOR_X);
+    pointerYRatio.set(0);
+  };
+
   return (
     <main
       style={{
@@ -118,18 +182,80 @@ export function ImmersivePortfolio() {
       }}
     >
       <section
+        onPointerMove={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
         style={{
           width: "min(1120px, 100%)",
+          minHeight: "min(78vh, 880px)",
+          display: "flex",
+          alignItems: "flex-end",
           border: "1px solid rgba(255, 255, 255, 0.08)",
           borderRadius: "32px",
           padding: "clamp(32px, 5vw, 72px)",
-          background:
-            "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+          background: "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
           boxShadow: "0 24px 90px rgba(0, 0, 0, 0.35)",
           overflow: "hidden",
           position: "relative",
+          isolation: "isolate",
         }}
       >
+        <motion.svg
+          aria-hidden="true"
+          viewBox="0 0 1600 1200"
+          preserveAspectRatio="xMidYMid slice"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            pointerEvents: "none",
+          }}
+        >
+          <defs>
+            <filter
+              id="portfolio-liquid-filter"
+              x="-10%"
+              y="-10%"
+              width="120%"
+              height="120%"
+              colorInterpolationFilters="sRGB"
+            >
+              <motion.feTurbulence
+                type="fractalNoise"
+                baseFrequency={baseFrequency}
+                numOctaves={2}
+                seed={7}
+                stitchTiles="stitch"
+                result="noise"
+              />
+              <motion.feDisplacementMap
+                in="SourceGraphic"
+                in2="noise"
+                scale={displacementScale}
+                xChannelSelector="R"
+                yChannelSelector="B"
+              />
+            </filter>
+            <linearGradient id="portfolio-image-fade" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="rgba(8, 8, 10, 0.15)" />
+              <stop offset="58%" stopColor="rgba(8, 8, 10, 0.3)" />
+              <stop offset="100%" stopColor="rgba(8, 8, 10, 0.84)" />
+            </linearGradient>
+          </defs>
+
+          <image
+            href={HERO_IMAGE}
+            x="0"
+            y="0"
+            width="1600"
+            height="1200"
+            preserveAspectRatio="xMidYMid slice"
+            filter="url(#portfolio-liquid-filter)"
+            opacity="0.92"
+          />
+          <rect x="0" y="0" width="1600" height="1200" fill="url(#portfolio-image-fade)" />
+        </motion.svg>
+
         <div
           style={{
             position: "absolute",
@@ -142,6 +268,18 @@ export function ImmersivePortfolio() {
             background:
               "radial-gradient(circle, rgba(255, 119, 48, 0.22), rgba(255, 119, 48, 0) 68%)",
             pointerEvents: "none",
+            zIndex: 1,
+          }}
+        />
+
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(90deg, rgba(8, 8, 10, 0.82) 0%, rgba(8, 8, 10, 0.54) 38%, rgba(8, 8, 10, 0.3) 100%)",
+            pointerEvents: "none",
+            zIndex: 1,
           }}
         />
 
@@ -150,7 +288,8 @@ export function ImmersivePortfolio() {
             display: "grid",
             gap: "28px",
             position: "relative",
-            zIndex: 1,
+            zIndex: 2,
+            maxWidth: "760px",
           }}
         >
           <div
