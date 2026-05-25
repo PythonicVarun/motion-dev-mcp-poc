@@ -90,6 +90,7 @@ type ProcessStep = {
   description: string;
   nodeLeft: number;
   nodeTop: number;
+  cardTop: number;
   cardSide: "left" | "right";
   backgroundImage: string;
   illustrationImage: string;
@@ -103,6 +104,7 @@ type ProcessStepSeed = {
   palette: [string, string, string];
   nodeLeft: number;
   nodeTop: number;
+  cardTop: number;
   cardSide: "left" | "right";
 };
 
@@ -170,7 +172,7 @@ function createProcessBackground(
         <path d="M88 646c164-104 309-122 433-54 124 68 247 76 574-38" stroke-width="8" />
         <path d="M100 726c148-58 275-70 380-36 105 34 240 22 544-76" stroke-width="3" />
       </g>
-      <text x="86" y="162" fill="rgba(255,255,255,0.14)" font-size="146" font-family="Segoe UI, sans-serif" font-weight="800" letter-spacing="-6">${title}</text>
+      <text x="86" y="170" fill="rgba(255,255,255,0.08)" font-size="112" font-family="Segoe UI, sans-serif" font-weight="800" letter-spacing="-4">${title}</text>
     </svg>
   `)}`;
 }
@@ -251,7 +253,7 @@ const PROJECTS: Project[] = ([
     tags: ["Identity", "Motion.dev", "Frontend"],
     palette: ["#13131c", "#3a2c64", "#8f90ff"],
   },
- ] satisfies ProjectSeed[]).map((project) => ({
+] satisfies ProjectSeed[]).map((project) => ({
   ...project,
   image: createProjectImage(project.name, project.category, project.palette),
 }));
@@ -321,6 +323,7 @@ const PROCESS_STEPS: ProcessStep[] = ([
     palette: ["#16101b", "#4a2b35", "#ff8e5b"],
     nodeLeft: 48,
     nodeTop: 10,
+    cardTop: 22,
     cardSide: "left",
   },
   {
@@ -332,6 +335,7 @@ const PROCESS_STEPS: ProcessStep[] = ([
     palette: ["#121724", "#274d62", "#77d7ff"],
     nodeLeft: 57,
     nodeTop: 29,
+    cardTop: 36,
     cardSide: "right",
   },
   {
@@ -343,6 +347,7 @@ const PROCESS_STEPS: ProcessStep[] = ([
     palette: ["#160f12", "#5b2a2f", "#ffaf77"],
     nodeLeft: 44,
     nodeTop: 49,
+    cardTop: 52,
     cardSide: "left",
   },
   {
@@ -354,6 +359,7 @@ const PROCESS_STEPS: ProcessStep[] = ([
     palette: ["#101723", "#2f3a5d", "#86b9ff"],
     nodeLeft: 56,
     nodeTop: 69,
+    cardTop: 68,
     cardSide: "right",
   },
   {
@@ -365,9 +371,10 @@ const PROCESS_STEPS: ProcessStep[] = ([
     palette: ["#171411", "#5b4834", "#f3c47b"],
     nodeLeft: 49,
     nodeTop: 88,
+    cardTop: 82,
     cardSide: "left",
   },
- ] satisfies ProcessStepSeed[]).map((step) => ({
+] satisfies ProcessStepSeed[]).map((step) => ({
   ...step,
   backgroundImage: createProcessBackground(step.title, step.palette),
   illustrationImage: createProcessIllustration(step.palette),
@@ -471,10 +478,10 @@ function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
     <motion.article
       style={{
         position: "absolute",
-        top: `${step.nodeTop}%`,
+        top: `${step.cardTop}%`,
         [step.cardSide]: "7%",
         width: "min(38vw, 430px)",
-        minHeight: "288px",
+        minHeight: "208px",
         y: "-50%",
         borderRadius: "28px",
         overflow: "hidden",
@@ -498,9 +505,9 @@ function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
         style={{
           position: "absolute",
           inset: "12% 12% auto auto",
-          width: "46%",
+          width: "40%",
           y: illustrationY,
-          opacity: 0.88,
+          opacity: 0.78,
         }}
       >
         <img
@@ -527,8 +534,8 @@ function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
           zIndex: 1,
           display: "grid",
           alignContent: "start",
-          gap: "14px",
-          padding: "28px",
+          gap: "10px",
+          padding: "24px",
           y: textY,
         }}
       >
@@ -545,9 +552,10 @@ function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
         <h3
           style={{
             margin: 0,
-            fontSize: "clamp(1.9rem, 3vw, 2.7rem)",
-            lineHeight: 0.94,
+            fontSize: "clamp(1.6rem, 2.3vw, 2.2rem)",
+            lineHeight: 0.98,
             letterSpacing: "-0.05em",
+            maxWidth: "10ch",
           }}
         >
           {step.title}
@@ -556,8 +564,9 @@ function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
           style={{
             margin: 0,
             color: "rgba(246,239,232,0.7)",
-            lineHeight: 1.55,
-            maxWidth: "34ch",
+            fontSize: "0.94rem",
+            lineHeight: 1.45,
+            maxWidth: "32ch",
           }}
         >
           {step.description}
@@ -676,10 +685,15 @@ function ProcessSection() {
         <div
           style={{
             position: "absolute",
-            inset: "6% 8% auto",
+            top: "6%",
+            left: "53%",
+            transform: "translateX(-50%)",
             zIndex: 2,
             display: "grid",
             gap: "10px",
+            width: "min(28vw, 360px)",
+            textAlign: "center",
+            pointerEvents: "none",
           }}
         >
           <span
@@ -695,8 +709,9 @@ function ProcessSection() {
           <h2
             style={{
               margin: 0,
-              maxWidth: "12ch",
-              fontSize: "clamp(2.2rem, 5vw, 4.4rem)",
+              maxWidth: "10ch",
+              marginInline: "auto",
+              fontSize: "clamp(2rem, 4.2vw, 3.8rem)",
               lineHeight: 0.92,
               letterSpacing: "-0.06em",
             }}
@@ -946,19 +961,19 @@ function ClientsCarousel() {
 
     snapRef.current = animate(trackX, targetX, reduced
       ? {
-          duration: 0,
-          onUpdate: (latest) => {
-            normalizeTrack(latest);
-          },
-        }
+        duration: 0,
+        onUpdate: (latest) => {
+          normalizeTrack(latest);
+        },
+      }
       : {
-          type: "spring",
-          stiffness: 300,
-          damping: 30,
-          onUpdate: (latest) => {
-            normalizeTrack(latest);
-          },
-        });
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+        onUpdate: (latest) => {
+          normalizeTrack(latest);
+        },
+      });
   };
 
   const startInertia = (velocityPerFrame: number) => {
@@ -1237,12 +1252,12 @@ function ScatterSection({ children, index, contactActive }: ScatterSectionProps)
         reduced
           ? { opacity: contactActive ? 0 : 1 }
           : {
-              opacity: contactActive ? 0 : 1,
-              x: contactActive ? vector.x : 0,
-              y: contactActive ? vector.y : 0,
-              rotate: contactActive ? vector.rotate : 0,
-              filter: contactActive ? "blur(18px)" : "blur(0px)",
-            }
+            opacity: contactActive ? 0 : 1,
+            x: contactActive ? vector.x : 0,
+            y: contactActive ? vector.y : 0,
+            rotate: contactActive ? vector.rotate : 0,
+            filter: contactActive ? "blur(18px)" : "blur(0px)",
+          }
       }
       transition={{
         ...sectionTransition,
@@ -1354,11 +1369,11 @@ function ContactSection({
                 reduced
                   ? { duration: 0 }
                   : {
-                      type: "spring",
-                      stiffness: 220,
-                      damping: 24,
-                      delay: index * 0.04,
-                    }
+                    type: "spring",
+                    stiffness: 220,
+                    damping: 24,
+                    delay: index * 0.04,
+                  }
               }
               style={{ display: "inline-block" }}
             >
@@ -1636,6 +1651,7 @@ export function ImmersivePortfolio() {
             layout
             transition={motionConfig.springTransition}
             style={{
+              overflowX: "hidden",
               width: "min(1180px, 100%)",
               display: "grid",
               alignContent: "start",
@@ -1650,7 +1666,6 @@ export function ImmersivePortfolio() {
                 onPointerMove={handlePointerMove}
                 onPointerLeave={handlePointerLeave}
                 style={{
-                  width: "100%",
                   display: "flex",
                   alignItems: "flex-end",
                   border: "1px solid rgba(255, 255, 255, 0.08)",
@@ -1664,234 +1679,234 @@ export function ImmersivePortfolio() {
                   isolation: "isolate",
                 }}
               >
-            <motion.svg
-              aria-hidden="true"
-              viewBox="0 0 1600 1200"
-              preserveAspectRatio="xMidYMid slice"
-              style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
-                pointerEvents: "none",
-              }}
-            >
-              <defs>
-                <filter
-                  id="portfolio-liquid-filter"
-                  x="-10%"
-                  y="-10%"
-                  width="120%"
-                  height="120%"
-                  colorInterpolationFilters="sRGB"
+                <motion.svg
+                  aria-hidden="true"
+                  viewBox="0 0 1600 1200"
+                  preserveAspectRatio="xMidYMid slice"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    pointerEvents: "none",
+                  }}
                 >
-                  <motion.feTurbulence
-                    type="fractalNoise"
-                    baseFrequency={prefersReducedMotion ? "0.02 0.02" : animatedBaseFrequency}
-                    numOctaves={2}
-                    seed={7}
-                    stitchTiles="stitch"
-                    result="noise"
+                  <defs>
+                    <filter
+                      id="portfolio-liquid-filter"
+                      x="-10%"
+                      y="-10%"
+                      width="120%"
+                      height="120%"
+                      colorInterpolationFilters="sRGB"
+                    >
+                      <motion.feTurbulence
+                        type="fractalNoise"
+                        baseFrequency={prefersReducedMotion ? "0.02 0.02" : animatedBaseFrequency}
+                        numOctaves={2}
+                        seed={7}
+                        stitchTiles="stitch"
+                        result="noise"
+                      />
+                      <motion.feDisplacementMap
+                        in="SourceGraphic"
+                        in2="noise"
+                        scale={prefersReducedMotion ? 0 : displacementScale}
+                        xChannelSelector="R"
+                        yChannelSelector="B"
+                      />
+                    </filter>
+                    <linearGradient id="portfolio-image-fade" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stopColor="rgba(8, 8, 10, 0.15)" />
+                      <stop offset="58%" stopColor="rgba(8, 8, 10, 0.3)" />
+                      <stop offset="100%" stopColor="rgba(8, 8, 10, 0.84)" />
+                    </linearGradient>
+                  </defs>
+
+                  <image
+                    href={HERO_IMAGE}
+                    x="0"
+                    y="0"
+                    width="1600"
+                    height="1200"
+                    preserveAspectRatio="xMidYMid slice"
+                    filter="url(#portfolio-liquid-filter)"
+                    opacity="0.92"
                   />
-                  <motion.feDisplacementMap
-                    in="SourceGraphic"
-                    in2="noise"
-                    scale={prefersReducedMotion ? 0 : displacementScale}
-                    xChannelSelector="R"
-                    yChannelSelector="B"
-                  />
-                </filter>
-                <linearGradient id="portfolio-image-fade" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stopColor="rgba(8, 8, 10, 0.15)" />
-                  <stop offset="58%" stopColor="rgba(8, 8, 10, 0.3)" />
-                  <stop offset="100%" stopColor="rgba(8, 8, 10, 0.84)" />
-                </linearGradient>
-              </defs>
+                  <rect x="0" y="0" width="1600" height="1200" fill="url(#portfolio-image-fade)" />
+                </motion.svg>
 
-              <image
-                href={HERO_IMAGE}
-                x="0"
-                y="0"
-                width="1600"
-                height="1200"
-                preserveAspectRatio="xMidYMid slice"
-                filter="url(#portfolio-liquid-filter)"
-                opacity="0.92"
-              />
-              <rect x="0" y="0" width="1600" height="1200" fill="url(#portfolio-image-fade)" />
-            </motion.svg>
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: "auto -12% -18% auto",
+                    width: "42vw",
+                    height: "42vw",
+                    maxWidth: "460px",
+                    maxHeight: "460px",
+                    borderRadius: "999px",
+                    background:
+                      "radial-gradient(circle, rgba(255, 119, 48, 0.22), rgba(255, 119, 48, 0) 68%)",
+                    pointerEvents: "none",
+                    zIndex: 1,
+                  }}
+                />
 
-            <div
-              style={{
-                position: "absolute",
-                inset: "auto -12% -18% auto",
-                width: "42vw",
-                height: "42vw",
-                maxWidth: "460px",
-                maxHeight: "460px",
-                borderRadius: "999px",
-                background:
-                  "radial-gradient(circle, rgba(255, 119, 48, 0.22), rgba(255, 119, 48, 0) 68%)",
-                pointerEvents: "none",
-                zIndex: 1,
-              }}
-            />
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(90deg, rgba(8, 8, 10, 0.82) 0%, rgba(8, 8, 10, 0.54) 38%, rgba(8, 8, 10, 0.3) 100%)",
+                    pointerEvents: "none",
+                    zIndex: 1,
+                  }}
+                />
 
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background:
-                  "linear-gradient(90deg, rgba(8, 8, 10, 0.82) 0%, rgba(8, 8, 10, 0.54) 38%, rgba(8, 8, 10, 0.3) 100%)",
-                pointerEvents: "none",
-                zIndex: 1,
-              }}
-            />
-
-            <motion.div
-              layout
-              transition={motionConfig.springTransition}
-              style={{
-                display: "grid",
-                gap: "28px",
-                position: "relative",
-                zIndex: 2,
-                maxWidth: "760px",
-              }}
-            >
-              <motion.div
-                layout
-                transition={motionConfig.springTransition}
-                style={{
-                  display: "inline-flex",
-                  width: "fit-content",
-                  padding: "8px 14px",
-                  borderRadius: "999px",
-                  border: "1px solid rgba(255,255,255,0.12)",
-                  color: "rgba(246, 239, 232, 0.7)",
-                  letterSpacing: "0.22em",
-                  fontSize: "12px",
-                  textTransform: "uppercase",
-                }}
-              >
-                Selected Portfolio 2026
-              </motion.div>
-
-              <motion.h1
-                layout
-                transition={motionConfig.springTransition}
-                style={{
-                  margin: 0,
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "flex-end",
-                  gap: "0.01em",
-                  fontSize: "clamp(4.6rem, 18vw, 11rem)",
-                  lineHeight: 0.9,
-                  letterSpacing: "-0.08em",
-                  textTransform: "uppercase",
-                  fontWeight: 900,
-                  perspective: "1200px",
-                  textShadow: "0 10px 38px rgba(0, 0, 0, 0.24)",
-                }}
-              >
-                {characters.map((character, index) => (
-                  <AnimatedCharacter
-                    key={`${character}-${index}`}
-                    character={character}
-                    index={index}
-                    timeline={timeline}
-                  />
-                ))}
-              </motion.h1>
-
-              <AnimatePresence initial={false}>
-                {heroSupportVisible ? (
+                <motion.div
+                  layout
+                  transition={motionConfig.springTransition}
+                  style={{
+                    display: "grid",
+                    gap: "28px",
+                    position: "relative",
+                    zIndex: 2,
+                    maxWidth: "760px",
+                  }}
+                >
                   <motion.div
-                    key="hero-support"
                     layout
                     transition={motionConfig.springTransition}
-                    initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 22 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: prefersReducedMotion ? 0 : -18 }}
                     style={{
-                      display: "grid",
-                      gap: "20px",
+                      display: "inline-flex",
+                      width: "fit-content",
+                      padding: "8px 14px",
+                      borderRadius: "999px",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      color: "rgba(246, 239, 232, 0.7)",
+                      letterSpacing: "0.22em",
+                      fontSize: "12px",
+                      textTransform: "uppercase",
                     }}
                   >
-                    <motion.p
-                      initial={false}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        delay: revealDelay,
-                        duration: prefersReducedMotion ? 0 : 0.7,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                      style={{
-                        margin: 0,
-                        maxWidth: "640px",
-                        color: "rgba(246, 239, 232, 0.78)",
-                        fontSize: "clamp(1rem, 2.6vw, 1.35rem)",
-                        lineHeight: 1.55,
-                      }}
-                    >
-                      Cinematic interfaces, tactile motion systems, and deliberate visual
-                      narratives for brands that want their portfolio to feel alive before
-                      a single case study opens.
-                    </motion.p>
-
-                    <motion.div
-                      initial={false}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        delay: revealDelay + 0.14,
-                        duration: prefersReducedMotion ? 0 : 0.65,
-                        ease: [0.22, 1, 0.36, 1],
-                      }}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "16px",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <motion.button
-                        whileHover={prefersReducedMotion ? undefined : { y: -2, scale: 1.01 }}
-                        whileTap={prefersReducedMotion ? undefined : { scale: 0.985 }}
-                        style={{
-                          border: 0,
-                          borderRadius: "999px",
-                          padding: "16px 24px",
-                          background: "linear-gradient(135deg, #ff7730, #ff5a36)",
-                          color: "#120a07",
-                          fontSize: "0.96rem",
-                          fontWeight: 800,
-                          letterSpacing: "0.08em",
-                          textTransform: "uppercase",
-                          cursor: "pointer",
-                          boxShadow: "0 18px 40px rgba(255, 107, 43, 0.28)",
-                        }}
-                        onClick={openContact}
-                      >
-                        Contact
-                      </motion.button>
-
-                      <span
-                        style={{
-                          color: "rgba(246, 239, 232, 0.54)",
-                          fontSize: "0.95rem",
-                          letterSpacing: "0.04em",
-                          textTransform: "uppercase",
-                        }}
-                      >
-                        Direction, code, and motion systems
-                      </span>
-                    </motion.div>
+                    Selected Portfolio 2026
                   </motion.div>
-                ) : null}
-              </AnimatePresence>
-            </motion.div>
-          </motion.section>
+
+                  <motion.h1
+                    layout
+                    transition={motionConfig.springTransition}
+                    style={{
+                      margin: 0,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      alignItems: "flex-end",
+                      gap: "0.01em",
+                      fontSize: "clamp(4.6rem, 18vw, 11rem)",
+                      lineHeight: 0.9,
+                      letterSpacing: "-0.08em",
+                      textTransform: "uppercase",
+                      fontWeight: 900,
+                      perspective: "1200px",
+                      textShadow: "0 10px 38px rgba(0, 0, 0, 0.24)",
+                    }}
+                  >
+                    {characters.map((character, index) => (
+                      <AnimatedCharacter
+                        key={`${character}-${index}`}
+                        character={character}
+                        index={index}
+                        timeline={timeline}
+                      />
+                    ))}
+                  </motion.h1>
+
+                  <AnimatePresence initial={false}>
+                    {heroSupportVisible ? (
+                      <motion.div
+                        key="hero-support"
+                        layout
+                        transition={motionConfig.springTransition}
+                        initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 22 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: prefersReducedMotion ? 0 : -18 }}
+                        style={{
+                          display: "grid",
+                          gap: "20px",
+                        }}
+                      >
+                        <motion.p
+                          initial={false}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            delay: revealDelay,
+                            duration: prefersReducedMotion ? 0 : 0.7,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          style={{
+                            margin: 0,
+                            maxWidth: "640px",
+                            color: "rgba(246, 239, 232, 0.78)",
+                            fontSize: "clamp(1rem, 2.6vw, 1.35rem)",
+                            lineHeight: 1.55,
+                          }}
+                        >
+                          Cinematic interfaces, tactile motion systems, and deliberate visual
+                          narratives for brands that want their portfolio to feel alive before
+                          a single case study opens.
+                        </motion.p>
+
+                        <motion.div
+                          initial={false}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{
+                            delay: revealDelay + 0.14,
+                            duration: prefersReducedMotion ? 0 : 0.65,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "16px",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <motion.button
+                            whileHover={prefersReducedMotion ? undefined : { y: -2, scale: 1.01 }}
+                            whileTap={prefersReducedMotion ? undefined : { scale: 0.985 }}
+                            style={{
+                              border: 0,
+                              borderRadius: "999px",
+                              padding: "16px 24px",
+                              background: "linear-gradient(135deg, #ff7730, #ff5a36)",
+                              color: "#120a07",
+                              fontSize: "0.96rem",
+                              fontWeight: 800,
+                              letterSpacing: "0.08em",
+                              textTransform: "uppercase",
+                              cursor: "pointer",
+                              boxShadow: "0 18px 40px rgba(255, 107, 43, 0.28)",
+                            }}
+                            onClick={openContact}
+                          >
+                            Contact
+                          </motion.button>
+
+                          <span
+                            style={{
+                              color: "rgba(246, 239, 232, 0.54)",
+                              fontSize: "0.95rem",
+                              letterSpacing: "0.04em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            Direction, code, and motion systems
+                          </span>
+                        </motion.div>
+                      </motion.div>
+                    ) : null}
+                  </AnimatePresence>
+                </motion.div>
+              </motion.section>
             </ScatterSection>
 
             <ScatterSection index={1} contactActive={contactActive}>
@@ -1911,159 +1926,159 @@ export function ImmersivePortfolio() {
                   overflow: "hidden",
                 }}
               >
-            <motion.div
-              layout
-              transition={motionConfig.springTransition}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "20px",
-                flexWrap: "wrap",
-                alignItems: "end",
-              }}
-            >
-              <div style={{ display: "grid", gap: "8px" }}>
-                <span
+                <motion.div
+                  layout
+                  transition={motionConfig.springTransition}
                   style={{
-                    fontSize: "0.78rem",
-                    letterSpacing: "0.22em",
-                    textTransform: "uppercase",
-                    color: "rgba(246, 239, 232, 0.48)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: "20px",
+                    flexWrap: "wrap",
+                    alignItems: "end",
                   }}
                 >
-                  Featured projects
-                </span>
-                <h2
-                  style={{
-                    margin: 0,
-                    fontSize: "clamp(1.9rem, 4vw, 3.1rem)",
-                    letterSpacing: "-0.04em",
-                  }}
-                >
-                  Spatial case studies built to open like scenes.
-                </h2>
-              </div>
-
-              <p
-                style={{
-                  margin: 0,
-                  maxWidth: "420px",
-                  color: "rgba(246, 239, 232, 0.62)",
-                  lineHeight: 1.5,
-                }}
-              >
-                Each tile is a living entry point. Expand any project to move from
-                overview into the full narrative without breaking spatial continuity.
-              </p>
-            </motion.div>
-
-            <motion.div
-              layout
-              transition={motionConfig.springTransition}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                gap: "18px",
-              }}
-            >
-              {PROJECTS.map((project) => {
-                const isSelected = project.id === selectedProjectId;
-                const isDimmed = selectedProjectId !== null && !isSelected;
-
-                return (
-                  <motion.button
-                    key={project.id}
-                    layout
-                    transition={motionConfig.springTransition}
-                    onClick={() => setSelectedProjectId(project.id)}
-                    animate={
-                      prefersReducedMotion
-                        ? { opacity: isDimmed ? 0.24 : isSelected ? 0 : 1 }
-                        : isDimmed
-                          ? { scale: 0.92, opacity: 0.22, filter: "blur(10px)" }
-                          : { scale: 1, opacity: isSelected ? 0 : 1, filter: "blur(0px)" }
-                    }
-                    style={{
-                      border: 0,
-                      padding: 0,
-                      textAlign: "left",
-                      cursor: "pointer",
-                      background: "transparent",
-                      pointerEvents: isSelected ? "none" : "auto",
-                    }}
-                  >
-                    <motion.article
-                      layoutId={`project-card-${project.id}`}
-                      transition={motionConfig.springTransition}
+                  <div style={{ display: "grid", gap: "8px" }}>
+                    <span
                       style={{
-                        minHeight: "340px",
-                        borderRadius: "26px",
-                        overflow: "hidden",
-                        background: "rgba(18, 18, 24, 0.88)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        display: "grid",
-                        gridTemplateRows: "220px auto",
-                        boxShadow: "0 16px 36px rgba(0,0,0,0.22)",
+                        fontSize: "0.78rem",
+                        letterSpacing: "0.22em",
+                        textTransform: "uppercase",
+                        color: "rgba(246, 239, 232, 0.48)",
                       }}
                     >
-                      <motion.img
-                        layoutId={`project-image-${project.id}`}
-                        transition={motionConfig.springTransition}
-                        src={project.image}
-                        alt={project.name}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          display: "block",
-                        }}
-                      />
+                      Featured projects
+                    </span>
+                    <h2
+                      style={{
+                        margin: 0,
+                        fontSize: "clamp(1.9rem, 4vw, 3.1rem)",
+                        letterSpacing: "-0.04em",
+                      }}
+                    >
+                      Spatial case studies built to open like scenes.
+                    </h2>
+                  </div>
 
-                      <div
+                  <p
+                    style={{
+                      margin: 0,
+                      maxWidth: "420px",
+                      color: "rgba(246, 239, 232, 0.62)",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Each tile is a living entry point. Expand any project to move from
+                    overview into the full narrative without breaking spatial continuity.
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  layout
+                  transition={motionConfig.springTransition}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                    gap: "18px",
+                  }}
+                >
+                  {PROJECTS.map((project) => {
+                    const isSelected = project.id === selectedProjectId;
+                    const isDimmed = selectedProjectId !== null && !isSelected;
+
+                    return (
+                      <motion.button
+                        key={project.id}
+                        layout
+                        transition={motionConfig.springTransition}
+                        onClick={() => setSelectedProjectId(project.id)}
+                        animate={
+                          prefersReducedMotion
+                            ? { opacity: isDimmed ? 0.24 : isSelected ? 0 : 1 }
+                            : isDimmed
+                              ? { scale: 0.92, opacity: 0.22, filter: "blur(10px)" }
+                              : { scale: 1, opacity: isSelected ? 0 : 1, filter: "blur(0px)" }
+                        }
                         style={{
-                          display: "grid",
-                          gap: "14px",
-                          padding: "18px 18px 20px",
-                          alignContent: "start",
+                          border: 0,
+                          padding: 0,
+                          textAlign: "left",
+                          cursor: "pointer",
+                          background: "transparent",
+                          pointerEvents: isSelected ? "none" : "auto",
                         }}
                       >
-                        <motion.span
-                          layoutId={`project-category-${project.id}`}
+                        <motion.article
+                          layoutId={`project-card-${project.id}`}
                           transition={motionConfig.springTransition}
                           style={{
-                            display: "inline-flex",
-                            width: "fit-content",
-                            padding: "7px 12px",
-                            borderRadius: "999px",
-                            background: "rgba(255,255,255,0.08)",
-                            color: "rgba(246, 239, 232, 0.76)",
-                            fontSize: "0.78rem",
-                            letterSpacing: "0.14em",
-                            textTransform: "uppercase",
+                            minHeight: "340px",
+                            borderRadius: "26px",
+                            overflow: "hidden",
+                            background: "rgba(18, 18, 24, 0.88)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            display: "grid",
+                            gridTemplateRows: "220px auto",
+                            boxShadow: "0 16px 36px rgba(0,0,0,0.22)",
                           }}
                         >
-                          {project.category}
-                        </motion.span>
+                          <motion.img
+                            layoutId={`project-image-${project.id}`}
+                            transition={motionConfig.springTransition}
+                            src={project.image}
+                            alt={project.name}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                              display: "block",
+                            }}
+                          />
 
-                        <motion.h3
-                          layoutId={`project-title-${project.id}`}
-                          transition={motionConfig.springTransition}
-                          style={{
-                            margin: 0,
-                            fontSize: "1.65rem",
-                            lineHeight: 0.96,
-                            letterSpacing: "-0.05em",
-                          }}
-                        >
-                          {project.name}
-                        </motion.h3>
-                      </div>
-                    </motion.article>
-                  </motion.button>
-                );
-              })}
-            </motion.div>
-          </motion.section>
+                          <div
+                            style={{
+                              display: "grid",
+                              gap: "14px",
+                              padding: "18px 18px 20px",
+                              alignContent: "start",
+                            }}
+                          >
+                            <motion.span
+                              layoutId={`project-category-${project.id}`}
+                              transition={motionConfig.springTransition}
+                              style={{
+                                display: "inline-flex",
+                                width: "fit-content",
+                                padding: "7px 12px",
+                                borderRadius: "999px",
+                                background: "rgba(255,255,255,0.08)",
+                                color: "rgba(246, 239, 232, 0.76)",
+                                fontSize: "0.78rem",
+                                letterSpacing: "0.14em",
+                                textTransform: "uppercase",
+                              }}
+                            >
+                              {project.category}
+                            </motion.span>
+
+                            <motion.h3
+                              layoutId={`project-title-${project.id}`}
+                              transition={motionConfig.springTransition}
+                              style={{
+                                margin: 0,
+                                fontSize: "1.65rem",
+                                lineHeight: 0.96,
+                                letterSpacing: "-0.05em",
+                              }}
+                            >
+                              {project.name}
+                            </motion.h3>
+                          </div>
+                        </motion.article>
+                      </motion.button>
+                    );
+                  })}
+                </motion.div>
+              </motion.section>
             </ScatterSection>
 
             <ScatterSection index={2} contactActive={contactActive}>
@@ -2143,138 +2158,138 @@ export function ImmersivePortfolio() {
                     event.stopPropagation();
                   }}
                 >
-                <motion.img
-                  layoutId={`project-image-${selectedProject.id}`}
-                  transition={motionConfig.springTransition}
-                  src={selectedProject.image}
-                  alt={selectedProject.name}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    minHeight: "320px",
-                    objectFit: "cover",
-                    borderRadius: "24px",
-                    display: "block",
-                  }}
-                />
-
-                <div
-                  style={{
-                    display: "grid",
-                    alignContent: "start",
-                    gap: "18px",
-                    padding: "4px 4px 4px 0",
-                  }}
-                >
-                  <motion.span
-                    layoutId={`project-category-${selectedProject.id}`}
+                  <motion.img
+                    layoutId={`project-image-${selectedProject.id}`}
                     transition={motionConfig.springTransition}
+                    src={selectedProject.image}
+                    alt={selectedProject.name}
                     style={{
-                      display: "inline-flex",
-                      width: "fit-content",
-                      padding: "9px 14px",
-                      borderRadius: "999px",
-                      background: "rgba(255,255,255,0.08)",
-                      color: "rgba(246, 239, 232, 0.76)",
-                      fontSize: "0.82rem",
-                      letterSpacing: "0.18em",
-                      textTransform: "uppercase",
+                      width: "100%",
+                      height: "100%",
+                      minHeight: "320px",
+                      objectFit: "cover",
+                      borderRadius: "24px",
+                      display: "block",
+                    }}
+                  />
+
+                  <div
+                    style={{
+                      display: "grid",
+                      alignContent: "start",
+                      gap: "18px",
+                      padding: "4px 4px 4px 0",
                     }}
                   >
-                    {selectedProject.category}
-                  </motion.span>
+                    <motion.span
+                      layoutId={`project-category-${selectedProject.id}`}
+                      transition={motionConfig.springTransition}
+                      style={{
+                        display: "inline-flex",
+                        width: "fit-content",
+                        padding: "9px 14px",
+                        borderRadius: "999px",
+                        background: "rgba(255,255,255,0.08)",
+                        color: "rgba(246, 239, 232, 0.76)",
+                        fontSize: "0.82rem",
+                        letterSpacing: "0.18em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {selectedProject.category}
+                    </motion.span>
 
-                  <motion.h2
-                    layoutId={`project-title-${selectedProject.id}`}
-                    transition={motionConfig.springTransition}
-                    style={{
-                      margin: 0,
-                      fontSize: "clamp(3rem, 7vw, 5.5rem)",
-                      lineHeight: 0.9,
-                      letterSpacing: "-0.07em",
-                    }}
-                  >
-                    {selectedProject.name}
-                  </motion.h2>
+                    <motion.h2
+                      layoutId={`project-title-${selectedProject.id}`}
+                      transition={motionConfig.springTransition}
+                      style={{
+                        margin: 0,
+                        fontSize: "clamp(3rem, 7vw, 5.5rem)",
+                        lineHeight: 0.9,
+                        letterSpacing: "-0.07em",
+                      }}
+                    >
+                      {selectedProject.name}
+                    </motion.h2>
 
-                  <AnimatePresence initial={false}>
-                    {detailReady ? (
-                      <motion.div
-                        key={`project-details-${selectedProject.id}`}
-                        initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 24 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: prefersReducedMotion ? 0 : 12 }}
-                        transition={{
-                          duration: prefersReducedMotion ? 0 : 0.28,
-                          ease: [0.22, 1, 0.36, 1],
-                        }}
-                        style={{
-                          display: "grid",
-                          gap: "24px",
-                        }}
-                      >
-                        <p
+                    <AnimatePresence initial={false}>
+                      {detailReady ? (
+                        <motion.div
+                          key={`project-details-${selectedProject.id}`}
+                          initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 24 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: prefersReducedMotion ? 0 : 12 }}
+                          transition={{
+                            duration: prefersReducedMotion ? 0 : 0.28,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
                           style={{
-                            margin: 0,
-                            color: "rgba(246, 239, 232, 0.72)",
-                            fontSize: "1.04rem",
-                            lineHeight: 1.65,
-                            maxWidth: "46ch",
+                            display: "grid",
+                            gap: "24px",
                           }}
                         >
-                          {selectedProject.description}
-                        </p>
+                          <p
+                            style={{
+                              margin: 0,
+                              color: "rgba(246, 239, 232, 0.72)",
+                              fontSize: "1.04rem",
+                              lineHeight: 1.65,
+                              maxWidth: "46ch",
+                            }}
+                          >
+                            {selectedProject.description}
+                          </p>
 
-                        <div
-                          style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: "10px",
-                          }}
-                        >
-                          {selectedProject.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              style={{
-                                padding: "10px 14px",
-                                borderRadius: "999px",
-                                background: "rgba(255,255,255,0.06)",
-                                color: "rgba(246,239,232,0.74)",
-                                letterSpacing: "0.08em",
-                                textTransform: "uppercase",
-                                fontSize: "0.78rem",
-                              }}
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: "10px",
+                            }}
+                          >
+                            {selectedProject.tags.map((tag) => (
+                              <span
+                                key={tag}
+                                style={{
+                                  padding: "10px 14px",
+                                  borderRadius: "999px",
+                                  background: "rgba(255,255,255,0.06)",
+                                  color: "rgba(246,239,232,0.74)",
+                                  letterSpacing: "0.08em",
+                                  textTransform: "uppercase",
+                                  fontSize: "0.78rem",
+                                }}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
 
-                        <motion.button
-                          whileHover={prefersReducedMotion ? undefined : { y: -2, scale: 1.01 }}
-                          whileTap={prefersReducedMotion ? undefined : { scale: 0.985 }}
-                          onClick={closeProject}
-                          style={{
-                            border: 0,
-                            width: "fit-content",
-                            borderRadius: "999px",
-                            padding: "15px 22px",
-                            background: "linear-gradient(135deg, #ff7730, #ff5a36)",
-                            color: "#120a07",
-                            fontSize: "0.92rem",
-                            fontWeight: 800,
-                            letterSpacing: "0.08em",
-                            textTransform: "uppercase",
-                            cursor: "pointer",
-                            boxShadow: "0 18px 40px rgba(255, 107, 43, 0.28)",
-                          }}
-                        >
-                          Close Project
-                        </motion.button>
-                      </motion.div>
-                    ) : null}
-                  </AnimatePresence>
-                </div>
+                          <motion.button
+                            whileHover={prefersReducedMotion ? undefined : { y: -2, scale: 1.01 }}
+                            whileTap={prefersReducedMotion ? undefined : { scale: 0.985 }}
+                            onClick={closeProject}
+                            style={{
+                              border: 0,
+                              width: "fit-content",
+                              borderRadius: "999px",
+                              padding: "15px 22px",
+                              background: "linear-gradient(135deg, #ff7730, #ff5a36)",
+                              color: "#120a07",
+                              fontSize: "0.92rem",
+                              fontWeight: 800,
+                              letterSpacing: "0.08em",
+                              textTransform: "uppercase",
+                              cursor: "pointer",
+                              boxShadow: "0 18px 40px rgba(255, 107, 43, 0.28)",
+                            }}
+                          >
+                            Close Project
+                          </motion.button>
+                        </motion.div>
+                      ) : null}
+                    </AnimatePresence>
+                  </div>
                 </motion.article>
               </motion.div>
             ) : null}
