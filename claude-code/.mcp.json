@@ -7,6 +7,12 @@
     "motion-dev": {
       "command": "node",
       "args": ["V:/mcp_server/motion-dev-mcp/dist/index.js"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y", "@playwright/mcp@latest"
+      ]
     }
   }
 }

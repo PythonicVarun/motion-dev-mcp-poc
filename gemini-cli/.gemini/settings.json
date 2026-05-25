@@ -1,16 +1,22 @@
 {
   "mcp": {
-    "allowed": ["motion-studio", "motion-dev"]
+    "allowed": ["motion-studio", "motion-dev", "playwright"]
   },
   "mcpServers": {
     "motion-studio": {
       "command": "npx",
       "args": ["-y", "https://api.motion.dev/registry.tgz?package=motion-studio-mcp&version=latest"]
     },
-    "": {
+    "motion-dev": {
       "command": "node",
       "args": ["dist/index.js"],
       "cwd": "V:/mcp_server/motion-dev-mcp"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "-y", "@playwright/mcp@latest"
+      ]
     }
   }
 }
