@@ -1,9 +1,17 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   AnimatePresence,
   LayoutGroup,
   animate,
   motion,
+  useReducedMotion,
   useScroll,
   useMotionTemplate,
   useMotionValue,
@@ -264,6 +272,44 @@ const CLIENT_LOGOS: ClientLogo[] = [
 const CLIENT_CARD_WIDTH = 216;
 const CLIENT_CARD_GAP = 18;
 const CLIENT_CARD_SPAN = CLIENT_CARD_WIDTH + CLIENT_CARD_GAP;
+const CONTACT_HEADING = "Let's build the next living interface";
+const SCATTER_VECTORS = [
+  { x: -680, y: -280, rotate: -14 },
+  { x: 720, y: -180, rotate: 11 },
+  { x: -620, y: 360, rotate: 9 },
+  { x: 640, y: 420, rotate: -12 },
+];
+const TRANSITION_FLAT_PATH =
+  "M0 1000 L0 1000 C250 1000 250 1000 500 1000 C750 1000 750 1000 1000 1000 L1000 1000 L1000 1000 L0 1000 Z";
+const TRANSITION_FILLED_PATH =
+  "M0 1000 L0 0 C250 112 250 112 500 0 C750 -108 750 -108 1000 0 L1000 1000 L1000 1000 L0 1000 Z";
+
+type PortfolioMotionConfig = {
+  reduced: boolean;
+  sectionTransition: { duration: number; ease?: [number, number, number, number] };
+  springTransition: typeof LAYOUT_TRANSITION | { duration: number };
+};
+
+const PortfolioMotionContext = createContext<PortfolioMotionConfig | null>(null);
+
+function usePortfolioMotionConfig() {
+  const context = useContext(PortfolioMotionContext);
+
+  if (!context) {
+    throw new Error("PortfolioMotionContext is missing");
+  }
+
+  return context;
+}
+
+function cubicBezierPoint(t: number, p0: number, p1: number, p2: number, p3: number) {
+  const inverse = 1 - t;
+  return inverse ** 3 * p0 + 3 * inverse ** 2 * t * p1 + 3 * inverse * t ** 2 * p2 + t ** 3 * p3;
+}
+
+function acceleratedProgress(value: number) {
+  return cubicBezierPoint(value, 0, 0.18, 0.82, 1);
+}
 
 const PROCESS_STEPS: ProcessStep[] = ([
   {
@@ -354,6 +400,7 @@ function AnimatedCharacter({
   index,
   timeline,
 }: AnimatedCharacterProps) {
+  const { reduced } = usePortfolioMotionConfig();
   const direction = useMemo(() => getCharacterDirection(index), [index]);
   const breatheY = useTransform(timeline, (value) => {
     const phase = value * BREATH_SPEED + index * WAVE_OFFSET;
@@ -364,26 +411,26 @@ function AnimatedCharacter({
     <motion.span
       style={{
         display: "inline-block",
-        y: breatheY,
+        y: reduced ? 0 : breatheY,
         marginRight: character === " " ? "0.3em" : "0.02em",
       }}
     >
       <motion.span
         initial={{
           opacity: 0,
-          rotateX: direction * 96,
-          y: direction * 52,
-          filter: "blur(10px)",
+          rotateX: reduced ? 0 : direction * 96,
+          y: reduced ? 0 : direction * 52,
+          filter: reduced ? "none" : "blur(10px)",
         }}
         animate={{
           opacity: 1,
           rotateX: 0,
           y: 0,
-          filter: "blur(0px)",
+          filter: "none",
         }}
         transition={{
           delay: index * STAGGER_SECONDS,
-          duration: ENTRANCE_SECONDS,
+          duration: reduced ? 0 : ENTRANCE_SECONDS,
           ease: [0.16, 1, 0.3, 1],
         }}
         style={{
@@ -408,6 +455,7 @@ type ProcessStepCardProps = {
 };
 
 function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
+  const { reduced } = usePortfolioMotionConfig();
   const trigger = index / (PROCESS_STEPS.length - 1);
   const inputRange = [
     Math.max(0, trigger - 0.17),
@@ -415,9 +463,9 @@ function ProcessStepCard({ step, progress, index }: ProcessStepCardProps) {
     Math.min(1, trigger + 0.17),
   ];
   const localOffset = useTransform(progress, inputRange, [-1, 0, 1]);
-  const backgroundY = useTransform(localOffset, [-1, 1], [-32, 32]);
-  const illustrationY = useTransform(localOffset, [-1, 1], [-74, 74]);
-  const textY = useTransform(localOffset, [-1, 1], [-2, 2]);
+  const backgroundY = useTransform(localOffset, [-1, 1], reduced ? [0, 0] : [-32, 32]);
+  const illustrationY = useTransform(localOffset, [-1, 1], reduced ? [0, 0] : [-74, 74]);
+  const textY = useTransform(localOffset, [-1, 1], reduced ? [0, 0] : [-2, 2]);
 
   return (
     <motion.article
@@ -527,14 +575,15 @@ type ProcessNodeProps = {
 };
 
 function ProcessNode({ progress, trigger, left, top }: ProcessNodeProps) {
+  const { reduced } = usePortfolioMotionConfig();
   const pulse = useTransform(
     progress,
     [Math.max(0, trigger - 0.045), trigger, Math.min(1, trigger + 0.045)],
     [0, 1, 0],
   );
-  const scale = useTransform(pulse, [0, 1], [1, 1.45]);
+  const scale = useTransform(pulse, [0, 1], reduced ? [1, 1] : [1, 1.45]);
   const glowSize = useTransform(pulse, [0, 1], [12, 42]);
-  const glowAlpha = useTransform(pulse, [0, 1], [0.24, 0.9]);
+  const glowAlpha = useTransform(pulse, [0, 1], reduced ? [0.2, 0.6] : [0.24, 0.9]);
   const boxShadow = useMotionTemplate`0 0 ${glowSize}px rgba(255, 140, 82, ${glowAlpha})`;
 
   return (
@@ -565,6 +614,7 @@ function ProcessNode({ progress, trigger, left, top }: ProcessNodeProps) {
 }
 
 function ProcessSection() {
+  const { reduced } = usePortfolioMotionConfig();
   const sectionRef = useRef<HTMLElement | null>(null);
   const pathRef = useRef<SVGPathElement | null>(null);
   const [pathLength, setPathLength] = useState(0);
@@ -581,9 +631,13 @@ function ProcessSection() {
     setPathLength(pathRef.current.getTotalLength());
   }, []);
 
-  const strokeDashoffset = useTransform(scrollYProgress, [0, 1], [pathLength, 0]);
-  const wipeLead = useTransform(scrollYProgress, [0, 0.18], [0, 112]);
-  const wipeTail = useTransform(scrollYProgress, [0, 0.18], [-16, 98]);
+  const strokeDashoffset = useTransform(
+    scrollYProgress,
+    [0, 1],
+    reduced ? [0, 0] : [pathLength, 0],
+  );
+  const wipeLead = useTransform(scrollYProgress, [0, 0.18], reduced ? [112, 112] : [0, 112]);
+  const wipeTail = useTransform(scrollYProgress, [0, 0.18], reduced ? [98, 98] : [-16, 98]);
   const sectionClipPath = useMotionTemplate`polygon(0% 0%, ${wipeLead}% 0%, ${wipeTail}% 100%, 0% 100%)`;
 
   return (
@@ -735,6 +789,7 @@ function ClientCarouselCard({
   trackX,
   viewportCenter,
 }: ClientCarouselCardProps) {
+  const { reduced } = usePortfolioMotionConfig();
   const distanceFromCenter = useTransform(
     [trackX, viewportCenter],
     ([track, center]: number[]) =>
@@ -743,15 +798,15 @@ function ClientCarouselCard({
   const scale = useTransform(
     distanceFromCenter,
     [-540, -160, 0, 160, 540],
-    [0.82, 0.96, 1.2, 0.96, 0.82],
+    reduced ? [1, 1, 1, 1, 1] : [0.82, 0.96, 1.2, 0.96, 0.82],
   );
   const opacity = useTransform(
     distanceFromCenter,
     [-540, -180, 0, 180, 540],
     [0.28, 0.64, 1, 0.64, 0.28],
   );
-  const rotateY = useTransform(distanceFromCenter, [-420, 0, 420], [15, 0, -15]);
-  const translateZ = useTransform(scale, [0.82, 1.2], [0, 34]);
+  const rotateY = useTransform(distanceFromCenter, [-420, 0, 420], reduced ? [0, 0, 0] : [15, 0, -15]);
+  const translateZ = useTransform(scale, [0.82, 1.2], reduced ? [0, 0] : [0, 34]);
   const borderGlow = useMotionTemplate`0 14px 34px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(255,255,255,${opacity}) inset`;
 
   return (
@@ -826,6 +881,7 @@ function ClientCarouselCard({
 }
 
 function ClientsCarousel() {
+  const { reduced } = usePortfolioMotionConfig();
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const trackX = useMotionValue(0);
   const viewportCenter = useMotionValue(0);
@@ -888,17 +944,29 @@ function ClientsCarousel() {
     const nearestIndex = Math.round(rawIndex);
     const targetX = center - CLIENT_CARD_WIDTH / 2 - nearestIndex * CLIENT_CARD_SPAN;
 
-    snapRef.current = animate(trackX, targetX, {
-      type: "spring",
-      stiffness: 300,
-      damping: 30,
-      onUpdate: (latest) => {
-        normalizeTrack(latest);
-      },
-    });
+    snapRef.current = animate(trackX, targetX, reduced
+      ? {
+          duration: 0,
+          onUpdate: (latest) => {
+            normalizeTrack(latest);
+          },
+        }
+      : {
+          type: "spring",
+          stiffness: 300,
+          damping: 30,
+          onUpdate: (latest) => {
+            normalizeTrack(latest);
+          },
+        });
   };
 
   const startInertia = (velocityPerFrame: number) => {
+    if (reduced) {
+      snapToNearest();
+      return;
+    }
+
     let velocity = velocityPerFrame;
     stopMotion();
 
@@ -1120,23 +1188,297 @@ function ClientsCarousel() {
   );
 }
 
+function GlobalScrollProgressBar() {
+  const { reduced } = usePortfolioMotionConfig();
+  const { scrollYProgress } = useScroll();
+  const nonlinearProgress = useTransform(scrollYProgress, (value) => acceleratedProgress(value));
+  const barOpacity = useTransform(scrollYProgress, [0, 1], [0.34, 1]);
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "4px",
+        background: "rgba(255,255,255,0.06)",
+        zIndex: 60,
+        transformOrigin: "0% 50%",
+      }}
+    >
+      <motion.div
+        style={{
+          width: "100%",
+          height: "100%",
+          background: "linear-gradient(90deg, #ff8446, #ffd18d 55%, #8fd5ff)",
+          scaleX: reduced ? 1 : nonlinearProgress,
+          opacity: reduced ? barOpacity : 1,
+          transformOrigin: "0% 50%",
+        }}
+      />
+    </div>
+  );
+}
+
+type ScatterSectionProps = {
+  children: React.ReactNode;
+  index: number;
+  contactActive: boolean;
+};
+
+function ScatterSection({ children, index, contactActive }: ScatterSectionProps) {
+  const { reduced, sectionTransition } = usePortfolioMotionConfig();
+  const vector = SCATTER_VECTORS[index % SCATTER_VECTORS.length];
+
+  return (
+    <motion.div
+      animate={
+        reduced
+          ? { opacity: contactActive ? 0 : 1 }
+          : {
+              opacity: contactActive ? 0 : 1,
+              x: contactActive ? vector.x : 0,
+              y: contactActive ? vector.y : 0,
+              rotate: contactActive ? vector.rotate : 0,
+              filter: contactActive ? "blur(18px)" : "blur(0px)",
+            }
+      }
+      transition={{
+        ...sectionTransition,
+        delay: contactActive ? index * 0.06 : (SCATTER_VECTORS.length - index) * 0.03,
+      }}
+      style={{
+        pointerEvents: contactActive ? "none" : "auto",
+      }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+type ContactSectionProps = {
+  contactActive: boolean;
+  contentReady: boolean;
+  sectionRef: React.RefObject<HTMLElement | null>;
+  onBack: () => void;
+};
+
+function ContactSection({
+  contactActive,
+  contentReady,
+  sectionRef,
+  onBack,
+}: ContactSectionProps) {
+  const { reduced } = usePortfolioMotionConfig();
+  const words = useMemo(() => CONTACT_HEADING.split(" "), []);
+
+  return (
+    <motion.section
+      ref={sectionRef}
+      id="contact-section"
+      animate={
+        reduced
+          ? { opacity: contactActive ? 1 : 0.42 }
+          : { opacity: contactActive ? 1 : 0.56, scale: contactActive ? 1 : 0.98 }
+      }
+      transition={{ duration: reduced ? 0 : 0.45, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        minHeight: "88vh",
+        borderRadius: "32px",
+        border: "1px solid rgba(255,255,255,0.08)",
+        background:
+          "radial-gradient(circle at top, rgba(255, 129, 79, 0.18), transparent 28%), linear-gradient(180deg, rgba(14,14,20,0.98), rgba(10,10,14,0.94))",
+        boxShadow: "0 24px 90px rgba(0, 0, 0, 0.3)",
+        padding: "clamp(32px, 5vw, 64px)",
+        display: "grid",
+        alignContent: "center",
+        gap: "28px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: "auto -6% -18% auto",
+          width: "34vw",
+          height: "34vw",
+          maxWidth: "420px",
+          maxHeight: "420px",
+          borderRadius: "999px",
+          background:
+            "radial-gradient(circle, rgba(255, 122, 80, 0.22), rgba(255, 122, 80, 0) 68%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      <span
+        style={{
+          color: "rgba(246,239,232,0.48)",
+          fontSize: "0.78rem",
+          letterSpacing: "0.24em",
+          textTransform: "uppercase",
+        }}
+      >
+        Contact
+      </span>
+
+      <h2
+        style={{
+          margin: 0,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "0.25em",
+          fontSize: "clamp(2.7rem, 7vw, 6rem)",
+          lineHeight: 0.92,
+          letterSpacing: "-0.08em",
+          maxWidth: "10ch",
+        }}
+      >
+        {words.map((word, index) => {
+          const randomX = (createSeededRandom(index + 30)() - 0.5) * 480;
+          const randomY = (createSeededRandom(index + 60)() - 0.5) * 320;
+
+          return (
+            <motion.span
+              key={word}
+              initial={false}
+              animate={{
+                opacity: contentReady ? 1 : 0,
+                x: reduced ? 0 : contentReady ? 0 : randomX,
+                y: reduced ? 0 : contentReady ? 0 : randomY,
+                filter: contentReady ? "none" : "blur(8px)",
+              }}
+              transition={
+                reduced
+                  ? { duration: 0 }
+                  : {
+                      type: "spring",
+                      stiffness: 220,
+                      damping: 24,
+                      delay: index * 0.04,
+                    }
+              }
+              style={{ display: "inline-block" }}
+            >
+              {word}
+            </motion.span>
+          );
+        })}
+      </h2>
+
+      <motion.p
+        initial={false}
+        animate={{ opacity: contentReady ? 1 : 0 }}
+        transition={{ duration: reduced ? 0 : 0.28, delay: reduced ? 0 : 0.18 }}
+        style={{
+          margin: 0,
+          maxWidth: "46ch",
+          color: "rgba(246,239,232,0.72)",
+          lineHeight: 1.65,
+          fontSize: "1.04rem",
+        }}
+      >
+        For launches, portfolios, brand platforms, and motion systems that need to
+        feel precise under real production constraints.
+      </motion.p>
+
+      <motion.div
+        initial={false}
+        animate={{ opacity: contentReady ? 1 : 0 }}
+        transition={{ duration: reduced ? 0 : 0.28, delay: reduced ? 0 : 0.26 }}
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "14px",
+          alignItems: "center",
+        }}
+      >
+        <motion.a
+          href="mailto:hello@immersivefolio.dev"
+          whileHover={reduced ? undefined : { y: -2, scale: 1.01 }}
+          whileTap={reduced ? undefined : { scale: 0.985 }}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "999px",
+            padding: "16px 24px",
+            background: "linear-gradient(135deg, #ff7730, #ff5a36)",
+            color: "#120a07",
+            fontWeight: 800,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            textDecoration: "none",
+            boxShadow: "0 18px 40px rgba(255, 107, 43, 0.28)",
+          }}
+        >
+          hello@immersivefolio.dev
+        </motion.a>
+
+        <motion.button
+          type="button"
+          onClick={onBack}
+          whileHover={reduced ? undefined : { y: -2, scale: 1.01 }}
+          whileTap={reduced ? undefined : { scale: 0.985 }}
+          style={{
+            border: "1px solid rgba(255,255,255,0.12)",
+            background: "rgba(255,255,255,0.02)",
+            color: "#f6efe8",
+            borderRadius: "999px",
+            padding: "16px 22px",
+            fontWeight: 700,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            cursor: "pointer",
+          }}
+        >
+          Back To Work
+        </motion.button>
+      </motion.div>
+    </motion.section>
+  );
+}
+
 export function ImmersivePortfolio() {
+  const prefersReducedMotion = useReducedMotion() ?? false;
+  const motionConfig = useMemo<PortfolioMotionConfig>(
+    () => ({
+      reduced: prefersReducedMotion,
+      sectionTransition: prefersReducedMotion
+        ? { duration: 0 }
+        : { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+      springTransition: prefersReducedMotion ? { duration: 0 } : LAYOUT_TRANSITION,
+    }),
+    [prefersReducedMotion],
+  );
+  const heroRef = useRef<HTMLElement | null>(null);
+  const contactRef = useRef<HTMLElement | null>(null);
+  const { scrollYProgress: pageScrollProgress } = useScroll();
   const timeline = useMotionValue(0);
   const pointerXRatio = useMotionValue(NEUTRAL_CURSOR_X);
   const pointerYRatio = useMotionValue(0);
   const characters = useMemo(() => Array.from(HERO_TITLE), []);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [detailReady, setDetailReady] = useState(false);
+  const [contactActive, setContactActive] = useState(false);
+  const [contactContentReady, setContactContentReady] = useState(false);
   const revealDelay = characters.length * STAGGER_SECONDS + ENTRANCE_SECONDS * 0.7;
   const turbulenceTargetX = useTransform(pointerXRatio, [0, 1], [MIN_FREQUENCY_X, MAX_FREQUENCY_X]);
   const displacementTarget = useTransform(pointerYRatio, [0, 1], [0, MAX_DISPLACEMENT]);
   const turbulenceX = useSpring(turbulenceTargetX, LIQUID_SPRING);
   const displacementScale = useSpring(displacementTarget, LIQUID_SPRING);
-  const baseFrequency = useMotionTemplate`${turbulenceX} 0.02`;
+  const animatedBaseFrequency = useMotionTemplate`${turbulenceX} 0.02`;
   const selectedProject = PROJECTS.find((project) => project.id === selectedProjectId) ?? null;
-  const heroSupportVisible = selectedProjectId === null;
+  const heroSupportVisible = selectedProjectId === null && !contactActive;
 
   useEffect(() => {
+    if (prefersReducedMotion) {
+      timeline.set(0);
+      return;
+    }
+
     let frameId = 0;
     const startedAt = performance.now();
 
@@ -1150,13 +1492,65 @@ export function ImmersivePortfolio() {
     return () => {
       window.cancelAnimationFrame(frameId);
     };
-  }, [timeline]);
+  }, [prefersReducedMotion, timeline]);
 
   useEffect(() => {
     setDetailReady(false);
   }, [selectedProjectId]);
 
+  useEffect(() => {
+    if (!contactActive) {
+      setContactContentReady(false);
+      return;
+    }
+
+    if (prefersReducedMotion) {
+      setContactContentReady(true);
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setContactContentReady(true);
+    }, 520);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [contactActive, prefersReducedMotion]);
+
+  useEffect(() => {
+    const unsubscribe = pageScrollProgress.on("change", () => {
+      if (!contactRef.current) {
+        return;
+      }
+
+      const top = contactRef.current.getBoundingClientRect().top;
+      const enterThreshold = window.innerHeight * 0.5;
+      const exitThreshold = window.innerHeight * 0.78;
+
+      setContactActive((current) => {
+        if (top <= enterThreshold && !current) {
+          return true;
+        }
+
+        if (top >= exitThreshold && current) {
+          return false;
+        }
+
+        return current;
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [pageScrollProgress]);
+
   const handlePointerMove = (event: React.PointerEvent<HTMLElement>) => {
+    if (prefersReducedMotion) {
+      return;
+    }
+
     const bounds = event.currentTarget.getBoundingClientRect();
     const nextX = (event.clientX - bounds.left) / bounds.width;
     const nextY = (event.clientY - bounds.top) / bounds.height;
@@ -1175,50 +1569,101 @@ export function ImmersivePortfolio() {
     setSelectedProjectId(null);
   };
 
+  const openContact = () => {
+    setContactActive(true);
+    contactRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
+  const closeContact = () => {
+    setContactActive(false);
+    heroRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
   return (
-    <LayoutGroup id="immersive-portfolio-layout">
-      <main
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          padding: "24px",
-          background:
-            "radial-gradient(circle at top, rgba(255, 119, 48, 0.16), transparent 28%), linear-gradient(135deg, #09090b 0%, #121217 42%, #1b1010 100%)",
-          color: "#f6efe8",
-          fontFamily: '"Segoe UI", sans-serif',
-        }}
-      >
-        <motion.div
-          layout
-          transition={LAYOUT_TRANSITION}
+    <PortfolioMotionContext.Provider value={motionConfig}>
+      <LayoutGroup id="immersive-portfolio-layout">
+        <GlobalScrollProgressBar />
+
+        <motion.svg
+          viewBox="0 0 1000 1000"
+          preserveAspectRatio="none"
           style={{
-            width: "min(1180px, 100%)",
-            display: "grid",
-            alignContent: "start",
-            gap: "22px",
+            position: "fixed",
+            inset: 0,
+            width: "100vw",
+            height: "100vh",
+            zIndex: 45,
+            pointerEvents: "none",
+            opacity: contactActive ? 1 : 0,
           }}
         >
-          <motion.section
+          <motion.path
+            initial={false}
+            fill="rgba(10,10,14,0.96)"
+            d={contactActive ? TRANSITION_FILLED_PATH : TRANSITION_FLAT_PATH}
+            animate={
+              prefersReducedMotion
+                ? { opacity: contactActive ? 1 : 0 }
+                : { d: contactActive ? TRANSITION_FILLED_PATH : TRANSITION_FLAT_PATH }
+            }
+            transition={
+              prefersReducedMotion
+                ? { duration: 0 }
+                : { duration: 0.6, ease: [0.76, 0, 0.24, 1] }
+            }
+          />
+        </motion.svg>
+
+        <main
+          style={{
+            minHeight: "100vh",
+            display: "flex",
+            justifyContent: "center",
+            padding: "24px",
+            background:
+              "radial-gradient(circle at top, rgba(255, 119, 48, 0.16), transparent 28%), linear-gradient(135deg, #09090b 0%, #121217 42%, #1b1010 100%)",
+            color: "#f6efe8",
+            fontFamily: '"Segoe UI", sans-serif',
+          }}
+        >
+          <motion.div
             layout
-            transition={LAYOUT_TRANSITION}
-            onPointerMove={handlePointerMove}
-            onPointerLeave={handlePointerLeave}
+            transition={motionConfig.springTransition}
             style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "flex-end",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
-              borderRadius: "32px",
-              padding: "clamp(32px, 5vw, 72px)",
-              background:
-                "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
-              boxShadow: "0 24px 90px rgba(0, 0, 0, 0.35)",
-              overflow: "hidden",
-              position: "relative",
-              isolation: "isolate",
+              width: "min(1180px, 100%)",
+              display: "grid",
+              alignContent: "start",
+              gap: "22px",
             }}
           >
+            <ScatterSection index={0} contactActive={contactActive}>
+              <motion.section
+                ref={heroRef}
+                layout
+                transition={motionConfig.springTransition}
+                onPointerMove={handlePointerMove}
+                onPointerLeave={handlePointerLeave}
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: "32px",
+                  padding: "clamp(32px, 5vw, 72px)",
+                  background:
+                    "linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01))",
+                  boxShadow: "0 24px 90px rgba(0, 0, 0, 0.35)",
+                  overflow: "hidden",
+                  position: "relative",
+                  isolation: "isolate",
+                }}
+              >
             <motion.svg
               aria-hidden="true"
               viewBox="0 0 1600 1200"
@@ -1242,7 +1687,7 @@ export function ImmersivePortfolio() {
                 >
                   <motion.feTurbulence
                     type="fractalNoise"
-                    baseFrequency={baseFrequency}
+                    baseFrequency={prefersReducedMotion ? "0.02 0.02" : animatedBaseFrequency}
                     numOctaves={2}
                     seed={7}
                     stitchTiles="stitch"
@@ -1251,7 +1696,7 @@ export function ImmersivePortfolio() {
                   <motion.feDisplacementMap
                     in="SourceGraphic"
                     in2="noise"
-                    scale={displacementScale}
+                    scale={prefersReducedMotion ? 0 : displacementScale}
                     xChannelSelector="R"
                     yChannelSelector="B"
                   />
@@ -1305,7 +1750,7 @@ export function ImmersivePortfolio() {
 
             <motion.div
               layout
-              transition={LAYOUT_TRANSITION}
+              transition={motionConfig.springTransition}
               style={{
                 display: "grid",
                 gap: "28px",
@@ -1316,7 +1761,7 @@ export function ImmersivePortfolio() {
             >
               <motion.div
                 layout
-                transition={LAYOUT_TRANSITION}
+                transition={motionConfig.springTransition}
                 style={{
                   display: "inline-flex",
                   width: "fit-content",
@@ -1334,7 +1779,7 @@ export function ImmersivePortfolio() {
 
               <motion.h1
                 layout
-                transition={LAYOUT_TRANSITION}
+                transition={motionConfig.springTransition}
                 style={{
                   margin: 0,
                   display: "flex",
@@ -1365,10 +1810,10 @@ export function ImmersivePortfolio() {
                   <motion.div
                     key="hero-support"
                     layout
-                    transition={LAYOUT_TRANSITION}
-                    initial={{ opacity: 0, y: 22 }}
+                    transition={motionConfig.springTransition}
+                    initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 22 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -18 }}
+                    exit={{ opacity: 0, y: prefersReducedMotion ? 0 : -18 }}
                     style={{
                       display: "grid",
                       gap: "20px",
@@ -1379,7 +1824,7 @@ export function ImmersivePortfolio() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{
                         delay: revealDelay,
-                        duration: 0.7,
+                        duration: prefersReducedMotion ? 0 : 0.7,
                         ease: [0.22, 1, 0.36, 1],
                       }}
                       style={{
@@ -1400,7 +1845,7 @@ export function ImmersivePortfolio() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{
                         delay: revealDelay + 0.14,
-                        duration: 0.65,
+                        duration: prefersReducedMotion ? 0 : 0.65,
                         ease: [0.22, 1, 0.36, 1],
                       }}
                       style={{
@@ -1411,8 +1856,8 @@ export function ImmersivePortfolio() {
                       }}
                     >
                       <motion.button
-                        whileHover={{ y: -2, scale: 1.01 }}
-                        whileTap={{ scale: 0.985 }}
+                        whileHover={prefersReducedMotion ? undefined : { y: -2, scale: 1.01 }}
+                        whileTap={prefersReducedMotion ? undefined : { scale: 0.985 }}
                         style={{
                           border: 0,
                           borderRadius: "999px",
@@ -1426,12 +1871,9 @@ export function ImmersivePortfolio() {
                           cursor: "pointer",
                           boxShadow: "0 18px 40px rgba(255, 107, 43, 0.28)",
                         }}
-                        onClick={() => {
-                          const grid = document.getElementById("project-grid");
-                          grid?.scrollIntoView({ behavior: "smooth", block: "start" });
-                        }}
+                        onClick={openContact}
                       >
-                        View Projects
+                        Contact
                       </motion.button>
 
                       <span
@@ -1450,26 +1892,28 @@ export function ImmersivePortfolio() {
               </AnimatePresence>
             </motion.div>
           </motion.section>
+            </ScatterSection>
 
-          <motion.section
-            id="project-grid"
-            layout
-            transition={LAYOUT_TRANSITION}
-            style={{
-              borderRadius: "32px",
-              border: "1px solid rgba(255, 255, 255, 0.08)",
-              background: "rgba(12, 12, 16, 0.72)",
-              boxShadow: "0 24px 90px rgba(0, 0, 0, 0.28)",
-              padding: "clamp(24px, 4vw, 36px)",
-              display: "grid",
-              gap: "24px",
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
+            <ScatterSection index={1} contactActive={contactActive}>
+              <motion.section
+                id="project-grid"
+                layout
+                transition={motionConfig.springTransition}
+                style={{
+                  borderRadius: "32px",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  background: "rgba(12, 12, 16, 0.72)",
+                  boxShadow: "0 24px 90px rgba(0, 0, 0, 0.28)",
+                  padding: "clamp(24px, 4vw, 36px)",
+                  display: "grid",
+                  gap: "24px",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
             <motion.div
               layout
-              transition={LAYOUT_TRANSITION}
+              transition={motionConfig.springTransition}
               style={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -1515,7 +1959,7 @@ export function ImmersivePortfolio() {
 
             <motion.div
               layout
-              transition={LAYOUT_TRANSITION}
+              transition={motionConfig.springTransition}
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
@@ -1530,12 +1974,14 @@ export function ImmersivePortfolio() {
                   <motion.button
                     key={project.id}
                     layout
-                    transition={LAYOUT_TRANSITION}
+                    transition={motionConfig.springTransition}
                     onClick={() => setSelectedProjectId(project.id)}
                     animate={
-                      isDimmed
-                        ? { scale: 0.92, opacity: 0.22, filter: "blur(10px)" }
-                        : { scale: 1, opacity: isSelected ? 0 : 1, filter: "blur(0px)" }
+                      prefersReducedMotion
+                        ? { opacity: isDimmed ? 0.24 : isSelected ? 0 : 1 }
+                        : isDimmed
+                          ? { scale: 0.92, opacity: 0.22, filter: "blur(10px)" }
+                          : { scale: 1, opacity: isSelected ? 0 : 1, filter: "blur(0px)" }
                     }
                     style={{
                       border: 0,
@@ -1548,7 +1994,7 @@ export function ImmersivePortfolio() {
                   >
                     <motion.article
                       layoutId={`project-card-${project.id}`}
-                      transition={LAYOUT_TRANSITION}
+                      transition={motionConfig.springTransition}
                       style={{
                         minHeight: "340px",
                         borderRadius: "26px",
@@ -1562,7 +2008,7 @@ export function ImmersivePortfolio() {
                     >
                       <motion.img
                         layoutId={`project-image-${project.id}`}
-                        transition={LAYOUT_TRANSITION}
+                        transition={motionConfig.springTransition}
                         src={project.image}
                         alt={project.name}
                         style={{
@@ -1583,7 +2029,7 @@ export function ImmersivePortfolio() {
                       >
                         <motion.span
                           layoutId={`project-category-${project.id}`}
-                          transition={LAYOUT_TRANSITION}
+                          transition={motionConfig.springTransition}
                           style={{
                             display: "inline-flex",
                             width: "fit-content",
@@ -1601,7 +2047,7 @@ export function ImmersivePortfolio() {
 
                         <motion.h3
                           layoutId={`project-title-${project.id}`}
-                          transition={LAYOUT_TRANSITION}
+                          transition={motionConfig.springTransition}
                           style={{
                             margin: 0,
                             fontSize: "1.65rem",
@@ -1618,76 +2064,88 @@ export function ImmersivePortfolio() {
               })}
             </motion.div>
           </motion.section>
+            </ScatterSection>
 
-          <ProcessSection />
+            <ScatterSection index={2} contactActive={contactActive}>
+              <ProcessSection />
+            </ScatterSection>
 
-          <ClientsCarousel />
-        </motion.div>
+            <ScatterSection index={3} contactActive={contactActive}>
+              <ClientsCarousel />
+            </ScatterSection>
 
-        <AnimatePresence initial={false}>
-          {selectedProject ? (
-            <motion.div
-              key="project-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              style={{
-                position: "fixed",
-                inset: 0,
-                zIndex: 30,
-                padding: "24px",
-                background: "rgba(5, 5, 8, 0.52)",
-                backdropFilter: "blur(20px)",
-                display: "flex",
-                alignItems: "stretch",
-                justifyContent: "center",
-              }}
-            >
-              <motion.button
-                aria-label="Close project"
+            <ContactSection
+              contactActive={contactActive}
+              contentReady={contactContentReady}
+              sectionRef={contactRef}
+              onBack={closeContact}
+            />
+          </motion.div>
+
+          <AnimatePresence initial={false}>
+            {selectedProject ? (
+              <motion.div
+                key="project-overlay"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
+                transition={{ duration: prefersReducedMotion ? 0 : 0.25 }}
                 style={{
-                  position: "absolute",
+                  position: "fixed",
                   inset: 0,
-                  border: 0,
-                  background: "transparent",
-                  cursor: "pointer",
-                }}
-                onClick={closeProject}
-              />
-
-              <motion.article
-                layoutId={`project-card-${selectedProject.id}`}
-                transition={LAYOUT_TRANSITION}
-                onLayoutAnimationComplete={() => {
-                  if (!detailReady) {
-                    setDetailReady(true);
-                  }
-                }}
-                style={{
-                  position: "relative",
-                  width: "min(1220px, 100%)",
-                  minHeight: "min(88vh, 940px)",
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
-                  gap: "24px",
+                  zIndex: 50,
                   padding: "24px",
-                  borderRadius: "32px",
-                  background: "rgba(12, 12, 16, 0.96)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  boxShadow: "0 32px 120px rgba(0,0,0,0.42)",
-                  overflow: "hidden",
-                }}
-                onClick={(event) => {
-                  event.stopPropagation();
+                  background: "rgba(5, 5, 8, 0.52)",
+                  backdropFilter: "blur(20px)",
+                  display: "flex",
+                  alignItems: "stretch",
+                  justifyContent: "center",
                 }}
               >
+                <motion.button
+                  aria-label="Close project"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    border: 0,
+                    background: "transparent",
+                    cursor: "pointer",
+                  }}
+                  onClick={closeProject}
+                />
+
+                <motion.article
+                  layoutId={`project-card-${selectedProject.id}`}
+                  transition={motionConfig.springTransition}
+                  onLayoutAnimationComplete={() => {
+                    if (!detailReady) {
+                      setDetailReady(true);
+                    }
+                  }}
+                  style={{
+                    position: "relative",
+                    width: "min(1220px, 100%)",
+                    minHeight: "min(88vh, 940px)",
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
+                    gap: "24px",
+                    padding: "24px",
+                    borderRadius: "32px",
+                    background: "rgba(12, 12, 16, 0.96)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    boxShadow: "0 32px 120px rgba(0,0,0,0.42)",
+                    overflow: "hidden",
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                  }}
+                >
                 <motion.img
                   layoutId={`project-image-${selectedProject.id}`}
-                  transition={LAYOUT_TRANSITION}
+                  transition={motionConfig.springTransition}
                   src={selectedProject.image}
                   alt={selectedProject.name}
                   style={{
@@ -1710,7 +2168,7 @@ export function ImmersivePortfolio() {
                 >
                   <motion.span
                     layoutId={`project-category-${selectedProject.id}`}
-                    transition={LAYOUT_TRANSITION}
+                    transition={motionConfig.springTransition}
                     style={{
                       display: "inline-flex",
                       width: "fit-content",
@@ -1728,7 +2186,7 @@ export function ImmersivePortfolio() {
 
                   <motion.h2
                     layoutId={`project-title-${selectedProject.id}`}
-                    transition={LAYOUT_TRANSITION}
+                    transition={motionConfig.springTransition}
                     style={{
                       margin: 0,
                       fontSize: "clamp(3rem, 7vw, 5.5rem)",
@@ -1743,10 +2201,13 @@ export function ImmersivePortfolio() {
                     {detailReady ? (
                       <motion.div
                         key={`project-details-${selectedProject.id}`}
-                        initial={{ opacity: 0, y: 24 }}
+                        initial={{ opacity: 0, y: prefersReducedMotion ? 0 : 24 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 12 }}
-                        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                        exit={{ opacity: 0, y: prefersReducedMotion ? 0 : 12 }}
+                        transition={{
+                          duration: prefersReducedMotion ? 0 : 0.28,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
                         style={{
                           display: "grid",
                           gap: "24px",
@@ -1790,8 +2251,8 @@ export function ImmersivePortfolio() {
                         </div>
 
                         <motion.button
-                          whileHover={{ y: -2, scale: 1.01 }}
-                          whileTap={{ scale: 0.985 }}
+                          whileHover={prefersReducedMotion ? undefined : { y: -2, scale: 1.01 }}
+                          whileTap={prefersReducedMotion ? undefined : { scale: 0.985 }}
                           onClick={closeProject}
                           style={{
                             border: 0,
@@ -1814,11 +2275,12 @@ export function ImmersivePortfolio() {
                     ) : null}
                   </AnimatePresence>
                 </div>
-              </motion.article>
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </main>
-    </LayoutGroup>
+                </motion.article>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>
+        </main>
+      </LayoutGroup>
+    </PortfolioMotionContext.Provider>
   );
 }
