@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>The Myth of the Tool-Using Agent</title>
-  <meta name="description" content="Four coding agents, four Motion.dev animation prompts, one uncomfortable result: tool availability and tool behavior aren't the same thing." />
+  <title>The Iteration Premium — How MCP Servers Compound a Coding Agent's Productivity</title>
+  <meta name="description" content="Three coding agents. One multi-day Motion.dev build. A close look at how MCP servers change the shape and cost of each iteration loop." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -22,7 +22,6 @@
       --codex: #e08a23;
       --gemini: #2a6df4;
       --claude: #c8533a;
-      --opencode: #6e57c4;
       --grid: #e3ddd0;
     }
     * { box-sizing: border-box; }
@@ -56,6 +55,8 @@
       color: var(--ink-soft);
     }
     .masthead .brand { font-weight: 700; color: var(--ink); }
+    .masthead a { color: var(--ink-soft); text-decoration: none; }
+    .masthead a:hover { color: var(--accent); }
     .kicker {
       font-family: 'Inter', system-ui, sans-serif;
       font-size: 12px;
@@ -191,14 +192,6 @@
       color: var(--ink-soft);
       margin-top: 4px;
     }
-    .stat .swatch {
-      display: inline-block;
-      width: 9px;
-      height: 9px;
-      border-radius: 2px;
-      margin-right: 6px;
-      vertical-align: middle;
-    }
     @media (max-width: 720px) {
       .statstrip { grid-template-columns: repeat(2, 1fr); }
       .stat:nth-child(2) { border-right: 0; }
@@ -238,6 +231,7 @@
     .chart-host { position: relative; width: 100%; }
     .chart-host.h-md { height: 360px; }
     .chart-host.h-sm { height: 280px; }
+    .chart-host.h-lg { height: 420px; }
     .legend {
       display: flex;
       flex-wrap: wrap;
@@ -406,41 +400,87 @@
       color: var(--paper);
       border-color: var(--ink);
     }
-    .outputs-matrix a.run.winner {
-      border-color: var(--accent);
-      color: var(--accent);
+
+    /* Featured walkthrough media slot */
+    .feature-media {
+      margin: 40px 0;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      padding: 24px;
     }
-    .outputs-matrix a.run.winner::before {
-      content: "★ ";
+    .feature-media .figlabel {
+      font-family: 'Inter', sans-serif;
       font-size: 11px;
-      letter-spacing: 0;
-    }
-    .outputs-matrix a.run.winner:hover {
-      background: var(--accent);
-      color: var(--paper);
-      border-color: var(--accent);
-    }
-    .outputs-matrix td.empty {
-      color: var(--muted);
-      font-variant-numeric: tabular-nums;
-      font-weight: 500;
-    }
-    .outputs-matrix td.empty small {
-      display: block;
-      font-size: 10.5px;
-      color: var(--muted);
-      letter-spacing: 0.06em;
+      letter-spacing: 0.18em;
       text-transform: uppercase;
-      margin-top: 4px;
-      font-weight: 600;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 4px;
     }
-    .builds-legend {
+    .feature-media .figtitle {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--ink);
+      margin: 0 0 6px;
+    }
+    .feature-media .figdek {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-bottom: 18px;
+      line-height: 1.55;
+    }
+    .media-slot {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: repeating-linear-gradient(45deg, #ebe4d1 0 12px, #efe9d8 12px 24px);
+      border: 1px dashed #b8ad94;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      color: #7a6f53;
       font-family: 'Inter', sans-serif;
       font-size: 12px;
-      color: var(--muted);
-      margin-top: 14px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: center;
+      padding: 24px;
     }
-    .builds-legend .star { color: var(--accent); font-weight: 700; }
+    .media-slot .slot-title {
+      font-family: 'Fraunces', serif;
+      font-size: 16px;
+      font-style: italic;
+      letter-spacing: 0;
+      text-transform: none;
+      color: #5d543e;
+      margin-bottom: 6px;
+    }
+    .media-slot .slot-meta {
+      font-size: 10.5px;
+      color: #8b7e60;
+      letter-spacing: 0.08em;
+    }
+    .media-slot.inline {
+      aspect-ratio: auto;
+      min-height: 220px;
+    }
+    .media-slot img, .media-slot video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+    .media-slot.has-media {
+      background: #15191c;
+      border: 1px solid var(--line);
+      padding: 0;
+      overflow: hidden;
+    }
 
     .meta {
       margin-top: 56px;
@@ -476,7 +516,6 @@
     .agent.codex { background: var(--codex); }
     .agent.gemini { background: var(--gemini); }
     .agent.claude { background: var(--claude); }
-    .agent.opencode { background: var(--opencode); }
   </style>
 </head>
 <body>
@@ -484,226 +523,269 @@
 
     <header class="masthead">
       <span class="brand">Motion.dev MCP Benchmark</span>
-      <span>Issue 01 · 2026-05-15</span>
+      <span>Issue 02 · <a href="./agents-comparison.html">← Static prompts story</a> · 2026-05-26</span>
     </header>
 
     <article>
 
-      <div class="kicker">Benchmark · Coding Agents · Tool Use</div>
-      <h1 class="headline">The Myth of the Tool-Using Agent</h1>
-      <p class="subhead">Codex used the most Motion.dev MCP and finished first. Gemini CLI used none and still won half the prompts. Same tasks, very different playbooks.</p>
+      <div class="kicker">Field Study · Coding Agents · MCP Productivity</div>
+      <h1 class="headline">The Iteration Premium</h1>
+      <p class="subhead">Three coding agents were asked to build the same multi-day animated portfolio. The story isn't who finished — it's how MCP servers compress the cost of every loop after the first draft.</p>
 
       <div class="byline">
-        <span><strong>Method</strong> History-based replay</span>
-        <span><strong>Agents</strong> 4</span>
-        <span><strong>Prompts</strong> 4</span>
-        <span><strong>Date</strong> 2026-05-15</span>
+        <span><strong>Method</strong> History-derived process metrics</span>
+        <span><strong>Agents</strong> 3</span>
+        <span><strong>Prompt turns</strong> 38</span>
+        <span><strong>Date</strong> 2026-05-26</span>
       </div>
 
-      <div class="statstrip" aria-label="Total benchmark duration by agent">
+      <div class="statstrip" aria-label="Cross-agent iterative session totals">
         <div class="stat">
-          <div class="label"><span class="swatch" style="background:var(--codex)"></span>codex</div>
-          <div class="value">26:50</div>
-          <div class="sub"><strong>GPT-5.4</strong> (medium) · 31 calls</div>
+          <div class="label">Active work</div>
+          <div class="value">5h 49m</div>
+          <div class="sub">12h 48m of idle wait removed from raw spans</div>
         </div>
         <div class="stat">
-          <div class="label"><span class="swatch" style="background:var(--gemini)"></span>gemini-cli</div>
-          <div class="value">32:54</div>
-          <div class="sub"><strong>Gemini 3.1 Pro</strong> Preview · 0 calls</div>
+          <div class="label">Feedback turns</div>
+          <div class="value">35/38</div>
+          <div class="sub">92% of all prompts were follow-up</div>
         </div>
         <div class="stat">
-          <div class="label"><span class="swatch" style="background:var(--claude)"></span>claude-code</div>
-          <div class="value">42:51</div>
-          <div class="sub"><strong>Sonnet 4.6</strong> (high) · 16 calls</div>
+          <div class="label">Tool calls</div>
+          <div class="value">1,165</div>
+          <div class="sub">Logged across the iterative window</div>
         </div>
         <div class="stat">
-          <div class="label"><span class="swatch" style="background:var(--opencode)"></span>opencode-minimax-2.5</div>
-          <div class="value">61:49</div>
-          <div class="sub"><strong>MiniMax M2.5</strong> · 4 calls</div>
+          <div class="label">Browser MCP</div>
+          <div class="value">341</div>
+          <div class="sub">Verification dominated the late loop</div>
         </div>
       </div>
+
+      <p class="lede">A coding agent's first answer is the part everyone benchmarks. The part that decides whether the work ships is everything that happens after — the layout that's almost right, the scroll handler that jitters on the third reload, the SVG path that drifts a few pixels off its label. This study tracks three agents through that second half on the same multi-day build, and the story it tells is small and useful: <strong>where MCP servers were available and used, each loop got cheaper; where they weren't, the loop just kept costing what it cost.</strong></p>
+
+      <p>The brief was the same in every session: build a <code>&lt;ImmersivePortfolio /&gt;</code> React component using Motion.dev, layered in over multiple turns — hero, displaced background, project grid, scroll-driven process timeline, draggable clients carousel, and a final integration pass. Across <span class="agent codex">codex</span>, <span class="agent claude">claude-code</span>, and <span class="agent gemini">gemini-cli</span>, the same prompts produced <span class="num">38</span> turns, <span class="num">35</span> of which were follow-ups: bug reports, alignment fixes, scroll fidelity complaints, screenshot-driven debugging. That is the shape this work has in real product engineering, and it's the shape MCP servers either help with or don't.</p>
 
       <section class="builds">
-        <h3>Scores table</h3>
-        <p>Every cell below links to the generated output for that agent and prompt. Prompt winners are starred.</p>
+        <h3>End-of-session builds</h3>
+        <p>Each link opens that agent's deployed build at the point where its iterative session ended. <strong>These aren't finished products.</strong> They show what the agents were capable of converging on inside the prompt set used here — every further refinement, polish pass, or feature addition is bounded by the creativity of the prompts a user is willing to write. The static prompts story is at <a href="./agents-comparison.html">agents-comparison.html</a>; the build prompts themselves are recorded in <a href="./PROMPT.md"><code>PROMPT.md</code></a>, and the verbatim iterative prompt archive is in <a href="./iterative-prompts.md"><code>iterative-prompts.md</code></a>.</p>
         <div class="outputs-wrap">
-          <table class="outputs-matrix" aria-label="Static outputs matrix">
+          <table class="outputs-matrix" aria-label="Iterative outputs">
             <thead>
               <tr>
-                <th class="label">Prompt</th>
-                <th>claude-code</th>
-                <th>codex</th>
-                <th>gemini-cli</th>
-                <th>opencode-minimax-2.5</th>
+                <th class="label">Agent</th>
+                <th>Active work</th>
+                <th>Prompt turns</th>
+                <th>Final build</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td class="prompt-cell">MagneticDock<small>dock · context-rich</small></td>
-                <td><a class="run winner" href="./claude-code/context-rich/">7m 25s</a></td>
-                <td><a class="run" href="./codex/context-rich/">8m 25s</a></td>
-                <td><a class="run" href="./gemini-cli/context-rich/">14m 09s</a></td>
-                <td><a class="run" href="./opencode-minimax-2.5/" title="Published at the agent root, not in a sub-route">24m 27s</a></td>
+                <td class="prompt-cell"><span class="agent codex">codex</span><small>019e5d97 · GPT-5.4 (medium)</small></td>
+                <td>1h 1m 30s<br><span style="font-size:11px;color:var(--muted);font-weight:400;">+ 8h 27m idle</span></td>
+                <td>14</td>
+                <td><a class="run" href="./codex/iterative/">Open build →</a></td>
               </tr>
               <tr>
-                <td class="prompt-cell">Interactive SVG Blob<small>blob · goal-oriented</small></td>
-                <td><a class="run" href="./claude-code/goal-oriented/">7m 27s</a></td>
-                <td><a class="run" href="./codex/goal-oriented/">9m 01s</a></td>
-                <td><a class="run winner" href="./gemini-cli/goal-oriented/">2m 47s</a></td>
-                <td><a class="run" href="./opencode-minimax-2.5/goal-oriented/">3m 49s</a></td>
+                <td class="prompt-cell"><span class="agent claude">claude-code</span><small>0fbef8f3 · Sonnet 4.6 (high)</small></td>
+                <td>2h 41m 42s<br><span style="font-size:11px;color:var(--muted);font-weight:400;">+ 1h 48m idle</span></td>
+                <td>12</td>
+                <td><a class="run" href="./claude-code/iterative/">Open build →</a></td>
               </tr>
               <tr>
-                <td class="prompt-cell">Cinematic Timeline<small>timeline · spec-driven</small></td>
-                <td><a class="run" href="./claude-code/spec-driven/">20m 25s</a></td>
-                <td><a class="run winner" href="./codex/spec-driven/">3m 24s</a></td>
-                <td><a class="run" href="./gemini-cli/spec-driven/">10m 44s</a></td>
-                <td class="empty">14m 21s<small>no static export</small></td>
-              </tr>
-              <tr>
-                <td class="prompt-cell">Liquid Menu<small>menu · visual-first</small></td>
-                <td><a class="run" href="./claude-code/visual-first/">7m 33s</a></td>
-                <td><a class="run" href="./codex/visual-first/">6m 01s</a></td>
-                <td><a class="run winner" href="./gemini-cli/visual-first/">5m 14s</a></td>
-                <td><a class="run" href="./opencode-minimax-2.5/visual-first/">19m 13s</a></td>
+                <td class="prompt-cell"><span class="agent gemini">gemini-cli</span><small>410aac00 · Gemini 3.1 Pro Preview</small></td>
+                <td>2h 5m 59s<br><span style="font-size:11px;color:var(--muted);font-weight:400;">+ 2h 35m idle</span></td>
+                <td>12</td>
+                <td><a class="run" href="./gemini-cli/iterative/">Open build →</a></td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div class="builds-legend"><span class="star">★</span> Prompt winner on completion time. Hover any cell to highlight it; click to open the generated artifact in its own page.</div>
       </section>
 
-      <p class="lede">The cleanest way to break the comfortable story about Model Context Protocol tooling is to put two agents next to each other. On a battery of four Motion.dev animation prompts — a magnetic dock, an interactive SVG blob, a scroll-driven cinematic timeline, and a liquid menu — <span class="agent codex">codex</span> invoked Motion.dev-specific tools <span class="num">31</span> times across every prompt and finished the entire benchmark first, at <span class="num">26m 50s</span>. <span class="agent gemini">gemini-cli</span> invoked them <span class="num">zero</span> times, never once, on any prompt — and still won two of the four sprints outright.</p>
+      <h2>The work was never one-shot</h2>
 
-      <p>That contrast is the spine of this report. The benchmark was designed to measure how four coding agents — <span class="agent claude">claude-code</span>, <span class="agent codex">codex</span>, <span class="agent gemini">gemini-cli</span>, and <span class="agent opencode">opencode-minimax-2.5</span> — handle Motion.dev-heavy tasks where the Motion.dev MCP server is available and named in the prompt. The presumed punchline was that MCP availability would translate into MCP usage, and MCP usage would translate into better outcomes. Neither half of that chain held cleanly.</p>
+      <p>Of <span class="num">38</span> prompt turns across the three sessions, only <span class="num">3</span> were initial build requests — one per agent. The remaining <span class="num">35</span> turns were either feature extensions ("now add the carousel"), corrective bug reports ("the timeline is misaligned with the cards"), or screenshot-attached debugging ("the text is overlapping"). Two turns explicitly asked the agent to <em>verify</em> a fix using Playwright MCP. One referenced a PNG attachment of a broken layout.</p>
 
-      <p>The headline numbers do favor the MCP-enthusiast. Codex finished fastest overall and was the only agent to record Motion.dev MCP calls on all <span class="num">4 of 4</span> prompts. Claude Code, second on tool-use breadth, invoked Motion.dev MCP on <span class="num">3 of 4</span> prompts and finished third in total time. But the cleanest one-line summary — <em>more MCP, more speed</em> — falls apart the moment you look at Gemini CLI, which sat at the top of half the leaderboard with a tool ledger that reads as a column of zeros.</p>
+      <p>That ratio is the most important fact in the dataset. The productivity question for a coding agent isn't "can it generate a working hero on the first try" — all three did. The productivity question is what happens on turns 6 through 12, when the user has seen the running interface, found something wrong, and needs the agent to absorb that feedback without a human walking it through the diff.</p>
 
-      <figure class="figure" aria-label="Per-prompt completion time by agent">
-        <div class="figlabel">Figure 01 · Per-prompt completion time</div>
-        <div class="figtitle">The same prompt, different outcomes</div>
-        <div class="figdek">Each prompt was sent to each agent. Bars show minutes to the first completed benchmark turn. Shorter is faster.</div>
-        <div class="chart-host h-md"><canvas id="chartDuration"></canvas></div>
-        <div class="figsource">Source: motion-dev-mcp-benchmark.json · duration_ms (first completed turn)</div>
+      <figure class="figure" aria-label="Tool calls per prompt turn">
+        <div class="figlabel">Figure 01 · The iterative tail</div>
+        <div class="figtitle">Tool activity doesn't taper — it spikes during corrective work</div>
+        <div class="figdek">Tool calls recorded against each prompt turn. The build phase (turns 1–5) is moderate; the corrective tail (turns 6+) is where the heaviest tool spend happens. Gemini's session ends on a single 258-call turn fighting a sticky contact-section bug.</div>
+        <div class="chart-host h-md"><canvas id="chartPromptTimeline"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-iterative-session-metrics.json · prompts[].tool_calls</div>
       </figure>
 
-      <h3>The timeline prompt is where the field cracked open</h3>
+      <h2>Active work vs wall clock</h2>
 
-      <p>Of the four prompts, the scroll-driven cinematic timeline produced the most dramatic spread. Codex finished it in <span class="num">3m 24s</span>. Claude Code took <span class="num">20m 25s</span> on the same instruction — six times longer — and called the Motion.dev MCP more than Codex did along the way (<span class="num">6</span> versus <span class="num">5</span>). This is the single clearest moment in the benchmark where MCP <em>call count</em> moves in the opposite direction of speed. The same prompt, the same target library, the same access to the same toolkit, and a 17-minute gap.</p>
+      <p>The raw session spans run anywhere from four and a half to nine and a half hours, but that is not how long the agents were actually <em>working</em>. Most of the difference is human idle time — the user walked away after a feature landed, came back forty minutes later, looked at it on their phone, sent the next prompt. After subtracting those waits, the combined active work time across all three sessions is <span class="num">5h 49m</span>, against <span class="num">12h 48m</span> of removed idle.</p>
 
-      <p>It is also the moment that should warn anyone tempted to write "MCP makes agents faster" on a slide. What the data supports is narrower: when Codex invoked Motion.dev tooling, it tended to do so efficiently. When Claude Code invoked it, the relationship between calls and wall time was less stable. The benchmark does not let us see <em>why</em>. It does let us see that the relationship is not linear.</p>
-
-      <div class="pull">"Saying 'use the Motion.dev MCP' in a prompt does not produce uniform agent behavior. On identical instructions, one agent invoked Motion.dev tools 31 times, another invoked them never."</div>
-
-      <h3>The dock prompt was the real stress test</h3>
-
-      <p>The MagneticDock — the <code>context-rich</code> prompt of the four — was the most expensive in the field. Its average completion time across agents was <span class="num">13m 37s</span>, the highest of the four. Yet it produced the most unconventional winner: <span class="agent claude">claude-code</span> took it in <span class="num">7m 25s</span> while logging <span class="num">zero</span> Motion.dev MCP calls. Codex, in second on the dock, made <span class="num">13</span> Motion.dev MCP calls — its single heaviest tool-use prompt of the benchmark — and still finished a minute behind. The hardest prompt was won by selective restraint, not by tool enthusiasm.</p>
-
-      <figure class="figure" aria-label="Motion.dev MCP usage matrix">
-        <div class="figlabel">Figure 02 · Motion.dev MCP usage</div>
-        <div class="figtitle">Same prompts. Wildly different tool ledgers.</div>
-        <div class="figdek">Number of Motion.dev-specific tool calls recorded per agent per prompt. Cell intensity scales with call count; pale cells are zero.</div>
-        <table class="matrix" id="matrix">
-          <thead>
-            <tr>
-              <th class="label">Prompt</th>
-              <th>claude-code</th>
-              <th>codex</th>
-              <th>gemini-cli</th>
-              <th>opencode-minimax-2.5</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-        <div class="figsource">Source: motion-dev-mcp-benchmark.json · motion_dev_mcp_calls</div>
+      <figure class="figure" aria-label="Active work vs idle wait per agent">
+        <div class="figlabel">Figure 02 · Active vs idle</div>
+        <div class="figtitle">Most of the wall clock was the user not being there</div>
+        <div class="figdek">Per-agent active work time (user present, agent responding) vs the idle gaps removed from the raw session span. Codex's nine-and-a-half-hour session was about an hour of real work and the rest waiting; Claude Code was the most consistently engaged.</div>
+        <div class="chart-host h-sm"><canvas id="chartActiveVsIdle"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-iterative-session-metrics.json · active_elapsed_ms, total_idle_removed_ms</div>
       </figure>
 
-      <h3>Tool-use behavior diverged before performance did</h3>
+      <p>That reframes how to read everything else. Codex's <span class="num">9h 29m</span> raw span was <span class="num">1h 1m</span> of active work and <span class="num">8h 27m</span> of waiting for the next user prompt. Gemini CLI's <span class="num">4h 40m</span> ran about evenly — <span class="num">2h 6m</span> active, <span class="num">2h 35m</span> idle. Claude Code had the most active work time at <span class="num">2h 41m</span> and the least idle removed. The productivity question is what each agent gets done during the active part.</p>
 
-      <p>The benchmark prompts were identical across agents. The tool-use ledgers were not even close. <span class="agent codex">codex</span> logged Motion.dev calls on every prompt; <span class="agent claude">claude-code</span> on three of four; <span class="agent opencode">opencode-minimax-2.5</span> on one of four; <span class="agent gemini">gemini-cli</span> on none. This is the part of the result most worth dwelling on, because it is the part that survives any concern about completion time. Even before we ask which agent was fastest, we have to register that the same instruction produced four meaningfully different tool strategies.</p>
+      <p>That density is striking: Codex executed <span class="num">350</span> tool calls in roughly 61 active minutes — about <span class="num">5.7</span> calls per minute, the densest tool-use rate in the field. Gemini CLI ran at a similar density (~<span class="num">4.9</span> calls/min), but the calls were skewed toward shell rebuilds and file edits. Claude Code's profile is the opposite: more active minutes, more reading before patching, ~<span class="num">1.2</span> calls per minute.</p>
 
-      <figure class="figure" aria-label="Motion.dev MCP calls vs duration scatter">
-        <div class="figlabel">Figure 03 · Calls vs. clock</div>
-        <div class="figtitle">There is no clean line between tool use and speed</div>
-        <div class="figdek">Each point is one prompt run. Horizontal axis: Motion.dev MCP calls. Vertical axis: completion time in minutes.</div>
-        <div class="chart-host h-md"><canvas id="chartScatter"></canvas></div>
-        <div class="legend">
-          <span><span class="dot" style="background:var(--codex)"></span>codex</span>
-          <span><span class="dot" style="background:var(--gemini)"></span>gemini-cli</span>
-          <span><span class="dot" style="background:var(--claude)"></span>claude-code</span>
-          <span><span class="dot" style="background:var(--opencode)"></span>opencode-minimax-2.5</span>
+      <p>The idle column has a second meaning worth keeping. Those gaps aren't wasted time for the human — they're time recovered. The async shape of an MCP-equipped coding agent means the user can hand off a feature, step into a meeting, ship something else, then come back and send the next prompt. Even the active span isn't fully claimed: while the agent is patching code, running builds, and verifying in the browser, the human is free to context-switch. The <span class="num">5h 49m</span> of active work tracked here was the agent's clock, not the user's. The compounding productivity story is that an MCP-equipped agent extends the user's working day without requiring more hours from the user.</p>
+
+      <div class="pull">"The 5 hours 49 minutes of active work was the agent's clock, not the user's. The 12 hours 48 minutes of idle was time the user got back."</div>
+
+      <h2>Where MCP shows up in the loop</h2>
+
+      <p>Across the three sessions, tool activity falls into six recognizable categories. The breakdown matters more than the total, because it tells you <em>what kind of work</em> each loop was doing.</p>
+
+      <figure class="figure" aria-label="Tool category mix per agent">
+        <div class="figlabel">Figure 03 · Workflow shape</div>
+        <div class="figtitle">Same task, three different operational mixes</div>
+        <div class="figdek">Tool calls per agent, split by category. Motion.dev MCP and Browser MCP are the two specialized surfaces; shell, file edits, file reads, and planning are the generic ones. Higher share of specialized tooling = more leverage per call.</div>
+        <div class="chart-host h-md"><canvas id="chartCategoryMix"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-iterative-session-metrics.json · tool_calls_by_category</div>
+      </figure>
+
+      <p>The <span class="agent codex">codex</span> session is roughly balanced: a third of its calls go to browser verification, a third to shell, and the rest split between file edits, Motion.dev lookups, and planning. The <span class="agent claude">claude-code</span> session is read-heavy — the largest single category is <code>Read</code>, which means the agent spent a lot of its tool budget gathering context before patching. The <span class="agent gemini">gemini-cli</span> session is the heaviest in raw volume and the most generic: a lot of shell, a lot of file edits, almost a hundred planning/topic-update calls, and not a single Motion.dev MCP call.</p>
+
+      <p>That last fact is worth pausing on. Every agent received the same instruction to use the Motion.dev MCP. The three sessions converted that instruction into <span class="num">17</span>, <span class="num">6</span>, and <span class="num">0</span> Motion.dev tool calls respectively. The data isn't telling a story about which is "right" — it's telling a story about how unevenly MCP availability becomes MCP utilization, and what happens to the rest of the workflow when it doesn't.</p>
+
+      <div class="pull">"Putting an MCP server in the room doesn't change how the agent works. The agents that picked it up traded shell turns for tool turns; the ones that didn't, paid for it in shell."</div>
+
+      <figure class="figure" aria-label="Motion.dev MCP vs Browser MCP usage">
+        <div class="figlabel">Figure 04 · Two MCP layers, two stories</div>
+        <div class="figtitle">Domain MCP diverged. Verification MCP converged.</div>
+        <div class="figdek">Motion.dev MCP calls (the domain-specific layer) varied by an order of magnitude across agents. Browser/Playwright MCP calls (the verification layer) were heavy in all three sessions.</div>
+        <div class="chart-host h-sm"><canvas id="chartMcpSplit"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-iterative-session-metrics.json · motion_mcp_calls, browser_mcp_calls</div>
+      </figure>
+
+      <p>The split is the cleanest single result in this study. Domain MCP — the Motion.dev-specific surface for component lookup, animation patterns, API docs, served by <a href="https://github.com/Abhishekrajpurohit/motion-dev-mcp"><code>motion-dev-mcp</code></a> — was used heavily by one agent, lightly by another, and not at all by the third. Browser MCP — Playwright navigation, screenshots, console reads, evaluated DOM queries, served by <a href="https://github.com/microsoft/playwright-mcp"><code>playwright-mcp</code></a> — was used by all three, and used <em>more</em> as the sessions wore on. By turn 8 in every session, verification had become the dominant tool category.</p>
+
+      <p>That suggests the two MCP layers do different jobs. Domain MCP is upstream: it shapes <em>what code gets written</em>. Browser MCP is downstream: it shapes <em>how quickly the agent learns whether the code worked</em>. The first is easier to opt out of; the second isn't, because without it the only feedback loop is the user looking at a screen and typing.</p>
+
+      <figure class="figure" aria-label="Motion.dev MCP usage per turn per agent">
+        <div class="figlabel">Figure 05 · Where the domain MCP showed up</div>
+        <div class="figtitle">Motion.dev MCP is a front-loaded tool</div>
+        <div class="figdek">Per-turn Motion.dev MCP calls. In sessions that used it at all, usage concentrated in the early feature-build turns and trailed off as the work shifted to corrective debugging. By turn 6 onward, virtually all domain-MCP activity has stopped.</div>
+        <div class="chart-host h-md"><canvas id="chartMotionTimeline"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-iterative-session-metrics.json · prompts[].tool_calls_by_category.motion_mcp</div>
+      </figure>
+
+      <h2>The verification surface is the real productivity layer</h2>
+
+      <p>If domain MCP belongs to the build phase, browser MCP belongs to the long tail. The cumulative Playwright/browser calls across the three sessions tell the story:</p>
+
+      <figure class="figure" aria-label="Browser MCP cumulative usage">
+        <div class="figlabel">Figure 06 · Verification compounds</div>
+        <div class="figtitle">Browser MCP calls accumulate fastest exactly when the user gets picky</div>
+        <div class="figdek">Cumulative Browser/Playwright MCP calls across each session's prompt turns. The slope steepens at the same turn in every session — the moment the spec shifts from "build the section" to "fix the section."</div>
+        <div class="chart-host h-md"><canvas id="chartBrowserCum"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-iterative-session-metrics.json · prompts[].tool_calls_by_category.browser_mcp</div>
+      </figure>
+
+      <p>The shape is the same in all three agents, even though their totals differ. There is a roughly flat early section while features are being added, and a steep climb starting around the first bug-report turn. The verification surface is what lets the agent close the loop on a visual problem without the user having to inspect, diff, and explain. It is, in a real sense, the part of the toolchain that lets an agent <em>iterate</em>.</p>
+
+      <section class="feature-media">
+        <div class="figlabel">Walkthrough · <span class="agent codex">codex</span> iterative build</div>
+        <div class="figtitle">The portfolio as it actually behaves at the end of a session</div>
+        <div class="figdek">A short capture of <span class="agent codex">codex</span>'s final iterative output, plus two stills from the sections that took the most corrective turns: the scroll-driven process timeline and the contact flow. <span class="agent claude">claude-code</span> and <span class="agent gemini">gemini-cli</span> builds are available via the links above; the walkthrough is intentionally limited to a single agent so the comparison stays about workflow, not visual polish.</div>
+        <div class="media-slot has-media">
+          <video src="./assets/walkthrough.mp4" controls preload="metadata" playsinline></video>
         </div>
-        <div class="figsource">Source: motion-dev-mcp-benchmark.json · per-record duration_ms × motion_dev_mcp_calls</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;">
+          <figure class="media-slot inline has-media" style="margin:0;">
+            <img src="./assets/process-section.png" alt="Process section — the scroll-driven timeline that took the most corrective turns across all three sessions" />
+          </figure>
+          <figure class="media-slot inline has-media" style="margin:0;">
+            <img src="./assets/contact-section.png" alt="Contact section — where Gemini CLI's session ended on a 258-call corrective turn" />
+          </figure>
+        </div>
+        <div class="figsource" style="margin-top:14px;">All three assets from <code>./codex/iterative/</code>. Process section (left): the alignment / scroll-animation surface that drew repeated bug reports. Contact section (right): the sticky-scroll bug that dominated the late corrective tail.</div>
+      </section>
+
+      <h2>The corrective phase is where MCP earns its keep</h2>
+
+      <p>Reading the prompt logs in order makes the pattern obvious. The first five turns in every session are feature requests: build a hero, add a displaced image, add a project grid, add the scroll-driven process timeline, add the carousel. From turn six onward, the prompts shift in character entirely. They become things like <em>"Fix process section, since the text isn't aligning with the cards. Use playwright mcp to verify the fix"</em>, or <em>"The scroll jitter is still there"</em>, or screenshots attached with two-line captions.</p>
+
+      <figure class="figure" aria-label="Feedback kind breakdown">
+        <div class="figlabel">Figure 07 · What the user actually asked for</div>
+        <div class="figtitle">Most of the work was not feature-building</div>
+        <div class="figdek">Feedback turn breakdown per agent. "Initial build" is the opening prompt; everything else is iterative work. Bugfix turns outnumber feature-extension turns in two of three sessions, and total feedback turns sit between 11 and 13 per agent.</div>
+        <div class="chart-host h-md"><canvas id="chartFeedbackKind"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-iterative-session-metrics.json · feedback_kind_counts</div>
       </figure>
 
-      <figure class="figure" aria-label="Aggregate benchmark time leaderboard">
-        <div class="figlabel">Figure 04 · Leaderboard</div>
-        <div class="figtitle">Codex first, OpenCode last — by more than double</div>
-        <div class="figdek">Total time per agent to finish all four prompts. OpenCode's run was 2.3× Codex's despite using Motion.dev MCP on only one prompt; Gemini CLI placed second with no recorded Motion.dev MCP usage at all.</div>
-        <div class="chart-host h-sm"><canvas id="chartLeaderboard"></canvas></div>
-        <div class="figsource">Source: motion-dev-mcp-benchmark.json · aggregate_by_agent.total_duration_ms</div>
+      <p>That is the part of the work where the cost of each loop matters most. A feature can be specified in a paragraph; a bug usually can't. The user describes a symptom, and the agent has to find the cause. Without browser MCP, that means asking the user to confirm what's on screen. With browser MCP, the agent can navigate to the running build, read the DOM, take a screenshot, execute a probe, and converge on the fix in the same turn.</p>
+
+      <p>The error rate column in the dataset is the closest thing to a direct cost signal. It's heuristic — three different log formats — but the direction is consistent: <span class="agent codex">codex</span> ran at a normalized <span class="num">4.29%</span> tool-error rate, <span class="agent claude">claude-code</span> at <span class="num">8.08%</span>, and <span class="agent gemini">gemini-cli</span> at <span class="num">12.32%</span>. The agent with the broadest specialized tool surface also had the cleanest error profile per call.</p>
+
+      <figure class="figure" aria-label="Tool error rate per agent">
+        <div class="figlabel">Figure 08 · The friction tax</div>
+        <div class="figtitle">Specialized tooling, lower normalized error rate</div>
+        <div class="figdek">Heuristic tool-error rate — failed tool calls divided by total tool calls. Different agents log failures differently, so this is directional rather than precise. The agent that leaned most on specialized MCP surfaces also had the lowest error rate per call.</div>
+        <div class="chart-host h-sm"><canvas id="chartErrorRate"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-iterative-session-metrics.json · tool_error_rate</div>
       </figure>
 
-      <p>Across the four prompts, Codex took the timeline outright and was the fastest agent in aggregate. Gemini CLI won the blob (<span class="num">2m 47s</span>, the fastest single run in the benchmark) and the liquid menu (<span class="num">5m 14s</span>). Claude Code won the dock. OpenCode running MiniMax 2.5 finished last on three of the four prompts and last overall by a wide margin — <span class="num">61m 49s</span> against Codex's <span class="num">26m 50s</span>, more than double the total.</p>
+      <h2>An MCP is only as good as its fit</h2>
 
-      <figure class="figure" aria-label="Total tool calls per agent split by Motion.dev MCP vs other">
-        <div class="figlabel">Figure 05 · Tool ledger</div>
-        <div class="figtitle">Gemini CLI runs with the smallest ledger overall</div>
-        <div class="figdek">Total tool calls per agent across the four prompts, split into Motion.dev MCP calls and everything else (shell, file, task tools). Gemini's <span class="num">38</span> total invocations are under half of every other agent's footprint — a leaner operational style, not just a different one.</div>
-        <div class="chart-host h-sm"><canvas id="chartLedger"></canvas></div>
-        <div class="figsource">Source: motion-dev-mcp-benchmark.json · aggregate_by_agent.{motion_dev_mcp_calls, total_tool_calls}</div>
-      </figure>
+      <p>One detail in the Claude Code session is worth keeping. Two of its Motion.dev MCP calls failed early: <code>generate_motion_component</code> returned <em>"Unknown animation pattern: stagger"</em>, and <code>get_component_api</code> returned <em>"No API documentation found for component: motion.span"</em>. That's not a problem with MCP in general — it's a problem with the specific Motion.dev MCP's coverage on the specific patterns the agent reached for. After those failures, Claude Code's domain-MCP usage thinned out and the session leaned more on file reads and shell builds.</p>
 
-      <p>That spread suggests two separate axes are in play. One is integration depth: does the agent <em>know</em> to reach for Motion.dev tooling, and does it use the toolkit in a way that compresses work into fewer turns? Codex's profile fits that description. The other is something closer to baseline implementation throughput on familiar web-animation tasks. Gemini CLI's profile — fastest twice, zero recorded MCP usage, lowest total tool count at <span class="num">38</span> — fits that one. The benchmark cannot tell us whether the resulting code is equivalently good. It can tell us that two very different approaches produced top-half results.</p>
+      <p>That's the kind of detail that should land in any productivity story about MCP servers. <strong>Availability isn't enough; alignment matters too.</strong> A domain MCP that doesn't recognize the patterns or components an agent needs becomes a brief detour, not a productivity lever. The good news is the recovery pattern was fast — Claude Code didn't get stuck — but the leverage from that MCP was real only on the calls where the documentation matched the request.</p>
 
-      <figure class="figure" aria-label="Average duration per prompt">
-        <div class="figlabel">Figure 06 · Prompt difficulty</div>
-        <div class="figtitle">The dock was the heaviest lift</div>
-        <div class="figdek">Average completion time per prompt across all four agents. The MagneticDock was the most expensive prompt in the benchmark; the blob was the lightest.</div>
-        <div class="chart-host h-sm"><canvas id="chartDifficulty"></canvas></div>
-        <div class="figsource">Source: motion-dev-mcp-benchmark.json · aggregate_by_prompt</div>
-      </figure>
+      <div class="pull">"The strongest version of this story isn't 'MCP makes agents faster.' It's: when the MCP fits the task, every loop after the first one gets shorter."</div>
 
-      <h3>What the benchmark does <em>not</em> say</h3>
+      <h2>Reading this as a productivity case</h2>
 
-      <p>This is a history-based benchmark. It compares what these four agents actually did, on this machine, in these working directories, on this day. It measures completion speed and tool-use patterns. It does <strong>not</strong> evaluate animation fidelity, code quality, visual polish, or how the produced components behave at runtime. A faster finish is not a better outcome by itself, and a heavier tool ledger is not a worse outcome by itself. The honest framing is that we now know how four agents <em>chose</em> to attack the same four prompts, and what that cost them in wall-clock time. The question of which dock actually feels good to use is unanswered here.</p>
+      <p>If you take this dataset as a small but real field study, three things hold up:</p>
 
-      <p>There are also normalization caveats. Codex names its Motion.dev tools without the conventional <code>mcp__</code> prefix, so counts there come from a curated list of Motion-specific tool names. Claude Code's Motion.dev calls are namespaced cleanly. OpenCode's session timings come from session metadata rather than per-turn fields. Some runs had follow-up turns; only the first completed benchmark turn was counted. None of these shift the directional finding, but readers should know the rules of the count.</p>
+      <p><strong>1. The iteration loop is the unit of productivity.</strong> Initial generation is solved well enough that the variance between agents on turn 1 is small. The variance shows up on turns 6 through 14, where the user is feeding back live impressions of a running UI. That's where MCP servers either help or don't.</p>
 
-      <p>The takeaway worth keeping is the one the data refuses to simplify: <strong>MCP availability and MCP behavior are not the same thing</strong>. Putting the toolkit in the room does not guarantee an agent will pick it up. The strongest single result here — Codex's <span class="num">31</span> Motion.dev calls coexisting with the fastest total time — is real, and it points toward integration quality mattering. The strongest counterweight — Gemini CLI's two wins with a clean tool sheet — is also real, and it points toward the limits of judging an agent on its tool ledger alone.</p>
+      <p><strong>2. The two MCP layers do different jobs.</strong> A domain MCP (Motion.dev here) compresses the cost of <em>knowing</em> — what components exist, what props they take, what patterns are idiomatic. A verification MCP (Playwright/browser here) compresses the cost of <em>seeing</em> — what the build actually looks like, whether the fix landed, whether the regression is real. Together they cover the two failure modes of iterative work: writing code from outdated guesses, and committing fixes without checking them.</p>
+
+      <p><strong>3. The absence of a domain MCP doesn't stop the work — it shifts it.</strong> The Gemini CLI session finished the same six-section build the other two did. It just spent <span class="num">617</span> tool calls doing it, more than the other two combined, with most of the extra going into shell rebuilds, file edits, and a much larger corrective tail on the contact section. That's the cost the domain MCP would have lowered — not zeroed out, but lowered.</p>
 
       <h2>Key findings</h2>
       <ul class="findings">
-        <li><b>Codex finished first overall and used Motion.dev MCP the most.</b> Total time <span class="num">26m 50s</span>, <span class="num">31</span> Motion.dev MCP calls across <span class="num">4 of 4</span> prompts. It is the only agent in the field with both attributes.</li>
-        <li><b>Gemini CLI logged zero Motion.dev MCP calls and still won two of four prompts.</b> It took the blob in <span class="num">2m 47s</span> and the menu in <span class="num">5m 14s</span>, the fastest single runs in their prompt brackets.</li>
-        <li><b>The timeline prompt produced the largest gap in the benchmark.</b> Codex: <span class="num">3m 24s</span>. Claude Code: <span class="num">20m 25s</span>. A roughly sixfold difference on identical instructions.</li>
-        <li><b>The MagneticDock was the hardest prompt on average.</b> Average completion time <span class="num">13m 37s</span>. Notably, it was won by Claude Code in <span class="num">7m 25s</span> with <span class="num">zero</span> Motion.dev MCP calls.</li>
-        <li><b>Tool-use behavior diverged sharply under identical prompts.</b> Motion.dev MCP was invoked on 4/4 prompts by Codex, 3/4 by Claude Code, 1/4 by OpenCode/MiniMax 2.5, and 0/4 by Gemini CLI.</li>
-        <li><b>OpenCode running MiniMax 2.5 was the slowest profile.</b> Total <span class="num">61m 49s</span>, more than double Codex's total, and Motion.dev MCP usage was limited to a single prompt (the dock).</li>
-        <li><b>Tool call count is not a proxy for speed.</b> Codex's <span class="num">97</span> total tool calls produced the fastest total time; OpenCode's <span class="num">78</span> total tool calls produced the slowest.</li>
-        <li><b>This benchmark measures speed and tool use, not quality.</b> It does not score animation fidelity, visual correctness, or runtime behavior of the output.</li>
+        <li><b>The real cost of the work was 5h 49m of active time across three sessions.</b> Raw spans summed to <span class="num">18h 45m</span>; <span class="num">12h 48m</span> of that was idle wait between user prompts. Use active time as the productivity unit.</li>
+        <li><b>92% of all prompts in this study were follow-up turns.</b> Only <span class="num">3</span> of <span class="num">38</span> were initial build requests. Iterative cost dominates the work.</li>
+        <li><b>Browser MCP was the universal verification layer.</b> All three agents used it heavily — <span class="num">341</span> combined calls — and usage steepened from turn 6 onward, when the spec shifted from feature-building to corrective debugging.</li>
+        <li><b>Motion.dev MCP usage diverged sharply on identical prompts.</b> Codex: <span class="num">17</span> calls. Claude Code: <span class="num">6</span>. Gemini CLI: <span class="num">0</span>. Same instruction, three operational styles.</li>
+        <li><b>Domain MCP is front-loaded; verification MCP is back-loaded.</b> Motion.dev calls clustered in early build turns; Playwright calls accumulated through the corrective tail.</li>
+        <li><b>Tool-error rate tracks specialization.</b> Codex (<span class="num">4.29%</span>) ran the cleanest, Gemini CLI (<span class="num">12.32%</span>) the noisiest. Heuristic, but directional.</li>
+        <li><b>The Claude Code Motion.dev failures show MCP fit matters.</b> Two early calls returned "unknown pattern" / "no documentation" errors. The session recovered, but the leverage was lost on those requests.</li>
+        <li><b>Without a domain MCP, the work shifts into generic tooling.</b> Gemini CLI's session ran <span class="num">617</span> total tool calls — more than the other two combined — with a single 258-call corrective turn on the contact section.</li>
+        <li><b>This study does not score output quality.</b> It measures workflow shape, tool mix, and iteration cost. Final builds are linked above for inspection.</li>
       </ul>
 
       <h2>Social summary</h2>
       <div class="social">
-        <div class="tag">Benchmark · 120-word version</div>
-        <p>We ran four coding agents — <b>Claude Code</b>, <b>Codex</b>, <b>Gemini CLI</b>, <b>OpenCode (MiniMax 2.5)</b> — on four Motion.dev animation prompts: a magnetic dock, an SVG blob, a scroll-driven timeline, and a liquid menu.</p>
-        <p><b>Codex won overall</b> (26m 50s) and was the heaviest Motion.dev MCP user (31 calls across 4/4 prompts). <b>Gemini CLI</b> logged <b>zero</b> Motion.dev MCP calls and <b>still won two of four prompts</b>, including the blob in 2m 47s.</p>
-        <p>The timeline prompt cracked the field open: Codex 3m 24s vs. Claude Code 20m 25s on identical instructions. The dock was the hardest prompt on average, and Claude Code won it with zero Motion.dev MCP calls.</p>
-        <p>Lesson: MCP <i>availability</i> ≠ MCP <i>behavior</i>. Speed isn't quality. The toolkit matters; so does how an agent chooses to use it.</p>
+        <div class="tag">Field study · 120-word version</div>
+        <p>Three coding agents — <b>Codex</b>, <b>Claude Code</b>, <b>Gemini CLI</b> — built the same multi-day Motion.dev portfolio in iterative turns. Across the three sessions: <b>5h 49m</b> of active work, <b>12h 48m</b> of idle wait removed. <b>92%</b> of all <b>38</b> prompts were follow-ups: bugfixes, alignment fixes, screenshot-driven debugging.</p>
+        <p>The verification MCP (Playwright/browser) was used heavily by all three, with <b>341</b> combined calls. The domain MCP (Motion.dev) diverged: Codex 17 calls, Claude Code 6, Gemini CLI <b>0</b>.</p>
+        <p>Where domain MCP was used, it concentrated in early build turns. Where it wasn't, the workflow leaned harder on shell, file edits, and a longer corrective tail.</p>
+        <p>The productivity story isn't speed. It's that <b>MCP servers compress the cost of every loop after the first answer</b> — and the second half of the work is most of the work.</p>
       </div>
 
       <section class="meta">
-        <h3>Methodology and caveats</h3>
+        <h3>Method and caveats</h3>
         <ul>
-          <li><b>Models behind the agents.</b> <code>codex</code> was running <b>GPT-5.4</b> (medium reasoning); <code>claude-code</code> was running <b>Claude Sonnet 4.6</b> (high reasoning); <code>gemini-cli</code> was running <b>Gemini 3.1 Pro Preview</b>; <code>opencode-minimax-2.5</code> was running <b>MiniMax M2.5</b>. Both the agent harness <em>and</em> its underlying model shape what we measured here; "agent" is shorthand for the combination.</li>
-          <li><b>History-based, not lab-replay.</b> Durations come from real session histories on a single machine, normalized to the first completed benchmark turn for each prompt.</li>
-          <li><b>Motion.dev MCP call counts are tool-name based.</b> For Claude Code, only <code>mcp__motion-dev__*</code> calls. For OpenCode, only <code>motion-dev_*</code> calls. For Codex, Motion.dev tool names (e.g. <code>search_motion_docs</code>, <code>get_component_api</code>) are counted explicitly because Codex does not use an <code>mcp__</code> prefix. For Gemini CLI, no Motion.dev-specific calls were recorded.</li>
-          <li><b>Generic discovery calls excluded.</b> Tools like <code>list_mcp_resources</code> were not counted as Motion.dev MCP usage.</li>
-          <li><b>OpenCode durations</b> are derived from session <code>time_created → time_updated</code> rather than per-turn fields, due to history format differences.</li>
-          <li><b>Output quality is not measured.</b> This benchmark does not score animation fidelity, runtime behavior, or visual polish of the generated components.</li>
+          <li><b>History-derived, not lab-replay.</b> Numbers are extracted from each agent's local session log on a single machine, normalized into a shared schema. Source paths are in <code>motion-dev-mcp-iterative-session-metrics.json</code>.</li>
+          <li><b>MCP servers under test.</b> The domain MCP was <a href="https://github.com/Abhishekrajpurohit/motion-dev-mcp"><code>Abhishekrajpurohit/motion-dev-mcp</code></a> (Motion.dev component lookup, animation patterns, API docs). The verification MCP was <a href="https://github.com/microsoft/playwright-mcp"><code>microsoft/playwright-mcp</code></a> (browser navigation, screenshots, console reads, evaluated DOM queries). Both were available to every agent; how each agent reached for them is what this study measures.</li>
+          <li><b>Active work time excludes idle gaps.</b> Wherever the last agent event in a turn was logged and the session sat waiting for the next user prompt, that gap was subtracted from the raw session span. <code>active_elapsed_ms</code> is the productivity unit in this story; the raw <code>elapsed_ms</code> is reported as wall-clock context but not used to compare agents.</li>
+          <li><b>Models behind the agents.</b> <code>codex</code> ran <b>GPT-5.4 (medium)</b>; <code>claude-code</code> ran <b>Claude Sonnet 4.6 (high)</b>; <code>gemini-cli</code> ran <b>Gemini 3.1 Pro Preview</b>. "Agent" is shorthand for the harness + model combination.</li>
+          <li><b>Tool categorization is heuristic.</b> Each agent logs tool calls in its own format; categories (<code>motion_mcp</code>, <code>browser_mcp</code>, <code>shell</code>, <code>file_edit</code>, <code>file_read</code>, <code>planning</code>) were normalized post-hoc.</li>
+          <li><b>Tool-error rate is approximate.</b> Non-zero shell exits with explicit error markers were counted as failures. Comparing absolute rates across agents is directional, not exact.</li>
+          <li><b>Output quality is not measured.</b> This study is about workflow and instrumentation, not visual polish or animation fidelity. Final builds are linked above so readers can judge for themselves.</li>
+          <li><b>The end-of-session builds are not finished products.</b> They show the capability ceiling reached inside this specific prompt set. Anything beyond — additional sections, deeper polish, accessibility, performance work, content — is bounded only by the creativity of the prompts the user is willing to write. The study measures what these agents do with the prompts they were given, not what they could do with a different set.</li>
+          <li><b>Repeated corrective turns are part of the story.</b> Several sessions included multiple prompts on the same bug (process-section alignment, contact-section scroll lock). The iterative tail is the productivity story, not an artifact to discount.</li>
         </ul>
-        <p>Source files: <code><a href="motion-dev-mcp-benchmark.json">motion-dev-mcp-benchmark.json</a></code>, <code><a href="motion-dev-mcp-benchmark.csv">motion-dev-mcp-benchmark.csv</a></code>, <code><a href="motion-dev-mcp-data-story-report.md">motion-dev-mcp-data-story-report.md</a></code>, <code><a href="motion-dev-mcp-executive-summary.md">motion-dev-mcp-executive-summary.md</a></code>.</p>
-        <p>Written by <b>Claude Opus 4.7 (1M context)</b> via <a href="https://claude.com/claude-code">Claude Code</a>, from the prompt and iteration notes recorded at <a href="./PROMPT.md"><code>PROMPT.md</code></a>.</p>
+        <p>Source files: <code><a href="motion-dev-mcp-iterative-session-metrics.json">motion-dev-mcp-iterative-session-metrics.json</a></code>, <code><a href="motion-dev-mcp-iterative-story-handoff.md">motion-dev-mcp-iterative-story-handoff.md</a></code>, <code><a href="iterative-prompts.md">iterative-prompts.md</a></code>. Companion study: <code><a href="agents-comparison.html">agents-comparison.html</a></code> (static one-shot prompts).</p>
+        <p>Written by <b>Claude Opus 4.7 (1M context)</b> via <a href="https://claude.com/claude-code">Claude Code</a>.</p>
       </section>
 
     </article>
@@ -712,53 +794,35 @@
 <script>
 (function () {
   const COLORS = {
-    'claude-code': '#c8533a',
     'codex': '#e08a23',
-    'gemini-cli': '#2a6df4',
-    'opencode-minimax-2.5': '#6e57c4'
+    'claude-code': '#c8533a',
+    'gemini-cli': '#2a6df4'
   };
-  const AGENTS = ['claude-code', 'codex', 'gemini-cli', 'opencode-minimax-2.5'];
-  const PROMPTS = ['dock', 'blob', 'timeline', 'menu'];
-  const PROMPT_LABELS = {
-    dock: 'MagneticDock',
-    blob: 'SVG Blob',
-    timeline: 'Cinematic Timeline',
-    menu: 'Liquid Menu'
-  };
+  const AGENTS = ['codex', 'claude-code', 'gemini-cli'];
 
-  // Per-prompt duration in minutes (derived from duration_ms in source JSON)
-  const DURATION_MIN = {
-    dock:     { 'claude-code': 7.42,  'codex': 8.42, 'gemini-cli': 14.15, 'opencode-minimax-2.5': 24.45 },
-    blob:     { 'claude-code': 7.45,  'codex': 9.02, 'gemini-cli': 2.78,  'opencode-minimax-2.5': 3.82 },
-    timeline: { 'claude-code': 20.42, 'codex': 3.40, 'gemini-cli': 10.73, 'opencode-minimax-2.5': 14.35 },
-    menu:     { 'claude-code': 7.55,  'codex': 6.02, 'gemini-cli': 5.23,  'opencode-minimax-2.5': 19.22 }
+  // ---- Figure 01: Tool calls per prompt turn (line chart, by turn index) ----
+  const promptCalls = {
+    'codex':       [29, 22, 27, 31, 24, 0, 40, 33, 53, 28, 9, 28, 14, 10],
+    'claude-code': [43, 11, 0, 14, 9, 16, 0, 6, 0, 50, 29, 20],
+    'gemini-cli':  [55, 25, 20, 35, 55, 5, 50, 50, 28, 8, 28, 258]
   };
+  const maxLen = Math.max(...Object.values(promptCalls).map(a => a.length));
+  const turnLabels = Array.from({length: maxLen}, (_, i) => 'T' + (i+1));
 
-  // Motion.dev MCP calls per agent per prompt
-  const MCP = {
-    dock:     { 'claude-code': 0, 'codex': 13, 'gemini-cli': 0, 'opencode-minimax-2.5': 4 },
-    blob:     { 'claude-code': 5, 'codex': 6,  'gemini-cli': 0, 'opencode-minimax-2.5': 0 },
-    timeline: { 'claude-code': 6, 'codex': 5,  'gemini-cli': 0, 'opencode-minimax-2.5': 0 },
-    menu:     { 'claude-code': 5, 'codex': 7,  'gemini-cli': 0, 'opencode-minimax-2.5': 0 }
-  };
-
-  // Average prompt duration (minutes)
-  const AVG_PROMPT_MIN = {
-    dock: 13.62, timeline: 12.22, menu: 9.50, blob: 5.77
-  };
-
-  // ---- Figure 1: Per-prompt grouped bars ----
-  new Chart(document.getElementById('chartDuration').getContext('2d'), {
-    type: 'bar',
+  new Chart(document.getElementById('chartPromptTimeline').getContext('2d'), {
+    type: 'line',
     data: {
-      labels: PROMPTS.map(p => PROMPT_LABELS[p]),
+      labels: turnLabels,
       datasets: AGENTS.map(a => ({
         label: a,
-        data: PROMPTS.map(p => DURATION_MIN[p][a]),
-        backgroundColor: COLORS[a],
+        data: promptCalls[a],
         borderColor: COLORS[a],
-        borderWidth: 0,
-        borderRadius: 2
+        backgroundColor: COLORS[a] + '22',
+        borderWidth: 2,
+        tension: 0.25,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        spanGaps: true
       }))
     },
     options: {
@@ -769,113 +833,52 @@
         legend: { position: 'top', labels: { font: { family: 'Inter', size: 12 }, color: '#3b4145', boxWidth: 12, boxHeight: 12 } },
         tooltip: {
           backgroundColor: '#15191c',
-          titleFont: { family: 'Inter', weight: 700 },
-          bodyFont: { family: 'Inter' },
-          callbacks: { label: (c) => c.dataset.label + ': ' + c.parsed.y.toFixed(2) + ' min' }
-        }
-      },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 12 }, color: '#3b4145' } },
-        y: {
-          grid: { color: '#e3ddd0' },
-          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', callback: (v) => v + ' m' },
-          title: { display: true, text: 'Minutes to first completed turn', font: { family: 'Inter', size: 11 }, color: '#6b6b66' }
-        }
-      }
-    }
-  });
-
-  // ---- Figure 2: Matrix cell shading ----
-  const matrixBody = document.querySelector('#matrix tbody');
-  let maxMCP = 0;
-  PROMPTS.forEach(p => AGENTS.forEach(a => { if (MCP[p][a] > maxMCP) maxMCP = MCP[p][a]; }));
-  PROMPTS.forEach(p => {
-    const tr = document.createElement('tr');
-    const labelTd = document.createElement('td');
-    labelTd.className = 'label';
-    labelTd.textContent = PROMPT_LABELS[p];
-    tr.appendChild(labelTd);
-    AGENTS.forEach(a => {
-      const v = MCP[p][a];
-      const td = document.createElement('td');
-      td.className = 'cell' + (v === 0 ? ' zero' : '');
-      td.textContent = v;
-      if (v > 0) {
-        td.style.background = COLORS[a];
-        td.style.opacity = (0.35 + 0.65 * (v / maxMCP)).toFixed(2);
-      }
-      tr.appendChild(td);
-    });
-    matrixBody.appendChild(tr);
-  });
-
-  // ---- Figure 3: Scatter — MCP calls vs. duration ----
-  const scatterData = AGENTS.map(a => ({
-    label: a,
-    data: PROMPTS.map(p => ({ x: MCP[p][a], y: DURATION_MIN[p][a], prompt: PROMPT_LABELS[p] })),
-    backgroundColor: COLORS[a],
-    borderColor: COLORS[a],
-    pointRadius: 7,
-    pointHoverRadius: 9
-  }));
-  new Chart(document.getElementById('chartScatter').getContext('2d'), {
-    type: 'scatter',
-    data: { datasets: scatterData },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 600 },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: '#15191c',
-          callbacks: {
-            label: (c) => c.dataset.label + ' · ' + c.raw.prompt + ': ' + c.raw.x + ' MCP calls, ' + c.raw.y.toFixed(2) + ' min'
-          }
+          callbacks: { label: (c) => c.dataset.label + ': ' + c.parsed.y + ' tool calls' }
         }
       },
       scales: {
         x: {
-          title: { display: true, text: 'Motion.dev MCP calls', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
-          grid: { color: '#e3ddd0' },
-          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', stepSize: 2 },
-          beginAtZero: true
+          grid: { display: false },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#3b4145' },
+          title: { display: true, text: 'Prompt turn (chronological)', font: { family: 'Inter', size: 11 }, color: '#6b6b66' }
         },
         y: {
-          title: { display: true, text: 'Minutes to completion', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
           grid: { color: '#e3ddd0' },
-          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', callback: (v) => v + ' m' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          title: { display: true, text: 'Tool calls in this turn', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
           beginAtZero: true
         }
       }
     }
   });
 
-  // ---- Figure 4: Aggregate leaderboard (horizontal bars, sorted) ----
-  const TOTAL_MIN = {
-    'codex': 26.84,
-    'gemini-cli': 32.90,
-    'claude-code': 42.85,
-    'opencode-minimax-2.5': 61.83
+  // ---- Figure 02: Active vs idle (stacked horizontal, hours) ----
+  // Source values (hours): active / idle removed
+  const ACTIVE_HOURS = { 'codex': 1.025, 'claude-code': 2.695, 'gemini-cli': 2.099 };
+  const IDLE_HOURS   = { 'codex': 8.461, 'claude-code': 1.798, 'gemini-cli': 2.577 };
+  const HUMAN_TIME = {
+    'codex':       { active: '1h 1m 30s',  idle: '8h 27m 38s' },
+    'claude-code': { active: '2h 41m 42s', idle: '1h 47m 54s' },
+    'gemini-cli':  { active: '2h 5m 59s',  idle: '2h 34m 38s' }
   };
-  const COVERAGE = {
-    'codex': '4/4 prompts',
-    'gemini-cli': '0/4 prompts',
-    'claude-code': '3/4 prompts',
-    'opencode-minimax-2.5': '1/4 prompts'
-  };
-  const sortedAgents = AGENTS.slice().sort((a, b) => TOTAL_MIN[a] - TOTAL_MIN[b]);
-
-  new Chart(document.getElementById('chartLeaderboard').getContext('2d'), {
+  new Chart(document.getElementById('chartActiveVsIdle').getContext('2d'), {
     type: 'bar',
     data: {
-      labels: sortedAgents,
-      datasets: [{
-        data: sortedAgents.map(a => TOTAL_MIN[a]),
-        backgroundColor: sortedAgents.map(a => COLORS[a]),
-        borderRadius: 2,
-        borderWidth: 0
-      }]
+      labels: AGENTS,
+      datasets: [
+        {
+          label: 'Active work',
+          data: AGENTS.map(a => ACTIVE_HOURS[a]),
+          backgroundColor: '#b1402a',
+          borderWidth: 0
+        },
+        {
+          label: 'Idle wait (removed)',
+          data: AGENTS.map(a => IDLE_HOURS[a]),
+          backgroundColor: '#c4b9a2',
+          borderWidth: 0
+        }
+      ]
     },
     options: {
       indexAxis: 'y',
@@ -883,25 +886,31 @@
       maintainAspectRatio: false,
       animation: { duration: 600 },
       plugins: {
-        legend: { display: false },
+        legend: {
+          position: 'top',
+          labels: { font: { family: 'Inter', size: 12 }, color: '#3b4145', boxWidth: 12, boxHeight: 12 }
+        },
         tooltip: {
           backgroundColor: '#15191c',
           callbacks: {
             label: (c) => {
-              const a = sortedAgents[c.dataIndex];
-              return c.parsed.x.toFixed(2) + ' min total · Motion.dev MCP on ' + COVERAGE[a];
+              const a = AGENTS[c.dataIndex];
+              const key = c.datasetIndex === 0 ? 'active' : 'idle';
+              return c.dataset.label + ': ' + HUMAN_TIME[a][key];
             }
           }
         }
       },
       scales: {
         x: {
+          stacked: true,
           grid: { color: '#e3ddd0' },
-          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', callback: (v) => v + ' m' },
-          title: { display: true, text: 'Total minutes across all 4 prompts', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', callback: (v) => v + ' h' },
+          title: { display: true, text: 'Hours (active + idle = raw session span)', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
           beginAtZero: true
         },
         y: {
+          stacked: true,
           grid: { display: false },
           ticks: { font: { family: 'Inter', size: 12, weight: '600' }, color: '#15191c' }
         }
@@ -909,29 +918,40 @@
     }
   });
 
-  // ---- Figure 5: Tool ledger composition (stacked horizontal bars) ----
-  const MCP_TOTAL = { 'codex': 31, 'claude-code': 16, 'opencode-minimax-2.5': 4, 'gemini-cli': 0 };
-  const TOOL_TOTAL = { 'codex': 97, 'claude-code': 91, 'opencode-minimax-2.5': 78, 'gemini-cli': 38 };
-  const ledgerOrder = ['codex', 'claude-code', 'opencode-minimax-2.5', 'gemini-cli'];
+  // ---- Figure 03: Tool category mix (horizontal stacked bar) ----
+  const CATS = ['motion_mcp', 'browser_mcp', 'shell', 'file_edit', 'file_read', 'planning'];
+  const CAT_LABELS = {
+    motion_mcp: 'Motion.dev MCP',
+    browser_mcp: 'Browser MCP',
+    shell: 'Shell',
+    file_edit: 'File edits',
+    file_read: 'File reads',
+    planning: 'Planning'
+  };
+  const CAT_COLORS = {
+    motion_mcp: '#b1402a',
+    browser_mcp: '#d99858',
+    shell: '#6b6b66',
+    file_edit: '#3b4145',
+    file_read: '#c4b9a2',
+    planning: '#a08e6c'
+  };
+  const categoryData = {
+    'codex':       { motion_mcp: 17, browser_mcp: 136, shell: 134, file_edit: 58, file_read: 0,  planning: 5 },
+    'claude-code': { motion_mcp: 6,  browser_mcp: 50,  shell: 46,  file_edit: 29, file_read: 64, planning: 3 },
+    'gemini-cli':  { motion_mcp: 0,  browser_mcp: 155, shell: 165, file_edit: 126, file_read: 79, planning: 92 }
+  };
 
-  new Chart(document.getElementById('chartLedger').getContext('2d'), {
+  new Chart(document.getElementById('chartCategoryMix').getContext('2d'), {
     type: 'bar',
     data: {
-      labels: ledgerOrder,
-      datasets: [
-        {
-          label: 'Motion.dev MCP calls',
-          data: ledgerOrder.map(a => MCP_TOTAL[a]),
-          backgroundColor: '#b1402a',
-          borderWidth: 0
-        },
-        {
-          label: 'Other tool calls (shell, file, task)',
-          data: ledgerOrder.map(a => TOOL_TOTAL[a] - MCP_TOTAL[a]),
-          backgroundColor: '#c4b9a2',
-          borderWidth: 0
-        }
-      ]
+      labels: AGENTS,
+      datasets: CATS.map(c => ({
+        label: CAT_LABELS[c],
+        data: AGENTS.map(a => categoryData[a][c]),
+        backgroundColor: CAT_COLORS[c],
+        borderWidth: 0
+      }))
     },
     options: {
       indexAxis: 'y',
@@ -953,7 +973,7 @@
           stacked: true,
           grid: { color: '#e3ddd0' },
           ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
-          title: { display: true, text: 'Total tool calls across the benchmark', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          title: { display: true, text: 'Total tool calls in session', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
           beginAtZero: true
         },
         y: {
@@ -965,16 +985,222 @@
     }
   });
 
-  // ---- Figure 6: Prompt difficulty horizontal bars ----
-  const orderedPrompts = ['dock', 'timeline', 'menu', 'blob'];
-  new Chart(document.getElementById('chartDifficulty').getContext('2d'), {
+  // ---- Figure 04: Motion.dev MCP vs Browser MCP grouped bars ----
+  new Chart(document.getElementById('chartMcpSplit').getContext('2d'), {
     type: 'bar',
     data: {
-      labels: orderedPrompts.map(p => PROMPT_LABELS[p]),
+      labels: AGENTS,
+      datasets: [
+        {
+          label: 'Motion.dev MCP calls',
+          data: AGENTS.map(a => categoryData[a].motion_mcp),
+          backgroundColor: '#b1402a',
+          borderRadius: 2,
+          borderWidth: 0
+        },
+        {
+          label: 'Browser MCP calls',
+          data: AGENTS.map(a => categoryData[a].browser_mcp),
+          backgroundColor: '#d99858',
+          borderRadius: 2,
+          borderWidth: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: { position: 'top', labels: { font: { family: 'Inter', size: 12 }, color: '#3b4145', boxWidth: 12, boxHeight: 12 } },
+        tooltip: {
+          backgroundColor: '#15191c',
+          callbacks: { label: (c) => c.dataset.label + ': ' + c.parsed.y }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 12, weight: '600' }, color: '#15191c' } },
+        y: {
+          grid: { color: '#e3ddd0' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          title: { display: true, text: 'Tool calls', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  // ---- Figure 05: Motion.dev MCP per turn ----
+  const motionPerTurn = {
+    'codex':       [6, 3, 1, 2, 2, 0, 0, 3, 0, 0, 0, 0, 0, 0],
+    'claude-code': [6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    'gemini-cli':  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  };
+  new Chart(document.getElementById('chartMotionTimeline').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: turnLabels,
+      datasets: AGENTS.map(a => ({
+        label: a,
+        data: motionPerTurn[a],
+        backgroundColor: COLORS[a],
+        borderRadius: 2,
+        borderWidth: 0
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: { position: 'top', labels: { font: { family: 'Inter', size: 12 }, color: '#3b4145', boxWidth: 12, boxHeight: 12 } },
+        tooltip: { backgroundColor: '#15191c' }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#3b4145' },
+          title: { display: true, text: 'Prompt turn', font: { family: 'Inter', size: 11 }, color: '#6b6b66' }
+        },
+        y: {
+          grid: { color: '#e3ddd0' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', stepSize: 1 },
+          title: { display: true, text: 'Motion.dev MCP calls', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  // ---- Figure 06: Cumulative Browser MCP calls ----
+  const browserPerTurn = {
+    'codex':       [6, 7, 14, 12, 6, 0, 26, 12, 16, 12, 4, 10, 4, 5],
+    'claude-code': [0, 0, 0, 0, 0, 0, 0, 0, 0, 28, 13, 9],
+    'gemini-cli':  [0, 0, 0, 0, 0, 0, 20, 25, 0, 0, 0, 110]
+  };
+  const cum = obj => {
+    const out = {};
+    Object.entries(obj).forEach(([k, arr]) => {
+      let s = 0;
+      out[k] = arr.map(v => (s += v));
+    });
+    return out;
+  };
+  const browserCum = cum(browserPerTurn);
+  new Chart(document.getElementById('chartBrowserCum').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: turnLabels,
+      datasets: AGENTS.map(a => ({
+        label: a,
+        data: browserCum[a],
+        borderColor: COLORS[a],
+        backgroundColor: COLORS[a] + '22',
+        borderWidth: 2,
+        tension: 0.25,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        fill: false
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: { position: 'top', labels: { font: { family: 'Inter', size: 12 }, color: '#3b4145', boxWidth: 12, boxHeight: 12 } },
+        tooltip: { backgroundColor: '#15191c', callbacks: { label: (c) => c.dataset.label + ': ' + c.parsed.y + ' cumulative' } }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#3b4145' },
+          title: { display: true, text: 'Prompt turn (chronological)', font: { family: 'Inter', size: 11 }, color: '#6b6b66' }
+        },
+        y: {
+          grid: { color: '#e3ddd0' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          title: { display: true, text: 'Cumulative Browser MCP calls', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  // ---- Figure 07: Feedback kind stacked bars ----
+  const FB_KINDS = ['initial_build', 'feature_extension', 'bugfix', 'integration', 'other'];
+  const FB_LABELS = {
+    initial_build: 'Initial build',
+    feature_extension: 'Feature extension',
+    bugfix: 'Bugfix',
+    integration: 'Integration',
+    other: 'Other'
+  };
+  const FB_COLORS = {
+    initial_build: '#3b4145',
+    feature_extension: '#d99858',
+    bugfix: '#b1402a',
+    integration: '#6b6b66',
+    other: '#c4b9a2'
+  };
+  const feedbackKinds = {
+    'codex':       { initial_build: 1, feature_extension: 4, bugfix: 6, integration: 1, other: 2 },
+    'claude-code': { initial_build: 1, feature_extension: 6, bugfix: 4, integration: 1, other: 0 },
+    'gemini-cli':  { initial_build: 1, feature_extension: 4, bugfix: 6, integration: 1, other: 0 }
+  };
+  new Chart(document.getElementById('chartFeedbackKind').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: AGENTS,
+      datasets: FB_KINDS.map(k => ({
+        label: FB_LABELS[k],
+        data: AGENTS.map(a => feedbackKinds[a][k]),
+        backgroundColor: FB_COLORS[k],
+        borderWidth: 0
+      }))
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { font: { family: 'Inter', size: 12 }, color: '#3b4145', boxWidth: 12, boxHeight: 12 }
+        },
+        tooltip: {
+          backgroundColor: '#15191c',
+          callbacks: { label: (c) => c.dataset.label + ': ' + c.parsed.x + ' turn(s)' }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { color: '#e3ddd0' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', stepSize: 2 },
+          title: { display: true, text: 'Prompt turns', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          beginAtZero: true
+        },
+        y: {
+          stacked: true,
+          grid: { display: false },
+          ticks: { font: { family: 'Inter', size: 12, weight: '600' }, color: '#15191c' }
+        }
+      }
+    }
+  });
+
+  // ---- Figure 08: Error rate bars ----
+  const ERROR_RATE = { 'codex': 4.29, 'claude-code': 8.08, 'gemini-cli': 12.32 };
+  const ordered = AGENTS.slice().sort((a,b) => ERROR_RATE[a] - ERROR_RATE[b]);
+  new Chart(document.getElementById('chartErrorRate').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ordered,
       datasets: [{
-        label: 'Average minutes across agents',
-        data: orderedPrompts.map(p => AVG_PROMPT_MIN[p]),
-        backgroundColor: ['#b1402a', '#c46b3a', '#d99858', '#e6c089'],
+        data: ordered.map(a => ERROR_RATE[a]),
+        backgroundColor: ordered.map(a => COLORS[a]),
         borderRadius: 2,
         borderWidth: 0
       }]
@@ -988,14 +1214,15 @@
         legend: { display: false },
         tooltip: {
           backgroundColor: '#15191c',
-          callbacks: { label: (c) => c.parsed.x.toFixed(2) + ' min avg' }
+          callbacks: { label: (c) => c.parsed.x.toFixed(2) + '% normalized error rate' }
         }
       },
       scales: {
         x: {
           grid: { color: '#e3ddd0' },
-          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', callback: (v) => v + ' m' },
-          title: { display: true, text: 'Avg minutes (4 agents)', font: { family: 'Inter', size: 11 }, color: '#6b6b66' }
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', callback: (v) => v + '%' },
+          title: { display: true, text: 'Failed tool calls ÷ total tool calls (heuristic)', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          beginAtZero: true
         },
         y: {
           grid: { display: false },

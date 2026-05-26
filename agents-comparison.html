@@ -1,0 +1,1010 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>The Myth of the Tool-Using Agent</title>
+  <meta name="description" content="Four coding agents, four Motion.dev animation prompts, one uncomfortable result: tool availability and tool behavior aren't the same thing." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --paper: #fbf9f4;
+      --ink: #15191c;
+      --ink-soft: #3b4145;
+      --rule: #1e221f;
+      --muted: #6b6b66;
+      --line: #d8d3c8;
+      --accent: #b1402a;
+      --codex: #e08a23;
+      --gemini: #2a6df4;
+      --claude: #c8533a;
+      --opencode: #6e57c4;
+      --grid: #e3ddd0;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+      font-weight: 400;
+      font-size: 18px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    .wrap {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 48px 28px 96px;
+    }
+    .masthead {
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 14px;
+      margin-bottom: 40px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+    }
+    .masthead .brand { font-weight: 700; color: var(--ink); }
+    .kicker {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 18px;
+    }
+    h1.headline {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: clamp(36px, 5.4vw, 60px);
+      line-height: 1.04;
+      letter-spacing: -0.02em;
+      margin: 0 0 22px;
+      color: var(--ink);
+    }
+    .subhead {
+      font-family: 'Fraunces', serif;
+      font-weight: 500;
+      font-style: italic;
+      font-size: clamp(20px, 2.2vw, 24px);
+      line-height: 1.45;
+      color: var(--ink-soft);
+      margin: 0 0 32px;
+      max-width: 720px;
+    }
+    .byline {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 14px 0;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+    .byline strong { color: var(--ink); font-weight: 600; }
+
+    h2 {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 30px;
+      line-height: 1.15;
+      letter-spacing: -0.015em;
+      margin: 56px 0 18px;
+      color: var(--ink);
+    }
+    h2::before {
+      content: "";
+      display: block;
+      width: 44px;
+      height: 2px;
+      background: var(--accent);
+      margin-bottom: 14px;
+    }
+    h3 {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ink);
+      margin: 36px 0 10px;
+    }
+
+    article p { margin: 0 0 18px; }
+    article p.lede::first-letter {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 64px;
+      line-height: 0.85;
+      float: left;
+      padding: 8px 10px 0 0;
+      color: var(--accent);
+    }
+    article a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+    article strong { color: var(--ink); font-weight: 600; }
+    article em { font-style: italic; }
+    .num {
+      font-family: 'Inter', sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .pull {
+      font-family: 'Fraunces', serif;
+      font-weight: 600;
+      font-size: 26px;
+      line-height: 1.3;
+      color: var(--ink);
+      border-left: 3px solid var(--accent);
+      padding: 6px 0 6px 20px;
+      margin: 32px 0;
+      max-width: 720px;
+    }
+
+    .statstrip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      margin: 32px 0 40px;
+    }
+    .stat {
+      padding: 18px 16px;
+      border-right: 1px solid var(--line);
+      font-family: 'Inter', sans-serif;
+    }
+    .stat:last-child { border-right: 0; }
+    .stat .label {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .stat .value {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-size: 30px;
+      line-height: 1;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .stat .sub {
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-top: 4px;
+    }
+    .stat .swatch {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    @media (max-width: 720px) {
+      .statstrip { grid-template-columns: repeat(2, 1fr); }
+      .stat:nth-child(2) { border-right: 0; }
+      .stat:nth-child(1), .stat:nth-child(2) { border-bottom: 1px solid var(--line); }
+    }
+
+    .figure {
+      margin: 40px 0;
+      padding: 24px 24px 18px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+    }
+    .figure .figlabel {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .figure .figtitle {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--ink);
+      margin: 0 0 6px;
+    }
+    .figure .figdek {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-bottom: 18px;
+      line-height: 1.55;
+    }
+    .chart-host { position: relative; width: 100%; }
+    .chart-host.h-md { height: 360px; }
+    .chart-host.h-sm { height: 280px; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-top: 12px;
+    }
+    .legend span.dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .figsource {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-top: 12px;
+    }
+
+    .matrix {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+    }
+    .matrix th, .matrix td {
+      text-align: center;
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      font-variant-numeric: tabular-nums;
+    }
+    .matrix thead th {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--rule);
+    }
+    .matrix td.label, .matrix th.label {
+      text-align: left;
+      font-weight: 600;
+      color: var(--ink);
+    }
+    .matrix td.cell {
+      color: white;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .matrix td.cell.zero {
+      background: #efeadb;
+      color: #888477;
+    }
+
+    .findings {
+      list-style: none;
+      padding: 0;
+      margin: 24px 0 0;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .findings li {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.55;
+      background: var(--paper);
+      border-left: 3px solid var(--accent);
+      padding: 14px 18px;
+      color: var(--ink-soft);
+    }
+    .findings li b { color: var(--ink); font-weight: 600; }
+
+    .social {
+      background: var(--ink);
+      color: #f4eee0;
+      padding: 32px 28px;
+      margin: 40px 0 0;
+      border-radius: 2px;
+      font-family: 'Inter', sans-serif;
+    }
+    .social .tag {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #d8b87a;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .social p {
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 0 0 12px;
+      color: #efe7d4;
+    }
+    .social p:last-child { margin-bottom: 0; }
+    .social b { color: #fff; font-weight: 600; }
+
+    .builds {
+      margin-top: 56px;
+      padding: 28px 24px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+    }
+    .builds h3 { margin-top: 0; }
+    .builds p { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--ink-soft); margin-bottom: 16px; }
+    .outputs-wrap { overflow-x: auto; margin-top: 4px; }
+    .outputs-matrix {
+      width: 100%;
+      min-width: 640px;
+      border-collapse: collapse;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+    }
+    .outputs-matrix th, .outputs-matrix td {
+      padding: 14px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+      vertical-align: middle;
+    }
+    .outputs-matrix thead th {
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 600;
+      border-bottom: 1px solid var(--rule);
+    }
+    .outputs-matrix th.label,
+    .outputs-matrix td.prompt-cell {
+      text-align: left;
+      font-weight: 600;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+    .outputs-matrix td.prompt-cell small {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 400;
+      font-size: 10.5px;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      margin-top: 3px;
+      text-transform: none;
+    }
+    .outputs-matrix a.run {
+      display: inline-block;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      text-decoration: none;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .outputs-matrix a.run:hover {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+    .outputs-matrix a.run.winner {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .outputs-matrix a.run.winner::before {
+      content: "★ ";
+      font-size: 11px;
+      letter-spacing: 0;
+    }
+    .outputs-matrix a.run.winner:hover {
+      background: var(--accent);
+      color: var(--paper);
+      border-color: var(--accent);
+    }
+    .outputs-matrix td.empty {
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      font-weight: 500;
+    }
+    .outputs-matrix td.empty small {
+      display: block;
+      font-size: 10.5px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    .builds-legend {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 14px;
+    }
+    .builds-legend .star { color: var(--accent); font-weight: 700; }
+
+    .meta {
+      margin-top: 56px;
+      padding-top: 24px;
+      border-top: 1px solid var(--rule);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+    .meta h3 { margin-top: 0; color: var(--ink); }
+    .meta ul { padding-left: 18px; margin: 0 0 12px; }
+    .meta li { margin-bottom: 6px; }
+
+    code, .mono {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 0.92em;
+      background: #ece6d5;
+      padding: 1px 5px;
+      border-radius: 2px;
+      color: #2a2a26;
+    }
+
+    .agent {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88em;
+      font-weight: 500;
+      padding: 1px 6px;
+      border-radius: 2px;
+      color: white;
+      letter-spacing: 0;
+    }
+    .agent.codex { background: var(--codex); }
+    .agent.gemini { background: var(--gemini); }
+    .agent.claude { background: var(--claude); }
+    .agent.opencode { background: var(--opencode); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="masthead">
+      <span class="brand">Motion.dev MCP Benchmark</span>
+      <span>Issue 01 · 2026-05-15</span>
+    </header>
+
+    <article>
+
+      <div class="kicker">Benchmark · Coding Agents · Tool Use</div>
+      <h1 class="headline">The Myth of the Tool-Using Agent</h1>
+      <p class="subhead">Codex used the most Motion.dev MCP and finished first. Gemini CLI used none and still won half the prompts. Same tasks, very different playbooks.</p>
+
+      <div class="byline">
+        <span><strong>Method</strong> History-based replay</span>
+        <span><strong>Agents</strong> 4</span>
+        <span><strong>Prompts</strong> 4</span>
+        <span><strong>Date</strong> 2026-05-15</span>
+      </div>
+
+      <div class="statstrip" aria-label="Total benchmark duration by agent">
+        <div class="stat">
+          <div class="label"><span class="swatch" style="background:var(--codex)"></span>codex</div>
+          <div class="value">26:50</div>
+          <div class="sub"><strong>GPT-5.4</strong> (medium) · 31 calls</div>
+        </div>
+        <div class="stat">
+          <div class="label"><span class="swatch" style="background:var(--gemini)"></span>gemini-cli</div>
+          <div class="value">32:54</div>
+          <div class="sub"><strong>Gemini 3.1 Pro</strong> Preview · 0 calls</div>
+        </div>
+        <div class="stat">
+          <div class="label"><span class="swatch" style="background:var(--claude)"></span>claude-code</div>
+          <div class="value">42:51</div>
+          <div class="sub"><strong>Sonnet 4.6</strong> (high) · 16 calls</div>
+        </div>
+        <div class="stat">
+          <div class="label"><span class="swatch" style="background:var(--opencode)"></span>opencode-minimax-2.5</div>
+          <div class="value">61:49</div>
+          <div class="sub"><strong>MiniMax M2.5</strong> · 4 calls</div>
+        </div>
+      </div>
+
+      <section class="builds">
+        <h3>Scores table</h3>
+        <p>Every cell below links to the generated output for that agent and prompt. Prompt winners are starred.</p>
+        <div class="outputs-wrap">
+          <table class="outputs-matrix" aria-label="Static outputs matrix">
+            <thead>
+              <tr>
+                <th class="label">Prompt</th>
+                <th>claude-code</th>
+                <th>codex</th>
+                <th>gemini-cli</th>
+                <th>opencode-minimax-2.5</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="prompt-cell">MagneticDock<small>dock · context-rich</small></td>
+                <td><a class="run winner" href="./claude-code/context-rich/">7m 25s</a></td>
+                <td><a class="run" href="./codex/context-rich/">8m 25s</a></td>
+                <td><a class="run" href="./gemini-cli/context-rich/">14m 09s</a></td>
+                <td><a class="run" href="./opencode-minimax-2.5/" title="Published at the agent root, not in a sub-route">24m 27s</a></td>
+              </tr>
+              <tr>
+                <td class="prompt-cell">Interactive SVG Blob<small>blob · goal-oriented</small></td>
+                <td><a class="run" href="./claude-code/goal-oriented/">7m 27s</a></td>
+                <td><a class="run" href="./codex/goal-oriented/">9m 01s</a></td>
+                <td><a class="run winner" href="./gemini-cli/goal-oriented/">2m 47s</a></td>
+                <td><a class="run" href="./opencode-minimax-2.5/goal-oriented/">3m 49s</a></td>
+              </tr>
+              <tr>
+                <td class="prompt-cell">Cinematic Timeline<small>timeline · spec-driven</small></td>
+                <td><a class="run" href="./claude-code/spec-driven/">20m 25s</a></td>
+                <td><a class="run winner" href="./codex/spec-driven/">3m 24s</a></td>
+                <td><a class="run" href="./gemini-cli/spec-driven/">10m 44s</a></td>
+                <td class="empty">14m 21s<small>no static export</small></td>
+              </tr>
+              <tr>
+                <td class="prompt-cell">Liquid Menu<small>menu · visual-first</small></td>
+                <td><a class="run" href="./claude-code/visual-first/">7m 33s</a></td>
+                <td><a class="run" href="./codex/visual-first/">6m 01s</a></td>
+                <td><a class="run winner" href="./gemini-cli/visual-first/">5m 14s</a></td>
+                <td><a class="run" href="./opencode-minimax-2.5/visual-first/">19m 13s</a></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="builds-legend"><span class="star">★</span> Prompt winner on completion time. Hover any cell to highlight it; click to open the generated artifact in its own page.</div>
+      </section>
+
+      <p class="lede">The cleanest way to break the comfortable story about Model Context Protocol tooling is to put two agents next to each other. On a battery of four Motion.dev animation prompts — a magnetic dock, an interactive SVG blob, a scroll-driven cinematic timeline, and a liquid menu — <span class="agent codex">codex</span> invoked Motion.dev-specific tools <span class="num">31</span> times across every prompt and finished the entire benchmark first, at <span class="num">26m 50s</span>. <span class="agent gemini">gemini-cli</span> invoked them <span class="num">zero</span> times, never once, on any prompt — and still won two of the four sprints outright.</p>
+
+      <p>That contrast is the spine of this report. The benchmark was designed to measure how four coding agents — <span class="agent claude">claude-code</span>, <span class="agent codex">codex</span>, <span class="agent gemini">gemini-cli</span>, and <span class="agent opencode">opencode-minimax-2.5</span> — handle Motion.dev-heavy tasks where the Motion.dev MCP server is available and named in the prompt. The presumed punchline was that MCP availability would translate into MCP usage, and MCP usage would translate into better outcomes. Neither half of that chain held cleanly.</p>
+
+      <p>The headline numbers do favor the MCP-enthusiast. Codex finished fastest overall and was the only agent to record Motion.dev MCP calls on all <span class="num">4 of 4</span> prompts. Claude Code, second on tool-use breadth, invoked Motion.dev MCP on <span class="num">3 of 4</span> prompts and finished third in total time. But the cleanest one-line summary — <em>more MCP, more speed</em> — falls apart the moment you look at Gemini CLI, which sat at the top of half the leaderboard with a tool ledger that reads as a column of zeros.</p>
+
+      <figure class="figure" aria-label="Per-prompt completion time by agent">
+        <div class="figlabel">Figure 01 · Per-prompt completion time</div>
+        <div class="figtitle">The same prompt, different outcomes</div>
+        <div class="figdek">Each prompt was sent to each agent. Bars show minutes to the first completed benchmark turn. Shorter is faster.</div>
+        <div class="chart-host h-md"><canvas id="chartDuration"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-benchmark.json · duration_ms (first completed turn)</div>
+      </figure>
+
+      <h3>The timeline prompt is where the field cracked open</h3>
+
+      <p>Of the four prompts, the scroll-driven cinematic timeline produced the most dramatic spread. Codex finished it in <span class="num">3m 24s</span>. Claude Code took <span class="num">20m 25s</span> on the same instruction — six times longer — and called the Motion.dev MCP more than Codex did along the way (<span class="num">6</span> versus <span class="num">5</span>). This is the single clearest moment in the benchmark where MCP <em>call count</em> moves in the opposite direction of speed. The same prompt, the same target library, the same access to the same toolkit, and a 17-minute gap.</p>
+
+      <p>It is also the moment that should warn anyone tempted to write "MCP makes agents faster" on a slide. What the data supports is narrower: when Codex invoked Motion.dev tooling, it tended to do so efficiently. When Claude Code invoked it, the relationship between calls and wall time was less stable. The benchmark does not let us see <em>why</em>. It does let us see that the relationship is not linear.</p>
+
+      <div class="pull">"Saying 'use the Motion.dev MCP' in a prompt does not produce uniform agent behavior. On identical instructions, one agent invoked Motion.dev tools 31 times, another invoked them never."</div>
+
+      <h3>The dock prompt was the real stress test</h3>
+
+      <p>The MagneticDock — the <code>context-rich</code> prompt of the four — was the most expensive in the field. Its average completion time across agents was <span class="num">13m 37s</span>, the highest of the four. Yet it produced the most unconventional winner: <span class="agent claude">claude-code</span> took it in <span class="num">7m 25s</span> while logging <span class="num">zero</span> Motion.dev MCP calls. Codex, in second on the dock, made <span class="num">13</span> Motion.dev MCP calls — its single heaviest tool-use prompt of the benchmark — and still finished a minute behind. The hardest prompt was won by selective restraint, not by tool enthusiasm.</p>
+
+      <figure class="figure" aria-label="Motion.dev MCP usage matrix">
+        <div class="figlabel">Figure 02 · Motion.dev MCP usage</div>
+        <div class="figtitle">Same prompts. Wildly different tool ledgers.</div>
+        <div class="figdek">Number of Motion.dev-specific tool calls recorded per agent per prompt. Cell intensity scales with call count; pale cells are zero.</div>
+        <table class="matrix" id="matrix">
+          <thead>
+            <tr>
+              <th class="label">Prompt</th>
+              <th>claude-code</th>
+              <th>codex</th>
+              <th>gemini-cli</th>
+              <th>opencode-minimax-2.5</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="figsource">Source: motion-dev-mcp-benchmark.json · motion_dev_mcp_calls</div>
+      </figure>
+
+      <h3>Tool-use behavior diverged before performance did</h3>
+
+      <p>The benchmark prompts were identical across agents. The tool-use ledgers were not even close. <span class="agent codex">codex</span> logged Motion.dev calls on every prompt; <span class="agent claude">claude-code</span> on three of four; <span class="agent opencode">opencode-minimax-2.5</span> on one of four; <span class="agent gemini">gemini-cli</span> on none. This is the part of the result most worth dwelling on, because it is the part that survives any concern about completion time. Even before we ask which agent was fastest, we have to register that the same instruction produced four meaningfully different tool strategies.</p>
+
+      <figure class="figure" aria-label="Motion.dev MCP calls vs duration scatter">
+        <div class="figlabel">Figure 03 · Calls vs. clock</div>
+        <div class="figtitle">There is no clean line between tool use and speed</div>
+        <div class="figdek">Each point is one prompt run. Horizontal axis: Motion.dev MCP calls. Vertical axis: completion time in minutes.</div>
+        <div class="chart-host h-md"><canvas id="chartScatter"></canvas></div>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--codex)"></span>codex</span>
+          <span><span class="dot" style="background:var(--gemini)"></span>gemini-cli</span>
+          <span><span class="dot" style="background:var(--claude)"></span>claude-code</span>
+          <span><span class="dot" style="background:var(--opencode)"></span>opencode-minimax-2.5</span>
+        </div>
+        <div class="figsource">Source: motion-dev-mcp-benchmark.json · per-record duration_ms × motion_dev_mcp_calls</div>
+      </figure>
+
+      <figure class="figure" aria-label="Aggregate benchmark time leaderboard">
+        <div class="figlabel">Figure 04 · Leaderboard</div>
+        <div class="figtitle">Codex first, OpenCode last — by more than double</div>
+        <div class="figdek">Total time per agent to finish all four prompts. OpenCode's run was 2.3× Codex's despite using Motion.dev MCP on only one prompt; Gemini CLI placed second with no recorded Motion.dev MCP usage at all.</div>
+        <div class="chart-host h-sm"><canvas id="chartLeaderboard"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-benchmark.json · aggregate_by_agent.total_duration_ms</div>
+      </figure>
+
+      <p>Across the four prompts, Codex took the timeline outright and was the fastest agent in aggregate. Gemini CLI won the blob (<span class="num">2m 47s</span>, the fastest single run in the benchmark) and the liquid menu (<span class="num">5m 14s</span>). Claude Code won the dock. OpenCode running MiniMax 2.5 finished last on three of the four prompts and last overall by a wide margin — <span class="num">61m 49s</span> against Codex's <span class="num">26m 50s</span>, more than double the total.</p>
+
+      <figure class="figure" aria-label="Total tool calls per agent split by Motion.dev MCP vs other">
+        <div class="figlabel">Figure 05 · Tool ledger</div>
+        <div class="figtitle">Gemini CLI runs with the smallest ledger overall</div>
+        <div class="figdek">Total tool calls per agent across the four prompts, split into Motion.dev MCP calls and everything else (shell, file, task tools). Gemini's <span class="num">38</span> total invocations are under half of every other agent's footprint — a leaner operational style, not just a different one.</div>
+        <div class="chart-host h-sm"><canvas id="chartLedger"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-benchmark.json · aggregate_by_agent.{motion_dev_mcp_calls, total_tool_calls}</div>
+      </figure>
+
+      <p>That spread suggests two separate axes are in play. One is integration depth: does the agent <em>know</em> to reach for Motion.dev tooling, and does it use the toolkit in a way that compresses work into fewer turns? Codex's profile fits that description. The other is something closer to baseline implementation throughput on familiar web-animation tasks. Gemini CLI's profile — fastest twice, zero recorded MCP usage, lowest total tool count at <span class="num">38</span> — fits that one. The benchmark cannot tell us whether the resulting code is equivalently good. It can tell us that two very different approaches produced top-half results.</p>
+
+      <figure class="figure" aria-label="Average duration per prompt">
+        <div class="figlabel">Figure 06 · Prompt difficulty</div>
+        <div class="figtitle">The dock was the heaviest lift</div>
+        <div class="figdek">Average completion time per prompt across all four agents. The MagneticDock was the most expensive prompt in the benchmark; the blob was the lightest.</div>
+        <div class="chart-host h-sm"><canvas id="chartDifficulty"></canvas></div>
+        <div class="figsource">Source: motion-dev-mcp-benchmark.json · aggregate_by_prompt</div>
+      </figure>
+
+      <h3>What the benchmark does <em>not</em> say</h3>
+
+      <p>This is a history-based benchmark. It compares what these four agents actually did, on this machine, in these working directories, on this day. It measures completion speed and tool-use patterns. It does <strong>not</strong> evaluate animation fidelity, code quality, visual polish, or how the produced components behave at runtime. A faster finish is not a better outcome by itself, and a heavier tool ledger is not a worse outcome by itself. The honest framing is that we now know how four agents <em>chose</em> to attack the same four prompts, and what that cost them in wall-clock time. The question of which dock actually feels good to use is unanswered here.</p>
+
+      <p>There are also normalization caveats. Codex names its Motion.dev tools without the conventional <code>mcp__</code> prefix, so counts there come from a curated list of Motion-specific tool names. Claude Code's Motion.dev calls are namespaced cleanly. OpenCode's session timings come from session metadata rather than per-turn fields. Some runs had follow-up turns; only the first completed benchmark turn was counted. None of these shift the directional finding, but readers should know the rules of the count.</p>
+
+      <p>The takeaway worth keeping is the one the data refuses to simplify: <strong>MCP availability and MCP behavior are not the same thing</strong>. Putting the toolkit in the room does not guarantee an agent will pick it up. The strongest single result here — Codex's <span class="num">31</span> Motion.dev calls coexisting with the fastest total time — is real, and it points toward integration quality mattering. The strongest counterweight — Gemini CLI's two wins with a clean tool sheet — is also real, and it points toward the limits of judging an agent on its tool ledger alone.</p>
+
+      <h2>Key findings</h2>
+      <ul class="findings">
+        <li><b>Codex finished first overall and used Motion.dev MCP the most.</b> Total time <span class="num">26m 50s</span>, <span class="num">31</span> Motion.dev MCP calls across <span class="num">4 of 4</span> prompts. It is the only agent in the field with both attributes.</li>
+        <li><b>Gemini CLI logged zero Motion.dev MCP calls and still won two of four prompts.</b> It took the blob in <span class="num">2m 47s</span> and the menu in <span class="num">5m 14s</span>, the fastest single runs in their prompt brackets.</li>
+        <li><b>The timeline prompt produced the largest gap in the benchmark.</b> Codex: <span class="num">3m 24s</span>. Claude Code: <span class="num">20m 25s</span>. A roughly sixfold difference on identical instructions.</li>
+        <li><b>The MagneticDock was the hardest prompt on average.</b> Average completion time <span class="num">13m 37s</span>. Notably, it was won by Claude Code in <span class="num">7m 25s</span> with <span class="num">zero</span> Motion.dev MCP calls.</li>
+        <li><b>Tool-use behavior diverged sharply under identical prompts.</b> Motion.dev MCP was invoked on 4/4 prompts by Codex, 3/4 by Claude Code, 1/4 by OpenCode/MiniMax 2.5, and 0/4 by Gemini CLI.</li>
+        <li><b>OpenCode running MiniMax 2.5 was the slowest profile.</b> Total <span class="num">61m 49s</span>, more than double Codex's total, and Motion.dev MCP usage was limited to a single prompt (the dock).</li>
+        <li><b>Tool call count is not a proxy for speed.</b> Codex's <span class="num">97</span> total tool calls produced the fastest total time; OpenCode's <span class="num">78</span> total tool calls produced the slowest.</li>
+        <li><b>This benchmark measures speed and tool use, not quality.</b> It does not score animation fidelity, visual correctness, or runtime behavior of the output.</li>
+      </ul>
+
+      <h2>Social summary</h2>
+      <div class="social">
+        <div class="tag">Benchmark · 120-word version</div>
+        <p>We ran four coding agents — <b>Claude Code</b>, <b>Codex</b>, <b>Gemini CLI</b>, <b>OpenCode (MiniMax 2.5)</b> — on four Motion.dev animation prompts: a magnetic dock, an SVG blob, a scroll-driven timeline, and a liquid menu.</p>
+        <p><b>Codex won overall</b> (26m 50s) and was the heaviest Motion.dev MCP user (31 calls across 4/4 prompts). <b>Gemini CLI</b> logged <b>zero</b> Motion.dev MCP calls and <b>still won two of four prompts</b>, including the blob in 2m 47s.</p>
+        <p>The timeline prompt cracked the field open: Codex 3m 24s vs. Claude Code 20m 25s on identical instructions. The dock was the hardest prompt on average, and Claude Code won it with zero Motion.dev MCP calls.</p>
+        <p>Lesson: MCP <i>availability</i> ≠ MCP <i>behavior</i>. Speed isn't quality. The toolkit matters; so does how an agent chooses to use it.</p>
+      </div>
+
+      <section class="meta">
+        <h3>Methodology and caveats</h3>
+        <ul>
+          <li><b>Models behind the agents.</b> <code>codex</code> was running <b>GPT-5.4</b> (medium reasoning); <code>claude-code</code> was running <b>Claude Sonnet 4.6</b> (high reasoning); <code>gemini-cli</code> was running <b>Gemini 3.1 Pro Preview</b>; <code>opencode-minimax-2.5</code> was running <b>MiniMax M2.5</b>. Both the agent harness <em>and</em> its underlying model shape what we measured here; "agent" is shorthand for the combination.</li>
+          <li><b>History-based, not lab-replay.</b> Durations come from real session histories on a single machine, normalized to the first completed benchmark turn for each prompt.</li>
+          <li><b>Motion.dev MCP call counts are tool-name based.</b> For Claude Code, only <code>mcp__motion-dev__*</code> calls. For OpenCode, only <code>motion-dev_*</code> calls. For Codex, Motion.dev tool names (e.g. <code>search_motion_docs</code>, <code>get_component_api</code>) are counted explicitly because Codex does not use an <code>mcp__</code> prefix. For Gemini CLI, no Motion.dev-specific calls were recorded.</li>
+          <li><b>Generic discovery calls excluded.</b> Tools like <code>list_mcp_resources</code> were not counted as Motion.dev MCP usage.</li>
+          <li><b>OpenCode durations</b> are derived from session <code>time_created → time_updated</code> rather than per-turn fields, due to history format differences.</li>
+          <li><b>Output quality is not measured.</b> This benchmark does not score animation fidelity, runtime behavior, or visual polish of the generated components.</li>
+        </ul>
+        <p>Source files: <code><a href="motion-dev-mcp-benchmark.json">motion-dev-mcp-benchmark.json</a></code>, <code><a href="motion-dev-mcp-benchmark.csv">motion-dev-mcp-benchmark.csv</a></code>, <code><a href="motion-dev-mcp-data-story-report.md">motion-dev-mcp-data-story-report.md</a></code>, <code><a href="motion-dev-mcp-executive-summary.md">motion-dev-mcp-executive-summary.md</a></code>.</p>
+        <p>Written by <b>Claude Opus 4.7 (1M context)</b> via <a href="https://claude.com/claude-code">Claude Code</a>, from the prompt and iteration notes recorded at <a href="./PROMPT.md"><code>PROMPT.md</code></a>.</p>
+      </section>
+
+    </article>
+  </div>
+
+<script>
+(function () {
+  const COLORS = {
+    'claude-code': '#c8533a',
+    'codex': '#e08a23',
+    'gemini-cli': '#2a6df4',
+    'opencode-minimax-2.5': '#6e57c4'
+  };
+  const AGENTS = ['claude-code', 'codex', 'gemini-cli', 'opencode-minimax-2.5'];
+  const PROMPTS = ['dock', 'blob', 'timeline', 'menu'];
+  const PROMPT_LABELS = {
+    dock: 'MagneticDock',
+    blob: 'SVG Blob',
+    timeline: 'Cinematic Timeline',
+    menu: 'Liquid Menu'
+  };
+
+  // Per-prompt duration in minutes (derived from duration_ms in source JSON)
+  const DURATION_MIN = {
+    dock:     { 'claude-code': 7.42,  'codex': 8.42, 'gemini-cli': 14.15, 'opencode-minimax-2.5': 24.45 },
+    blob:     { 'claude-code': 7.45,  'codex': 9.02, 'gemini-cli': 2.78,  'opencode-minimax-2.5': 3.82 },
+    timeline: { 'claude-code': 20.42, 'codex': 3.40, 'gemini-cli': 10.73, 'opencode-minimax-2.5': 14.35 },
+    menu:     { 'claude-code': 7.55,  'codex': 6.02, 'gemini-cli': 5.23,  'opencode-minimax-2.5': 19.22 }
+  };
+
+  // Motion.dev MCP calls per agent per prompt
+  const MCP = {
+    dock:     { 'claude-code': 0, 'codex': 13, 'gemini-cli': 0, 'opencode-minimax-2.5': 4 },
+    blob:     { 'claude-code': 5, 'codex': 6,  'gemini-cli': 0, 'opencode-minimax-2.5': 0 },
+    timeline: { 'claude-code': 6, 'codex': 5,  'gemini-cli': 0, 'opencode-minimax-2.5': 0 },
+    menu:     { 'claude-code': 5, 'codex': 7,  'gemini-cli': 0, 'opencode-minimax-2.5': 0 }
+  };
+
+  // Average prompt duration (minutes)
+  const AVG_PROMPT_MIN = {
+    dock: 13.62, timeline: 12.22, menu: 9.50, blob: 5.77
+  };
+
+  // ---- Figure 1: Per-prompt grouped bars ----
+  new Chart(document.getElementById('chartDuration').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: PROMPTS.map(p => PROMPT_LABELS[p]),
+      datasets: AGENTS.map(a => ({
+        label: a,
+        data: PROMPTS.map(p => DURATION_MIN[p][a]),
+        backgroundColor: COLORS[a],
+        borderColor: COLORS[a],
+        borderWidth: 0,
+        borderRadius: 2
+      }))
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: { position: 'top', labels: { font: { family: 'Inter', size: 12 }, color: '#3b4145', boxWidth: 12, boxHeight: 12 } },
+        tooltip: {
+          backgroundColor: '#15191c',
+          titleFont: { family: 'Inter', weight: 700 },
+          bodyFont: { family: 'Inter' },
+          callbacks: { label: (c) => c.dataset.label + ': ' + c.parsed.y.toFixed(2) + ' min' }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 12 }, color: '#3b4145' } },
+        y: {
+          grid: { color: '#e3ddd0' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', callback: (v) => v + ' m' },
+          title: { display: true, text: 'Minutes to first completed turn', font: { family: 'Inter', size: 11 }, color: '#6b6b66' }
+        }
+      }
+    }
+  });
+
+  // ---- Figure 2: Matrix cell shading ----
+  const matrixBody = document.querySelector('#matrix tbody');
+  let maxMCP = 0;
+  PROMPTS.forEach(p => AGENTS.forEach(a => { if (MCP[p][a] > maxMCP) maxMCP = MCP[p][a]; }));
+  PROMPTS.forEach(p => {
+    const tr = document.createElement('tr');
+    const labelTd = document.createElement('td');
+    labelTd.className = 'label';
+    labelTd.textContent = PROMPT_LABELS[p];
+    tr.appendChild(labelTd);
+    AGENTS.forEach(a => {
+      const v = MCP[p][a];
+      const td = document.createElement('td');
+      td.className = 'cell' + (v === 0 ? ' zero' : '');
+      td.textContent = v;
+      if (v > 0) {
+        td.style.background = COLORS[a];
+        td.style.opacity = (0.35 + 0.65 * (v / maxMCP)).toFixed(2);
+      }
+      tr.appendChild(td);
+    });
+    matrixBody.appendChild(tr);
+  });
+
+  // ---- Figure 3: Scatter — MCP calls vs. duration ----
+  const scatterData = AGENTS.map(a => ({
+    label: a,
+    data: PROMPTS.map(p => ({ x: MCP[p][a], y: DURATION_MIN[p][a], prompt: PROMPT_LABELS[p] })),
+    backgroundColor: COLORS[a],
+    borderColor: COLORS[a],
+    pointRadius: 7,
+    pointHoverRadius: 9
+  }));
+  new Chart(document.getElementById('chartScatter').getContext('2d'), {
+    type: 'scatter',
+    data: { datasets: scatterData },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#15191c',
+          callbacks: {
+            label: (c) => c.dataset.label + ' · ' + c.raw.prompt + ': ' + c.raw.x + ' MCP calls, ' + c.raw.y.toFixed(2) + ' min'
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Motion.dev MCP calls', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          grid: { color: '#e3ddd0' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', stepSize: 2 },
+          beginAtZero: true
+        },
+        y: {
+          title: { display: true, text: 'Minutes to completion', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          grid: { color: '#e3ddd0' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', callback: (v) => v + ' m' },
+          beginAtZero: true
+        }
+      }
+    }
+  });
+
+  // ---- Figure 4: Aggregate leaderboard (horizontal bars, sorted) ----
+  const TOTAL_MIN = {
+    'codex': 26.84,
+    'gemini-cli': 32.90,
+    'claude-code': 42.85,
+    'opencode-minimax-2.5': 61.83
+  };
+  const COVERAGE = {
+    'codex': '4/4 prompts',
+    'gemini-cli': '0/4 prompts',
+    'claude-code': '3/4 prompts',
+    'opencode-minimax-2.5': '1/4 prompts'
+  };
+  const sortedAgents = AGENTS.slice().sort((a, b) => TOTAL_MIN[a] - TOTAL_MIN[b]);
+
+  new Chart(document.getElementById('chartLeaderboard').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: sortedAgents,
+      datasets: [{
+        data: sortedAgents.map(a => TOTAL_MIN[a]),
+        backgroundColor: sortedAgents.map(a => COLORS[a]),
+        borderRadius: 2,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#15191c',
+          callbacks: {
+            label: (c) => {
+              const a = sortedAgents[c.dataIndex];
+              return c.parsed.x.toFixed(2) + ' min total · Motion.dev MCP on ' + COVERAGE[a];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#e3ddd0' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', callback: (v) => v + ' m' },
+          title: { display: true, text: 'Total minutes across all 4 prompts', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          beginAtZero: true
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { family: 'Inter', size: 12, weight: '600' }, color: '#15191c' }
+        }
+      }
+    }
+  });
+
+  // ---- Figure 5: Tool ledger composition (stacked horizontal bars) ----
+  const MCP_TOTAL = { 'codex': 31, 'claude-code': 16, 'opencode-minimax-2.5': 4, 'gemini-cli': 0 };
+  const TOOL_TOTAL = { 'codex': 97, 'claude-code': 91, 'opencode-minimax-2.5': 78, 'gemini-cli': 38 };
+  const ledgerOrder = ['codex', 'claude-code', 'opencode-minimax-2.5', 'gemini-cli'];
+
+  new Chart(document.getElementById('chartLedger').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ledgerOrder,
+      datasets: [
+        {
+          label: 'Motion.dev MCP calls',
+          data: ledgerOrder.map(a => MCP_TOTAL[a]),
+          backgroundColor: '#b1402a',
+          borderWidth: 0
+        },
+        {
+          label: 'Other tool calls (shell, file, task)',
+          data: ledgerOrder.map(a => TOOL_TOTAL[a] - MCP_TOTAL[a]),
+          backgroundColor: '#c4b9a2',
+          borderWidth: 0
+        }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: {
+          position: 'top',
+          labels: { font: { family: 'Inter', size: 12 }, color: '#3b4145', boxWidth: 12, boxHeight: 12 }
+        },
+        tooltip: {
+          backgroundColor: '#15191c',
+          callbacks: { label: (c) => c.dataset.label + ': ' + c.parsed.x }
+        }
+      },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { color: '#e3ddd0' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          title: { display: true, text: 'Total tool calls across the benchmark', font: { family: 'Inter', size: 11 }, color: '#6b6b66' },
+          beginAtZero: true
+        },
+        y: {
+          stacked: true,
+          grid: { display: false },
+          ticks: { font: { family: 'Inter', size: 12, weight: '600' }, color: '#15191c' }
+        }
+      }
+    }
+  });
+
+  // ---- Figure 6: Prompt difficulty horizontal bars ----
+  const orderedPrompts = ['dock', 'timeline', 'menu', 'blob'];
+  new Chart(document.getElementById('chartDifficulty').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: orderedPrompts.map(p => PROMPT_LABELS[p]),
+      datasets: [{
+        label: 'Average minutes across agents',
+        data: orderedPrompts.map(p => AVG_PROMPT_MIN[p]),
+        backgroundColor: ['#b1402a', '#c46b3a', '#d99858', '#e6c089'],
+        borderRadius: 2,
+        borderWidth: 0
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#15191c',
+          callbacks: { label: (c) => c.parsed.x.toFixed(2) + ' min avg' }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: '#e3ddd0' },
+          ticks: { font: { family: 'Inter', size: 11 }, color: '#6b6b66', callback: (v) => v + ' m' },
+          title: { display: true, text: 'Avg minutes (4 agents)', font: { family: 'Inter', size: 11 }, color: '#6b6b66' }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { family: 'Inter', size: 12, weight: '600' }, color: '#15191c' }
+        }
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>

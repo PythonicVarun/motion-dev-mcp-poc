@@ -1,0 +1,933 @@
+{
+  "dataset": {
+    "name": "Motion.dev MCP Iterative Session Metrics",
+    "date": "2026-05-26",
+    "scope": "History-derived process metrics for the iterative ImmersivePortfolio build across Codex, Claude Code, and Gemini CLI.",
+    "objective": "Support a data story about how specialized MCP servers and verification tooling affect coding-agent workflow and productivity without comparing final visual output quality."
+  },
+  "metric_definitions": {
+    "elapsed_ms": "Full session span from the first real iterative build prompt in the selected session to the last timestamp recorded in that session.",
+    "active_elapsed_ms": "Active work time after removing idle gaps between the last agent event in a turn and the next user prompt.",
+    "total_idle_removed_ms": "Total time removed from elapsed_ms because the agent had already stopped responding and the session was waiting for the next user prompt.",
+    "prompt_count": "Number of user prompts in the selected iterative session, including the initial build request and later follow-up turns.",
+    "feedback_turns": "prompt_count minus the initial build prompt.",
+    "tool_calls_by_category": {
+      "motion_mcp": "Motion.dev-specific MCP usage.",
+      "browser_mcp": "Browser or Playwright automation and verification tools.",
+      "shell": "Terminal or shell commands.",
+      "file_read": "File reads, searches, or globbing.",
+      "file_edit": "Edits, writes, replacements, or patches.",
+      "planning": "Meta-planning or topic-tracking tools."
+    },
+    "tool_error_rate": "failed_tool_calls divided by total_tool_calls, using raw log outcomes and explicit non-zero/error markers. This is heuristic because each agent logs failures differently.",
+    "verification_requested_turns": "User prompts that explicitly asked for verification, usually via Playwright/browser MCP.",
+    "screenshot_or_attachment_feedback_turns": "User prompts that referenced a screenshot, image attachment, or PNG."
+  },
+  "caveats": [
+    "These metrics come from three different history formats, so tool categories and failure counts were normalized heuristically.",
+    "A non-zero shell exit was counted as a failed tool call when the log carried an explicit error or failed command output.",
+    "This dataset is about workflow and instrumentation, not final code quality or visual quality.",
+    "Some sessions include repeated corrective turns after a feature was already present; that iterative tail is part of the productivity story.",
+    "Codex and Claude recorded explicit Motion.dev MCP usage. Gemini CLI recorded no Motion.dev-specific tool calls in the selected iterative session."
+  ],
+  "selected_sessions": {
+    "codex": {
+      "session_id": "019e5d97-8202-73f0-80fa-3330c392fe81",
+      "source_path": "C:/Users/varun/.codex/sessions/2026/05/25/rollout-2026-05-25T10-54-31-019e5d97-8202-73f0-80fa-3330c392fe81.jsonl",
+      "start_timestamp": "2026-05-25T05:25:01.964Z",
+      "end_timestamp": "2026-05-25T14:54:10.356Z",
+      "elapsed_ms": 34148392,
+      "elapsed_human": "9h 29m 8s",
+      "active_elapsed_ms": 3689641,
+      "active_elapsed_human": "1h 1m 30s",
+      "total_idle_removed_ms": 30458134,
+      "total_idle_removed_human": "8h 27m 38s",
+      "prompt_count": 14,
+      "feedback_turns": 13,
+      "feedback_kind_counts": {
+        "feature_extension": 4,
+        "bugfix": 6,
+        "integration": 1,
+        "other": 2
+      },
+      "verification_requested_turns": 2,
+      "screenshot_or_attachment_feedback_turns": 1,
+      "total_tool_calls": 350,
+      "failed_tool_calls": 15,
+      "tool_error_rate": 0.0429,
+      "tool_calls_by_category": {
+        "browser_mcp": 136,
+        "shell": 134,
+        "file_edit": 58,
+        "motion_mcp": 17,
+        "planning": 5
+      },
+      "motion_mcp_calls": 17,
+      "browser_mcp_calls": 136,
+      "top_tools": [
+        {
+          "tool": "shell_command",
+          "count": 134,
+          "category": "shell"
+        },
+        {
+          "tool": "apply_patch",
+          "count": 58,
+          "category": "file_edit"
+        },
+        {
+          "tool": "browser_navigate",
+          "count": 27,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "browser_console_messages",
+          "count": 27,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "browser_run_code_unsafe",
+          "count": 24,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "browser_evaluate",
+          "count": 23,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "browser_take_screenshot",
+          "count": 13,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "browser_snapshot",
+          "count": 11,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "browser_tabs",
+          "count": 8,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "search_motion_docs",
+          "count": 7,
+          "category": "motion_mcp"
+        }
+      ],
+      "error_examples": [
+        {
+          "tool": "shell_command",
+          "message": "Exit code: 1 Wall time: 2.3 seconds Output: > immersive-portfolio@0.0.0 build > tsc -b && vite build src/ImmersivePortfolio.tsx(199,11): error TS2820: Type '\"isolated\"' is not assi"
+        },
+        {
+          "tool": "shell_command",
+          "message": "Exit code: 1 Wall time: 4.4 seconds Output: > immersive-portfolio@0.0.0 build > tsc -b && vite build src/ImmersivePortfolio.tsx(101,7): error TS2322: Type '{ image: string; id: str"
+        },
+        {
+          "tool": "shell_command",
+          "message": "Exit code: 1 Wall time: 7.5 seconds Output: > immersive-portfolio@0.0.0 build > tsc -b && vite build src/ImmersivePortfolio.tsx(737,26): error TS18046: 'track' is of type 'unknown'"
+        }
+      ],
+      "prompts": [
+        {
+          "index": 1,
+          "timestamp": "2026-05-25T05:25:01.964Z",
+          "kind": "initial_build",
+          "text": "Using the Motion.dev MCP, build a React app with component called <ImmersivePortfolio />. Start with a hero section: - A large heading (e.g. \"WORKS\") where ever",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 29,
+          "failed_tool_calls": 1,
+          "tool_calls_by_category": {
+            "shell": 11,
+            "planning": 4,
+            "motion_mcp": 6,
+            "file_edit": 2,
+            "browser_mcp": 6
+          }
+        },
+        {
+          "index": 2,
+          "timestamp": "2026-05-25T05:36:45.154Z",
+          "kind": "feature_extension",
+          "text": "Extend <ImmersivePortfolio /> — add a hero background image behind the text: - Apply an SVG feTurbulence + feDisplacementMap filter to the image - The turbulenc",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 22,
+          "failed_tool_calls": 2,
+          "tool_calls_by_category": {
+            "shell": 10,
+            "motion_mcp": 3,
+            "file_edit": 2,
+            "browser_mcp": 7
+          }
+        },
+        {
+          "index": 3,
+          "timestamp": "2026-05-25T05:45:45.205Z",
+          "kind": "feature_extension",
+          "text": "Add a project grid below the hero in <ImmersivePortfolio />: - 6 project cards in a 3×2 grid, each with an image, project name, and category - Clicking a card e",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 27,
+          "failed_tool_calls": 2,
+          "tool_calls_by_category": {
+            "file_edit": 4,
+            "shell": 8,
+            "motion_mcp": 1,
+            "browser_mcp": 14
+          }
+        },
+        {
+          "index": 4,
+          "timestamp": "2026-05-25T06:17:56.060Z",
+          "kind": "feature_extension",
+          "text": "Add a scroll-driven \"process\" section below the grid in <ImmersivePortfolio />: - A tall section (400vh) with 5 steps - A continuous SVG path runs vertically th",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 31,
+          "failed_tool_calls": 2,
+          "tool_calls_by_category": {
+            "shell": 11,
+            "motion_mcp": 2,
+            "file_edit": 6,
+            "browser_mcp": 12
+          }
+        },
+        {
+          "index": 5,
+          "timestamp": "2026-05-25T06:35:22.189Z",
+          "kind": "feature_extension",
+          "text": "Add a horizontal \"clients\" carousel at the bottom of <ImmersivePortfolio />: - 10 logo cards in an infinitely draggable horizontal track - Implement inertia man",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 24,
+          "failed_tool_calls": 3,
+          "tool_calls_by_category": {
+            "shell": 12,
+            "motion_mcp": 2,
+            "file_edit": 4,
+            "browser_mcp": 6
+          }
+        },
+        {
+          "index": 6,
+          "timestamp": "2026-05-25T07:12:49.432Z",
+          "kind": "bugfix",
+          "text": "Fix process section, since the text isn't aligning with the cards. Use playwright mcp to verify the fix.",
+          "verification_requested": true,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 0,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {}
+        },
+        {
+          "index": 7,
+          "timestamp": "2026-05-25T08:03:08.694Z",
+          "kind": "bugfix",
+          "text": "Fix process section, since the text isn't aligning with the cards. Use playwright mcp to verify the fix.",
+          "verification_requested": true,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 40,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "shell": 9,
+            "browser_mcp": 26,
+            "file_edit": 5
+          }
+        },
+        {
+          "index": 8,
+          "timestamp": "2026-05-25T08:29:39.247Z",
+          "kind": "integration",
+          "text": "Final integration pass on <ImmersivePortfolio />: A) Global scroll progress bar: - A fixed top bar whose scaleX is driven by overall page scroll progress - But ",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 33,
+          "failed_tool_calls": 1,
+          "tool_calls_by_category": {
+            "planning": 1,
+            "shell": 8,
+            "motion_mcp": 3,
+            "file_edit": 9,
+            "browser_mcp": 12
+          }
+        },
+        {
+          "index": 9,
+          "timestamp": "2026-05-25T09:14:21.097Z",
+          "kind": "other",
+          "text": "[image] Fix process section. The text is overlaping with each other [Image #1]",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": true,
+          "tool_calls": 53,
+          "failed_tool_calls": 2,
+          "tool_calls_by_category": {
+            "shell": 28,
+            "browser_mcp": 16,
+            "file_edit": 9
+          }
+        },
+        {
+          "index": 10,
+          "timestamp": "2026-05-25T14:23:02.304Z",
+          "kind": "bugfix",
+          "text": "Fix the Process section, since it's animation isn't working on scroll.",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 28,
+          "failed_tool_calls": 1,
+          "tool_calls_by_category": {
+            "shell": 14,
+            "browser_mcp": 12,
+            "file_edit": 2
+          }
+        },
+        {
+          "index": 11,
+          "timestamp": "2026-05-25T14:36:08.669Z",
+          "kind": "bugfix",
+          "text": "Still, the issue is same as earlier. Means, there is no animation or movement on scrolling through the Process section.",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 9,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "shell": 4,
+            "file_edit": 1,
+            "browser_mcp": 4
+          }
+        },
+        {
+          "index": 12,
+          "timestamp": "2026-05-25T14:38:52.670Z",
+          "kind": "bugfix",
+          "text": "The animation fails, means the animation performs slowly and if I scroll down page, I get an empty screen.",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 28,
+          "failed_tool_calls": 1,
+          "tool_calls_by_category": {
+            "shell": 11,
+            "browser_mcp": 10,
+            "file_edit": 7
+          }
+        },
+        {
+          "index": 13,
+          "timestamp": "2026-05-25T14:47:20.819Z",
+          "kind": "bugfix",
+          "text": "It's okay. But, the scroll is laggy. The UI vibrates when I scroll through the Process section.",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 14,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "shell": 6,
+            "file_edit": 4,
+            "browser_mcp": 4
+          }
+        },
+        {
+          "index": 14,
+          "timestamp": "2026-05-25T14:50:57.228Z",
+          "kind": "other",
+          "text": "The scroll jitter is still there.",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 10,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "browser_mcp": 5,
+            "file_edit": 3,
+            "shell": 2
+          }
+        }
+      ]
+    },
+    "claude_code": {
+      "session_id": "0fbef8f3-40b9-456a-9837-170274b43cc4",
+      "source_path": "C:/Users/varun/.claude/projects/V--Codes-Internship-Straive-Apr-26-motion-dev-mcp-poc-claude-code/0fbef8f3-40b9-456a-9837-170274b43cc4.jsonl",
+      "start_timestamp": "2026-05-25T05:07:29.725Z",
+      "end_timestamp": "2026-05-25T09:42:18.650Z",
+      "elapsed_ms": 16488925,
+      "elapsed_human": "4h 34m 49s",
+      "active_elapsed_ms": 9702121,
+      "active_elapsed_human": "2h 41m 42s",
+      "total_idle_removed_ms": 6474444,
+      "total_idle_removed_human": "1h 47m 54s",
+      "prompt_count": 12,
+      "feedback_turns": 11,
+      "feedback_kind_counts": {
+        "feature_extension": 6,
+        "bugfix": 4,
+        "integration": 1
+      },
+      "verification_requested_turns": 3,
+      "screenshot_or_attachment_feedback_turns": 0,
+      "total_tool_calls": 198,
+      "failed_tool_calls": 16,
+      "tool_error_rate": 0.0808,
+      "tool_calls_by_category": {
+        "file_read": 64,
+        "browser_mcp": 50,
+        "shell": 46,
+        "file_edit": 29,
+        "motion_mcp": 6,
+        "planning": 3
+      },
+      "motion_mcp_calls": 6,
+      "browser_mcp_calls": 50,
+      "top_tools": [
+        {
+          "tool": "Read",
+          "count": 58,
+          "category": "file_read"
+        },
+        {
+          "tool": "Bash",
+          "count": 46,
+          "category": "shell"
+        },
+        {
+          "tool": "mcp__playwright__browser_take_screenshot",
+          "count": 18,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "Edit",
+          "count": 17,
+          "category": "file_edit"
+        },
+        {
+          "tool": "mcp__playwright__browser_evaluate",
+          "count": 15,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "Write",
+          "count": 12,
+          "category": "file_edit"
+        },
+        {
+          "tool": "mcp__playwright__browser_navigate",
+          "count": 8,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "Glob",
+          "count": 6,
+          "category": "file_read"
+        },
+        {
+          "tool": "mcp__playwright__browser_run_code_unsafe",
+          "count": 6,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "mcp__playwright__browser_console_messages",
+          "count": 3,
+          "category": "browser_mcp"
+        }
+      ],
+      "error_examples": [
+        {
+          "tool": "mcp__motion-dev__generate_motion_component",
+          "message": "{ \"success\": false, \"framework\": \"react\", \"typescript\": true, \"error\": \"Tool 'generate_motion_component' failed: Unknown animation pattern: stagger\", \"generateTime\": 1 }"
+        },
+        {
+          "tool": "mcp__motion-dev__get_component_api",
+          "message": "{ \"success\": false, \"component\": \"motion.span\", \"framework\": \"react\", \"examples\": [], \"relatedComponents\": [], \"fetchTime\": 3, \"error\": \"No API documentation found for component: m"
+        },
+        {
+          "tool": "Bash",
+          "message": "Exit code 2 src/components/ImmersivePortfolio.tsx(121,19): error TS2322: Type 'MotionValue<number>' is not assignable to type '((Y<string | number> | CustomValueType | MotionValue<"
+        }
+      ],
+      "prompts": [
+        {
+          "index": 1,
+          "timestamp": "2026-05-25T05:07:29.725Z",
+          "kind": "initial_build",
+          "text": "Using the Motion.dev MCP, build a React app with component called <ImmersivePortfolio />. Start with a hero section: - A large heading (e.g. \"WORKS\") where ever",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 43,
+          "failed_tool_calls": 8,
+          "tool_calls_by_category": {
+            "motion_mcp": 6,
+            "file_edit": 10,
+            "shell": 19,
+            "planning": 2,
+            "file_read": 6
+          }
+        },
+        {
+          "index": 2,
+          "timestamp": "2026-05-25T05:36:41.984Z",
+          "kind": "feature_extension",
+          "text": "Extend <ImmersivePortfolio /> — add a hero background image behind the text: - Apply an SVG feTurbulence + feDisplacementMap filter to the image - The turbulenc",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 11,
+          "failed_tool_calls": 1,
+          "tool_calls_by_category": {
+            "file_read": 5,
+            "file_edit": 1,
+            "shell": 5
+          }
+        },
+        {
+          "index": 3,
+          "timestamp": "2026-05-25T05:45:51.748Z",
+          "kind": "feature_extension",
+          "text": "Add a project grid below the hero in <ImmersivePortfolio />: - 6 project cards in a 3×2 grid, each with an image, project name, and category - Clicking a card e",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 0,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {}
+        },
+        {
+          "index": 4,
+          "timestamp": "2026-05-25T06:01:54.772Z",
+          "kind": "bugfix",
+          "text": "SVG Displacement Distortion is working properly, it's only visible to the corners of the page. Fix it.",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 14,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "file_edit": 3,
+            "shell": 5,
+            "file_read": 6
+          }
+        },
+        {
+          "index": 5,
+          "timestamp": "2026-05-25T06:10:01.563Z",
+          "kind": "feature_extension",
+          "text": "Add a project grid below the hero in <ImmersivePortfolio />: - 6 project cards in a 3×2 grid, each with an image, project name, and category - Clicking a card e",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 9,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "file_edit": 1,
+            "shell": 4,
+            "file_read": 4
+          }
+        },
+        {
+          "index": 6,
+          "timestamp": "2026-05-25T06:28:19.351Z",
+          "kind": "feature_extension",
+          "text": "Add a scroll-driven \"process\" section below the grid in <ImmersivePortfolio />: - A tall section (400vh) with 5 steps - A continuous SVG path runs vertically th",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 16,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "file_read": 8,
+            "file_edit": 3,
+            "shell": 5
+          }
+        },
+        {
+          "index": 7,
+          "timestamp": "2026-05-25T07:00:10.549Z",
+          "kind": "feature_extension",
+          "text": "Add a horizontal \"clients\" carousel at the bottom of <ImmersivePortfolio />: - 10 logo cards in an infinitely draggable horizontal track - Implement inertia man",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 0,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {}
+        },
+        {
+          "index": 8,
+          "timestamp": "2026-05-25T07:05:22.909Z",
+          "kind": "bugfix",
+          "text": "Fix the process section, since the timeline svg animation doesn't align with the text. Use playwright mcp to verify the fixes.",
+          "verification_requested": true,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 6,
+          "failed_tool_calls": 2,
+          "tool_calls_by_category": {
+            "file_read": 4,
+            "planning": 1,
+            "shell": 1
+          }
+        },
+        {
+          "index": 9,
+          "timestamp": "2026-05-25T07:11:51.933Z",
+          "kind": "bugfix",
+          "text": "Fix the process section, since the timeline svg animation doesn't align with the text. Use playwright mcp to verify the fixes.",
+          "verification_requested": true,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 0,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {}
+        },
+        {
+          "index": 10,
+          "timestamp": "2026-05-25T07:12:29.003Z",
+          "kind": "bugfix",
+          "text": "Fix the process section, since the timeline svg animation doesn't align with the text. Use playwright mcp to verify the fixes.",
+          "verification_requested": true,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 50,
+          "failed_tool_calls": 2,
+          "tool_calls_by_category": {
+            "file_read": 13,
+            "file_edit": 6,
+            "shell": 3,
+            "browser_mcp": 28
+          }
+        },
+        {
+          "index": 11,
+          "timestamp": "2026-05-25T08:29:19.482Z",
+          "kind": "feature_extension",
+          "text": "Add a horizontal \"clients\" carousel at the bottom of <ImmersivePortfolio />: - 10 logo cards in an infinitely draggable horizontal track - Implement inertia man",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 29,
+          "failed_tool_calls": 3,
+          "tool_calls_by_category": {
+            "file_read": 9,
+            "file_edit": 4,
+            "shell": 3,
+            "browser_mcp": 13
+          }
+        },
+        {
+          "index": 12,
+          "timestamp": "2026-05-25T09:10:41.577Z",
+          "kind": "integration",
+          "text": "Final integration pass on <ImmersivePortfolio />: A) Global scroll progress bar: - A fixed top bar whose scaleX is driven by overall page scroll progress - But ",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 20,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "file_read": 9,
+            "file_edit": 1,
+            "shell": 1,
+            "browser_mcp": 9
+          }
+        }
+      ]
+    },
+    "gemini_cli": {
+      "session_id": "410aac00-27eb-440b-9287-0586bc7ba03a",
+      "source_path": "C:/Users/varun/.gemini/tmp/gemini-cli/chats/session-2026-05-25T05-25-410aac00.jsonl",
+      "start_timestamp": "2026-05-25T05:25:44.579Z",
+      "end_timestamp": "2026-05-25T10:06:22.554Z",
+      "elapsed_ms": 16837975,
+      "elapsed_human": "4h 40m 38s",
+      "active_elapsed_ms": 7559337,
+      "active_elapsed_human": "2h 5m 59s",
+      "total_idle_removed_ms": 9278245,
+      "total_idle_removed_human": "2h 34m 38s",
+      "prompt_count": 12,
+      "feedback_turns": 11,
+      "feedback_kind_counts": {
+        "feature_extension": 4,
+        "bugfix": 6,
+        "integration": 1
+      },
+      "verification_requested_turns": 2,
+      "screenshot_or_attachment_feedback_turns": 1,
+      "total_tool_calls": 617,
+      "failed_tool_calls": 76,
+      "tool_error_rate": 0.1232,
+      "tool_calls_by_category": {
+        "shell": 165,
+        "browser_mcp": 155,
+        "file_edit": 126,
+        "planning": 92,
+        "file_read": 79
+      },
+      "motion_mcp_calls": 0,
+      "browser_mcp_calls": 155,
+      "top_tools": [
+        {
+          "tool": "run_shell_command",
+          "count": 153,
+          "category": "shell"
+        },
+        {
+          "tool": "mcp_playwright_browser_evaluate",
+          "count": 117,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "replace",
+          "count": 97,
+          "category": "file_edit"
+        },
+        {
+          "tool": "update_topic",
+          "count": 92,
+          "category": "planning"
+        },
+        {
+          "tool": "read_file",
+          "count": 67,
+          "category": "file_read"
+        },
+        {
+          "tool": "write_file",
+          "count": 29,
+          "category": "file_edit"
+        },
+        {
+          "tool": "mcp_playwright_browser_take_screenshot",
+          "count": 15,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "mcp_playwright_browser_navigate",
+          "count": 13,
+          "category": "browser_mcp"
+        },
+        {
+          "tool": "grep_search",
+          "count": 12,
+          "category": "file_read"
+        },
+        {
+          "tool": "mcp_playwright_browser_tabs",
+          "count": 10,
+          "category": "browser_mcp"
+        }
+      ],
+      "error_examples": [
+        {
+          "tool": "run_shell_command",
+          "message": "Output: At line:1 char:49 + npm create vite@latest . -- --template react-ts && npm install && npm ... + ~~ The token '&&' is not a valid statement separator in this version. At lin"
+        },
+        {
+          "tool": "run_shell_command",
+          "message": "Output: > iterative@0.0.0 build > tsc -b && vite build src/App.tsx:1:1 - error TS6133: 'React' is declared but its value is never read. 1 import React from 'react'; ~~~~~~~~~~~~~~~"
+        },
+        {
+          "tool": "run_shell_command",
+          "message": "Output: > iterative@0.0.0 build > tsc -b && vite build src/ImmersivePortfolio.tsx:670:23 - error TS18046: 'currentX' is of type 'unknown'. 670 const globalPos = currentX + basePosi"
+        }
+      ],
+      "prompts": [
+        {
+          "index": 1,
+          "timestamp": "2026-05-25T05:25:44.579Z",
+          "kind": "initial_build",
+          "text": "Using the Motion.dev MCP, build a React app with component called <ImmersivePortfolio />. Start with a hero section: - A large heading (e.g. \"WORKS\") where ever",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 55,
+          "failed_tool_calls": 10,
+          "tool_calls_by_category": {
+            "planning": 15,
+            "shell": 25,
+            "file_edit": 15
+          }
+        },
+        {
+          "index": 2,
+          "timestamp": "2026-05-25T05:36:48.669Z",
+          "kind": "feature_extension",
+          "text": "Extend <ImmersivePortfolio /> — add a hero background image behind the text: - Apply an SVG feTurbulence + feDisplacementMap filter to the image - The turbulenc",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 25,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "planning": 10,
+            "file_read": 5,
+            "file_edit": 5,
+            "shell": 5
+          }
+        },
+        {
+          "index": 3,
+          "timestamp": "2026-05-25T05:45:39.663Z",
+          "kind": "feature_extension",
+          "text": "Add a project grid below the hero in <ImmersivePortfolio />: - 6 project cards in a 3×2 grid, each with an image, project name, and category - Clicking a card e",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 20,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "planning": 10,
+            "file_edit": 5,
+            "shell": 5
+          }
+        },
+        {
+          "index": 4,
+          "timestamp": "2026-05-25T06:18:08.235Z",
+          "kind": "feature_extension",
+          "text": "Add a scroll-driven \"process\" section below the grid in <ImmersivePortfolio />: - A tall section (400vh) with 5 steps - A continuous SVG path runs vertically th",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 35,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "planning": 10,
+            "file_read": 5,
+            "file_edit": 15,
+            "shell": 5
+          }
+        },
+        {
+          "index": 5,
+          "timestamp": "2026-05-25T06:35:27.996Z",
+          "kind": "feature_extension",
+          "text": "Add a horizontal \"clients\" carousel at the bottom of <ImmersivePortfolio />: - 10 logo cards in an infinitely draggable horizontal track - Implement inertia man",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 55,
+          "failed_tool_calls": 10,
+          "tool_calls_by_category": {
+            "planning": 10,
+            "file_read": 10,
+            "file_edit": 20,
+            "shell": 15
+          }
+        },
+        {
+          "index": 6,
+          "timestamp": "2026-05-25T07:05:41.189Z",
+          "kind": "bugfix",
+          "text": "Fix process section, since the text isn't aligning with the cards. Use playwright mcp to verify the fix.",
+          "verification_requested": true,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 5,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "shell": 5
+          }
+        },
+        {
+          "index": 7,
+          "timestamp": "2026-05-25T07:11:10.414Z",
+          "kind": "bugfix",
+          "text": "Fix process section, since the text isn't aligning with the cards. Use playwright mcp to verify the fix.",
+          "verification_requested": true,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 50,
+          "failed_tool_calls": 5,
+          "tool_calls_by_category": {
+            "planning": 10,
+            "shell": 15,
+            "browser_mcp": 20,
+            "file_edit": 5
+          }
+        },
+        {
+          "index": 8,
+          "timestamp": "2026-05-25T07:19:59.545Z",
+          "kind": "bugfix",
+          "text": "The timeline svg looks too weird, and streched.",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 50,
+          "failed_tool_calls": 5,
+          "tool_calls_by_category": {
+            "planning": 10,
+            "browser_mcp": 25,
+            "shell": 10,
+            "file_edit": 5
+          }
+        },
+        {
+          "index": 9,
+          "timestamp": "2026-05-25T08:29:35.218Z",
+          "kind": "integration",
+          "text": "Final integration pass on <ImmersivePortfolio />: A) Global scroll progress bar: - A fixed top bar whose scaleX is driven by overall page scroll progress - But ",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 28,
+          "failed_tool_calls": 5,
+          "tool_calls_by_category": {
+            "planning": 9,
+            "file_edit": 10,
+            "shell": 9
+          }
+        },
+        {
+          "index": 10,
+          "timestamp": "2026-05-25T09:09:25.465Z",
+          "kind": "bugfix",
+          "text": "Fix the contact section, @contact-section.png --- Content from referenced files --- --- End of content ---",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": true,
+          "tool_calls": 8,
+          "failed_tool_calls": 0,
+          "tool_calls_by_category": {
+            "planning": 4,
+            "file_edit": 4
+          }
+        },
+        {
+          "index": 11,
+          "timestamp": "2026-05-25T09:11:44.835Z",
+          "kind": "bugfix",
+          "text": "And, I am able to scroll to top when I am at contact section. Means, the ui gets stuck at contact section.",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 28,
+          "failed_tool_calls": 12,
+          "tool_calls_by_category": {
+            "planning": 4,
+            "file_edit": 8,
+            "shell": 16
+          }
+        },
+        {
+          "index": 12,
+          "timestamp": "2026-05-25T09:18:36.154Z",
+          "kind": "bugfix",
+          "text": "Still the contact section is stucked, I am not able to again scroll up or down.",
+          "verification_requested": false,
+          "screenshot_or_attachment_feedback": false,
+          "tool_calls": 258,
+          "failed_tool_calls": 29,
+          "tool_calls_by_category": {
+            "shell": 55,
+            "file_read": 59,
+            "file_edit": 34,
+            "browser_mcp": 110
+          }
+        }
+      ]
+    }
+  },
+  "cross_agent_summary": {
+    "agents_in_scope": [
+      "codex",
+      "claude_code",
+      "gemini_cli"
+    ],
+    "total_prompt_turns": 38,
+    "total_feedback_turns": 35,
+    "total_tool_calls": 1165,
+    "total_motion_mcp_calls": 23,
+    "total_browser_mcp_calls": 341,
+    "total_active_elapsed_ms": 20951199,
+    "total_active_elapsed_human": "5h 49m 11s",
+    "total_idle_removed_ms": 46110622,
+    "total_idle_removed_human": "12h 48m 31s",
+    "key_observations": [
+      "All three agents moved into multi-turn iterative development rather than one-shot generation.",
+      "Playwright or browser MCP became the dominant verification surface once layout, animation, and interaction debugging started.",
+      "Motion.dev MCP usage was uneven: Codex used it heavily, Claude Code used it selectively, and Gemini CLI recorded none in the selected iterative session.",
+      "Later turns shifted from feature expansion into corrective visual debugging, especially around the process section and contact flow.",
+      "The iterative tail matters: a large share of tool activity came after the core feature set already existed."
+    ]
+  }
+}
